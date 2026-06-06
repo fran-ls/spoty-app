@@ -1,4 +1,4 @@
-import { createContext, useContext, useRef, useState } from 'react'
+import { createContext, useContext, useEffect, useRef, useState } from 'react'
 import apiService from '../services/api.service'
 
 export type ViewType = 'home' | 'search' | 'library' | 'playlist' | 'create-playlist' | 'songs';
@@ -19,6 +19,7 @@ interface PlayerContextType {
   duration: number;
   volume: number;
   isMuted: boolean;
+  isQueue: boolean;
   seek: (time: number) => void;
   play: (songs: Song[], index: number) => void;
   togglePlay: () => void;
@@ -28,6 +29,8 @@ interface PlayerContextType {
   setVolume: React.Dispatch<React.SetStateAction<number>>;
   setIsPlaying: React.Dispatch<React.SetStateAction<boolean>>;
   setIsMuted: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsQueue: React.Dispatch<React.SetStateAction<boolean>>;
+  playQueueSong: (song: Song, index: number) => void;
 
   currentView: ViewType;
   setView: (view: ViewType) => void;
@@ -42,13 +45,26 @@ export const PlayerProvider = ({ children }: any) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [volume, setVolume] = useState(0.5);
+  const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
-  const [prevVolume, setPrevVolume] = useState<number>(0.75);
+  const [prevVolume, setPrevVolume] = useState<number>(1);
+  const [isQueue, setIsQueue] = useState(false);
 
   const [currentView, setView] = useState<ViewType>('home');
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const playQueueSong = (track: Song, index: number) => {
+    if (!audioRef.current) return;
+
+    setCurrentIndex(index);
+    setCurrentSong(track);
+
+    audioRef.current.src = apiService.streamUrl(track.id);
+    audioRef.current.play();
+
+    setIsPlaying(true);
+  }
 
   const seek = (time: number) => {
     if (!audioRef.current) return;
@@ -56,19 +72,11 @@ export const PlayerProvider = ({ children }: any) => {
     setProgress(time);
   }
 
-  const play = (songs: Song[], index: number) => {
+  const play = (tracks: Song[], index: number) => {
     if (!audioRef.current) return;
-
-    const song = songs[index];
-
-    setQueue(songs);
-    setCurrentIndex(index);
-    setCurrentSong(song);
-
-    audioRef.current.src = apiService.streamUrl(song.id);
-    audioRef.current.play();
-
-    setIsPlaying(true);
+    const track = tracks[index];
+    setQueue(tracks);
+    playQueueSong(track, index);
   }
 
   const togglePlay = () => {
@@ -84,9 +92,9 @@ export const PlayerProvider = ({ children }: any) => {
   }
 
   const next = () => {
-    if (currentIndex >= queue.length - 1) return;
+    // if (currentIndex >= queue.length - 1) return;
 
-    const newIndex = currentIndex + 1;
+    const newIndex = currentIndex >= queue.length - 1 ? 0 : currentIndex + 1;
     const song = queue[newIndex];
 
     setCurrentIndex(newIndex);
@@ -103,9 +111,9 @@ export const PlayerProvider = ({ children }: any) => {
   }
 
   const prev = () => {
-    if (currentIndex <= 0) return;
+    // if (currentIndex <= 0) return;
 
-    const newIndex = currentIndex - 1;
+    const newIndex = currentIndex <= 0 ? queue.length - 1 : currentIndex - 1;
     const song = queue[newIndex];
 
     setCurrentIndex(newIndex);
@@ -132,29 +140,28 @@ export const PlayerProvider = ({ children }: any) => {
     }
   }
 
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = volume;
+    }
+  }, [volume]);
+
   return (
     <PlayerContext.Provider
       value={{
-        progress,
-        duration,
-        currentSong,
-        isPlaying,
         queue,
-        currentIndex,
-        volume,
-        isMuted,
-        seek,
-        play,
-        togglePlay,
-        next,
-        prev,
-        setIsPlaying,
-        setVolume,
-        setIsMuted,
-        toggleMute,
+        progress, duration,
+        currentSong, currentIndex,
+        isPlaying, setIsPlaying,
+        volume, setVolume,
+        isMuted, setIsMuted,
+        isQueue, setIsQueue,
+        play, togglePlay,
+        next, prev,
+        seek, toggleMute,
+        playQueueSong,
 
-        currentView,
-        setView,
+        currentView, setView
       }}
     >
       {children}

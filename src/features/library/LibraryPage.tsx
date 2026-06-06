@@ -39,7 +39,7 @@ const LibraryPage: React.FC = () => {
 
   return (
     <div
-      className="px-8 pt-8 pb-32 min-h-full bg-surface text-white select-none scroll-smooth animate-fade-in"
+      className="p-8 pb-10 min-h-full bg-surface text-white select-none scroll-smooth animate-fade-in"
       id="spotify-library-stage"
     >
       <div className="flex justify-between items-end mb-10">

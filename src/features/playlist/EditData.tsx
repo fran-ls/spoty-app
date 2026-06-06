@@ -1,13 +1,16 @@
 import { useState } from "react";
 import { EllipsisIcon, GlobeIcon, LockIcon, MusicIcon, PenIcon, XIcon } from "lucide-react";
+import type { PlayListDTO } from "./playlist.type";
 
 interface EditDataProps {
+  form: PlayListDTO;
   isPrivate: boolean;
   onClose: () => void;
   onChangeVisibility: () => void;
+  onFormChange: (field: keyof PlayListDTO, value: any) => void;
 }
 
-const EditData = ({ isPrivate, onChangeVisibility, onClose }: EditDataProps) => {
+const EditData = ({ isPrivate, form, onFormChange, onChangeVisibility, onClose }: EditDataProps) => {
   const [isHover, setIsHover] = useState(false);
 
   return (
@@ -58,6 +61,8 @@ const EditData = ({ isPrivate, onChangeVisibility, onClose }: EditDataProps) => 
           <div className="text-sm mt-1 w-full">
             <div className="mb-3.5 relative input-group">
               <input
+                onChange={(e) => onFormChange('name', e.target.value)}
+                value={form.name}
                 className="w-full h-10 px-3 py-1 bg-[#3e3e3e] rounded border-white/20 focus:border focus:bg-transparent peer transition-all duration-100"
                 placeholder="Añade un nombre"
                 name="name"
@@ -74,6 +79,8 @@ const EditData = ({ isPrivate, onChangeVisibility, onClose }: EditDataProps) => 
 
             <div className="relative input-group">
               <textarea
+                onChange={(e) => onFormChange('description', e.target.value)}
+                value={form.description}
                 className="w-full h-31 px-3 py-2 bg-[#3e3e3e] rounded resize-none border-white/20 focus:bg-transparent focus:border peer transition-all duration-100"
                 placeholder="Añade una descripción opcional"
                 name="description"

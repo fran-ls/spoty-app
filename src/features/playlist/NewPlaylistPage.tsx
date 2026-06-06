@@ -1,17 +1,21 @@
 import React, { useState } from 'react';
 import { usePlayer } from '../../shared/context/PlayerContext';
 import { EllipsisIcon, ListIcon, MusicIcon, PenIcon, PlusIcon, SearchIcon, XIcon } from 'lucide-react';
+import type { PlayListDTO } from './playlist.type';
 import LayoutMenu from './LayoutMenu';
 import ActionMenu from './ActionMenu';
 import EditData from './EditData';
 
 const NewPlaylistPage: React.FC = () => {
-  const { createPlaylist, openPlaylist, setView } = usePlayer();
+  const { createPlaylist, openPlaylist } = usePlayer();
 
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [coverUrl, setCoverUrl] = useState('');
-  // const [bgColor, setBgColor] = useState('');
+  const [form, setForm] = useState<PlayListDTO>({
+    name: '',
+    description: '',
+    coverUrl: ''
+  });
+
+  const [bgColor, setBgColor] = useState('#3a3a3a');
   const [gradientColor, setGradientColor] = useState('');
   const [customColorsMode, setCustomColorsMode] = useState(false);
 
@@ -22,16 +26,19 @@ const NewPlaylistPage: React.FC = () => {
   const [isEdit, setIsEdit] = useState(false);
   const [query, setQuery] = useState('');
 
+  const onFormChange = (field: keyof PlayListDTO, value: any) => {
+    setForm({ ...form, [field]: value });
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const finalName = name.trim() || 'My Curated Playlist';
-    const finalDesc = description.trim() || 'Custom playlist styled by me.';
+    const finalName = form.name.trim() || 'My Curated Playlist';
+    const finalDesc = form.description.trim() || 'Custom playlist styled by me.';
 
     const newId = createPlaylist(
       finalName,
       finalDesc,
-      coverUrl,
+      form.coverUrl,
       bgColor,
       gradientColor
     );
@@ -40,13 +47,11 @@ const NewPlaylistPage: React.FC = () => {
     openPlaylist(newId);
   }
 
-  const bgColor = '#3a3a3a'
-
   return (
     <div className="space-y-3 min-h-full text-white select-none animate-fade-in bg-surface">
       <div
         style={{
-          background: `linear-gradient(to bottom, ${bgColor} 0%, ${gradientColor || '#121212'} 100%)`
+          background: `linear-gradient(to bottom, ${bgColor} 0%, ${gradientColor || '#121212'} 100%)`,
         }}
         className="p-6 flex items-center gap-6"
       >
@@ -162,10 +167,13 @@ const NewPlaylistPage: React.FC = () => {
 
       {isEdit &&
         <EditData
+          form={form}
           isPrivate={isPrivate}
+          onFormChange={onFormChange}
           onChangeVisibility={() => setIsPrivate(!isPrivate)}
           onClose={() => setIsEdit(false)}
-        />}
+        />
+      }
     </div>
   )
 }

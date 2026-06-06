@@ -39,7 +39,7 @@ const SearchPage: React.FC = () => {
 
   return (
     <div
-      className="px-8 pt-6 pb-32 min-h-full bg-surface text-white select-none scroll-smooth animate-fade-in"
+      className="px-8 pt-6 pb-10 min-h-full bg-surface text-white select-none scroll-smooth animate-fade-in"
       id="spotify-search-stage"
     >
       {/* Search active results layout */}

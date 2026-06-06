@@ -28,7 +28,7 @@ const HomePage: React.FC = () => {
 
   return (
     <div
-      className="px-8 pt-6 pb-32 min-h-full bg-linear-to-b from-[#2a2a2a] via-[#1a1a1a] to-[#0e0e0e] text-white select-none scroll-smooth animate-fade-in"
+      className="px-8 pt-6 pb-10 min-h-full bg-linear-to-b from-[#2a2a2a] via-[#1a1a1a] to-[#0e0e0e] text-white select-none scroll-smooth animate-fade-in"
       id="spotify-home-stage"
     >
       {/* 1. Good Evening Section */}
@@ -108,7 +108,7 @@ const HomePage: React.FC = () => {
       </section>
 
       {/* 3. Recently Played Section */}
-      <section className="mb-12" id="home-recent-section">
+      <section className="" id="home-recent-section">
         <div className="flex justify-between items-end mb-6">
           <h2 className="text-2xl font-bold font-headline text-white hover:underline cursor-pointer tracking-tight">
             Recently played

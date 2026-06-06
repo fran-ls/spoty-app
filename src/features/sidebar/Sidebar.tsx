@@ -63,7 +63,7 @@ export const Sidebar: React.FC = () => {
                   e.stopPropagation();
                   setIsSearch(true);
                 }}
-                className={`${isSearch ? 'w-full bg-[#1f1f1f] rounded' : 'w-7.5 h-7.5 rounded-full'} z-5 transition-all duration-100 hover:bg-[#1f1f1f] px-2 py-1.25 text-sm cursor-pointer flex items-center`}
+                className={`${isSearch ? 'w-full bg-[#1f1f1f] rounded' : 'w-8 h-8 rounded-full'} z-5 transition-all duration-100 hover:bg-[#1f1f1f] px-2 py-1.5 text-sm cursor-pointer flex items-center`}
               >
                 <SearchIcon className="min-w-4 w-4 h-4" />
 
@@ -106,7 +106,7 @@ export const Sidebar: React.FC = () => {
         </header>
 
         <nav
-          className={`${isCollapsed ? 'h-[calc(100vh-64px-88px-96px)]' : 'h-[calc(100vh-64px-88px-114px)]'} overflow-y-auto overflow-x-hidden relative`}
+          className={`${isCollapsed ? 'h-[calc(100vh-64px-88px-96px)]' : 'h-[calc(100vh-64px-88px-116px)]'} overflow-y-auto overflow-x-hidden relative`}
         >
           <ul className={`${isCollapsed ? 'pl-0 pb-4' : 'pl-2 pb-2'} w-full absolute top-0 left-0`}>
             <li className={`cursor-pointer p-2 text-[#adaaaa] hover:bg-[#1f1f1f] rounded-md gap-3 flex items-center`}>

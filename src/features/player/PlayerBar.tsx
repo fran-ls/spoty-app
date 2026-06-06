@@ -9,8 +9,8 @@ import { formatTime } from '../../shared/utils/formatTime';
 
 export const PlayerBar: React.FC = () => {
   const {
-    currentSong, progress, duration, isPlaying, volume, isMuted, queue, currentIndex,
-    seek, next, prev, togglePlay, setVolume, toggleMute, setIsPlaying
+    currentSong, progress, duration, isPlaying, volume, isMuted, queue, currentIndex, isQueue,
+    seek, next, prev, togglePlay, setVolume, toggleMute, setIsQueue
   } = usePlayer();
 
   const progressRef = useRef<HTMLDivElement>(null);
@@ -19,7 +19,6 @@ export const PlayerBar: React.FC = () => {
   const [hoverTime, setHoverTime] = useState<number | null>(null);
   const [hoverX, setHoverX] = useState<number>(0);
   const [isDragging, setIsDragging] = useState<boolean>(false);
-  // const [isHover, setIsHover] = useState<boolean>(false);
 
   const isRepeat: boolean = false;
   const isShuffle: boolean = false;
@@ -31,7 +30,7 @@ export const PlayerBar: React.FC = () => {
     const x = clientX - rect.left;
     const width = rect.width;
     const ratio = Math.max(0, Math.min(1, x / width));
-    const targetSecond = Math.floor(ratio * duration!);
+    const targetSecond = Math.floor(ratio * duration);
     seek(targetSecond);
   }
 
@@ -48,7 +47,7 @@ export const PlayerBar: React.FC = () => {
         const hoverXPos = moveEvent.clientX - rect.left;
         const width = rect.width;
         const clickRatio = Math.max(0, Math.min(1, hoverXPos / width));
-        const targetSecond = Math.floor(clickRatio * duration!);
+        const targetSecond = Math.floor(clickRatio * duration);
         setHoverTime(targetSecond);
         setHoverX(Math.max(0, Math.min(width, hoverXPos)));
       }
@@ -70,50 +69,46 @@ export const PlayerBar: React.FC = () => {
     const hoverXPos = e.clientX - rect.left;
     const width = rect.width;
     const clickRatio = Math.max(0, Math.min(1, hoverXPos / width));
-    const targetSecond = Math.floor(clickRatio * duration!);
+    const targetSecond = Math.floor(clickRatio * duration);
     setHoverTime(targetSecond);
     setHoverX(hoverXPos);
-  }
-
-  const handleProgressMouseMove2 = (_e: React.MouseEvent<HTMLDivElement>) => {
-    const handleProgressMouseMove2 = (moveEvent: MouseEvent) => {
-      if (!currentSong || !progressRef.current) return;
-      const rect = progressRef.current.getBoundingClientRect();
-      const hoverXPos = moveEvent.clientX - rect.left;
-      const width = rect.width;
-      const clickRatio = Math.max(0, Math.min(1, hoverXPos / width));
-      const targetSecond = Math.floor(clickRatio * duration!);
-      setHoverTime(targetSecond);
-      setHoverX(hoverXPos);
-    }
-
-    const handleMouseUp = () => {
-      window.removeEventListener('mousemove', handleProgressMouseMove2);
-      window.removeEventListener('mouseup', handleMouseUp);
-    }
-
-    window.addEventListener('mousemove', handleProgressMouseMove2);
-    window.addEventListener('mouseup', handleMouseUp);
   }
 
   const handleProgressMouseLeave = () => {
     if (!isDragging) setHoverTime(null);
   }
 
-  const handleVolumeChange = (e: React.MouseEvent<HTMLDivElement>) => {
+  const volumeSeek = (clientX: number) => {
     if (!volumeRef.current) return;
     const rect = volumeRef.current.getBoundingClientRect();
-    const clickX = e.clientX - rect.left;
+    const clickX = clientX - rect.left;
     const width = rect.width;
     const clickRatio = Math.max(0, Math.min(1, clickX / width));
     setVolume(clickRatio);
   }
 
+  const handleVolumeChange = (e: React.MouseEvent<HTMLDivElement>) => {
+    volumeSeek(e.clientX);
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      volumeSeek(moveEvent.clientX);
+    }
+
+    const handleMouseUp = () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    }
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+  }
+
   const progressPercent = Math.min(100, (progress / duration) * 100);
+  const volumePercent = volume * 100;
 
   useEffect(() => {
     if (currentIndex >= queue.length - 1 && progress === duration) {
-      setIsPlaying(false);
+      // setIsPlaying(false);
     }
   }, [progress]);
 
@@ -137,6 +132,7 @@ export const PlayerBar: React.FC = () => {
             <MusicIcon className="text-white absolute top-1/2 left-1/2 -translate-1/2" />
           }
         </div>
+
         {currentSong &&
           <>
             <div className="flex flex-col truncate min-w-0 pr-2">
@@ -167,7 +163,7 @@ export const PlayerBar: React.FC = () => {
               // onClick={toggleShuffle}
               className={`p-2 transition-colors duration-200 cursor-pointer relative ${isShuffle ? 'text-primary' : 'text-[#adaaaa] hover:text-white'
                 }`}
-              title="Suffle"
+              title="Habilitar la reproducción aleatoria"
             >
               <Shuffle size={16} />
               {isShuffle && (
@@ -178,7 +174,7 @@ export const PlayerBar: React.FC = () => {
             <button
               onClick={prev}
               className="p-2 text-[#adaaaa] hover:text-white transition-colors duration-200 cursor-pointer"
-              title="Previous"
+              title="Anterior"
             >
               <SkipBack size={16} fill="currentColor" />
             </button>
@@ -187,7 +183,7 @@ export const PlayerBar: React.FC = () => {
           <button
             onClick={togglePlay}
             className="bg-white text-black p-2 rounded-full hover:scale-105 active:scale-95 transition-all shadow-md flex items-center justify-center shrink-0 cursor-pointer"
-            title={isPlaying ? "Pause" : "Play"}
+            title={isPlaying ? "Pausar" : "Reproducir"}
           >
             {isPlaying ? (
               <Pause size={16} fill="currentColor" className="translate-x-0" />
@@ -200,7 +196,7 @@ export const PlayerBar: React.FC = () => {
             <button
               onClick={next}
               className="p-2 text-[#adaaaa] hover:text-white transition-colors duration-200 cursor-pointer"
-              title="Next"
+              title="Siguiente"
             >
               <SkipForward size={16} fill="currentColor" />
             </button>
@@ -209,7 +205,7 @@ export const PlayerBar: React.FC = () => {
               // onClick={toggleRepeat}
               className={`p-2 transition-colors duration-200 cursor-pointer relative ${isRepeat ? 'text-primary' : 'text-[#adaaaa] hover:text-white'
                 }`}
-              title="Repeat"
+              title="Activar repetir"
             >
               <Repeat size={16} />
               {isRepeat && (
@@ -273,39 +269,53 @@ export const PlayerBar: React.FC = () => {
 
       {/* RIGHT: Volume & Secondary Controls */}
       <div className="flex items-center justify-end gap-4 w-[30%] min-w-50">
-        <button className="text-[#adaaaa] hover:text-primary transition-all cursor-pointer">
+        <button
+          onClick={() => setIsQueue(!isQueue)}
+          className="text-[#adaaaa] hover:text-primary transition-all cursor-pointer"
+          title="Cola"
+          type="button"
+        >
           <List size={18} />
         </button>
-        <button className="text-[#adaaaa] hover:text-primary transition-all cursor-pointer">
+        <button
+          className="text-[#adaaaa] hover:text-primary transition-all cursor-pointer"
+          title="Conectar a un dispositivo"
+          type="button"
+        >
           <Radio size={18} />
         </button>
         <button
           onClick={toggleMute}
           className="text-[#adaaaa] hover:text-white transition-all cursor-pointer"
+          title={isMuted || !volume ? 'No silenciar' : 'Silenciar'}
         >
           {isMuted || volume === 0 ? <VolumeX size={18} /> : <Volume2 size={18} />}
         </button>
 
         {/* Volume Slider */}
-        <div className="flex items-center gap-2 w-24 group px-1">
-          <div
-            ref={volumeRef}
-            onClick={handleVolumeChange}
-            className="flex-1 rounded-full relative cursor-pointer"
-          >
-            <div className="absolute top-1/2 left-0 -translate-y-1/2 w-full h-0.75 bg-white/10 rounded-full overflow-hidden">
+        <div
+          ref={volumeRef}
+          onMouseDown={handleVolumeChange}
+          className="py-1.5 flex items-center gap-2 w-24 group px-1 rounded-full"
+        >
+          <div className="flex-1 rounded-full relative cursor-pointer">
+            <div className="absolute top-1/2 left-0 -translate-y-1/2 w-full h-1 bg-white/10 rounded-full overflow-hidden">
               <div
-                style={{ width: `${volume * 100}%` }}
+                style={{ width: `${volumePercent}%` }}
                 className="h-full bg-white group-hover:bg-primary transition-colors"
               />
             </div>
             <div
-              style={{ left: `${volume * 100}%` }}
+              style={{ left: `${volumePercent}%` }}
               className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-white rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
             />
           </div>
         </div>
-        <button className="text-[#adaaaa] hover:text-primary transition-all cursor-pointer">
+        <button
+          className="text-[#adaaaa] hover:text-primary transition-all cursor-pointer"
+          title="Abrir el Minireproductor"
+          type="button"
+        >
           <Laptop size={18} />
         </button>
       </div>
