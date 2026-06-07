@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { EllipsisIcon, GlobeIcon, LockIcon, MusicIcon, PenIcon, XIcon } from "lucide-react";
-import type { PlayListDTO } from "./playlist.type";
+import type { PlayListDTO } from "../playlist.type";
 
 interface EditDataProps {
   form: PlayListDTO;
@@ -10,7 +10,8 @@ interface EditDataProps {
   onFormChange: (field: keyof PlayListDTO, value: any) => void;
 }
 
-const EditData = ({ isPrivate, form, onFormChange, onChangeVisibility, onClose }: EditDataProps) => {
+const EditData = (props: EditDataProps) => {
+  const { isPrivate, form, onFormChange, onChangeVisibility, onClose } = props;
   const [isHover, setIsHover] = useState(false);
 
   return (

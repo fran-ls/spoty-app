@@ -1,4 +1,4 @@
-import type { Song } from "../types/song.types";
+import type { Song } from "../../features/song/song.types";
 import { api } from "../utils/api";
 import { envs } from "../utils/envs";
 

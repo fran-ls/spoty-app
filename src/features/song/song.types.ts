@@ -1,4 +1,4 @@
-import type { Artist } from "./music.types";
+import type { Artist } from "./artist.types";
 
 export interface Song {
   id: string;

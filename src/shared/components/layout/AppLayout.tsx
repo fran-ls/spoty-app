@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Sidebar } from "../../../features/sidebar/Sidebar";
+import { Playlists } from "../../../features/sidebar/Playlists";
 import { QueueList } from "../../../features/sidebar/QueueList";
 import { Header } from "../Header";
 import { PlayerBar } from "../../../features/player/PlayerBar";
@@ -14,7 +14,7 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
       <Header onExplorePremiumClick={() => setIsPremiumOpen(true)} />
 
       <div className="px-2 flex gap-2 select-none rounded-lg">
-        <Sidebar />
+        <Playlists />
 
         <main className="w-full rounded-lg bg-linear-to-b from-[#1c1c1c] via-surface to-black overflow-hidden">
           <div className={`${STYLES.maxHeightMain} ${STYLES.minHeightMain} flex-1 overflow-y-auto`}>

@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { MusicIcon, XIcon, PauseIcon, PlayIcon, ChevronLeft } from 'lucide-react';
-import { usePlayer } from '../../shared/context/PlayerContextMe';
+import { MusicIcon, XIcon, PauseIcon, PlayIcon, ChevronLeft, PanelTopOpenIcon, PanelTopCloseIcon } from 'lucide-react';
+import { usePlayer } from '../../shared/context/PlayerContext';
 
 export const QueueList: React.FC = () => {
-  const { queue, isPlaying, isQueue, setIsQueue, playQueueSong } = usePlayer();
+  const { queue, isPlaying, isQueue, currentSong, setIsQueue, playQueueSong } = usePlayer();
   const isCollapsed = isQueue;
 
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
@@ -29,30 +29,55 @@ export const QueueList: React.FC = () => {
               className={`p-1.5 hover:bg-[#1f1f1f] text-[#adaaaa] hover:text-white cursor-pointer ${isCollapsed ? 'bg-white/5 rounded-lg' : 'rounded-full'}`}
               title={isCollapsed ? "Abrir Cola" : "Cerrar"}
             >
-              {isCollapsed ? <ChevronLeft size={15} /> : <XIcon className="w-5 h-5" />}
+              {isCollapsed
+                ?
+                <PanelTopCloseIcon
+                  className="-rotate-90"
+                  size={20}
+                />
+                :
+                <XIcon className="w-5 h-5" />
+              }
             </button>
           </div>
         </header>
 
         <nav
-          className={`${isCollapsed ? 'h-[calc(100vh-64px-88px-59px)]' : 'h-[calc(100vh-64px-88px-64px)]'} overflow-y-auto overflow-x-hidden relative`}
+          className={`${isCollapsed ? 'h-[calc(100vh-64px-88px-64px)]' : 'h-[calc(100vh-64px-88px-64px)]'} overflow-y-auto overflow-x-hidden relative`}
         >
           <ul className={`${isCollapsed ? 'pl-0 pb-0' : 'pl-2 pb-2'} w-full absolute top-0 left-0`}>
             {queue.map((track, i) => (
               <li
-                className={`${isCollapsed ? 'justify-center' : 'justify-start'} p-2 cursor-pointer text-[#adaaaa] hover:bg-[#1f1f1f] rounded-md gap-3 flex items-center`}
+                onClick={() => console.log(track)}
                 onPointerEnter={() => setHoverIndex(i)}
                 onPointerLeave={() => setHoverIndex(null)}
-                key={i}
+                className={`${isCollapsed ? 'justify-center' : 'justify-start'} p-2 cursor-pointer text-[#adaaaa] hover:bg-[#1f1f1f] rounded-md gap-3 flex items-center`}
+                key={track.id}
               >
                 <div className="min-w-12 w-12 h-12 bg-[#262626] rounded relative overflow-hidden hover:badge:bg-blue-500">
                   {track.cover ?
-                    <img src="favicon.svg" alt="" />
+                    <img
+                      src={track.cover}
+                      alt=""
+                      onError={(e) => {
+                        // e.currentTarget.style.display = 'none';
+                      }}
+                    />
                     :
                     <MusicIcon className="absolute top-1/2 left-1/2 -translate-1/2" />
                   }
 
-                  {hoverIndex !== null && hoverIndex === i &&
+                  {(hoverIndex !== null && hoverIndex === i && currentSong?.id !== track.id) &&
+                    <div className="text-white badge w-full h-full absolute top-0 left-0 bg-black/50 flex items-center justify-center">
+                      <PlayIcon
+                        fill="currentColor"
+                        className="min-w-5.5 w-5.5 h-5.5"
+                        stroke="0"
+                      />
+                    </div>
+                  }
+
+                  {(currentSong?.id === track.id && hoverIndex === i) &&
                     <div className="text-white badge w-full h-full absolute top-0 left-0 bg-black/50 flex items-center justify-center">
                       {!isPlaying
                         ? <PlayIcon fill="currentColor" className="min-w-5.5 w-5.5 h-5.5" stroke="0" />
@@ -69,11 +94,12 @@ export const QueueList: React.FC = () => {
                     </h4>
                     <div className="text-[13px] font-semibold">
                       <span className="line-clamp-1 w-full">
-                        {track.id} • {track.artist.name}
+                        {track.artist.name}
+                        {/* {track.albumId} • {track.artist.name} */}
                       </span>
                     </div>
                     <div className="hidden text-[13px] font-semibold className">
-                      <span className="truncate">
+                      <span className="line-clamp-1">
                         {track.id}
                       </span> • <span className="truncate">
                         {track.artist.name}

@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
-import { usePlayer } from '../../shared/context/PlayerContext';
 import { EllipsisIcon, ListIcon, MusicIcon, PenIcon, PlusIcon, SearchIcon, XIcon } from 'lucide-react';
-import type { PlayListDTO } from './playlist.type';
-import LayoutMenu from './LayoutMenu';
-import ActionMenu from './ActionMenu';
-import EditData from './EditData';
+import type { PlayListDTO } from '../playlist.type';
+import LayoutMenu from '../components/LayoutMenu';
+import ActionMenu from '../components/ActionMenu';
+import EditData from '../components/EditData';
+import StyleConfig from '../components/StyleConfig';
 
 const NewPlaylistPage: React.FC = () => {
-  const { createPlaylist, openPlaylist } = usePlayer();
-
   const [form, setForm] = useState<PlayListDTO>({
     name: '',
     description: '',
@@ -16,9 +14,9 @@ const NewPlaylistPage: React.FC = () => {
   });
 
   const [bgColor, setBgColor] = useState('#3a3a3a');
-  const [gradientColor, setGradientColor] = useState('');
-  const [customColorsMode, setCustomColorsMode] = useState(false);
+  const [gradientColor, setGradientColor] = useState('#121212');
 
+  const [isBackground, setIsBackground] = useState(false);
   const [isOpenAction, setIsOpenAction] = useState(false);
   const [isPrivate, setIsPrivate] = useState(false);
   const [isHover, setIsHover] = useState(false);
@@ -30,25 +28,15 @@ const NewPlaylistPage: React.FC = () => {
     setForm({ ...form, [field]: value });
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  /*const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const finalName = form.name.trim() || 'My Curated Playlist';
     const finalDesc = form.description.trim() || 'Custom playlist styled by me.';
-
-    const newId = createPlaylist(
-      finalName,
-      finalDesc,
-      form.coverUrl,
-      bgColor,
-      gradientColor
-    );
-
-    // Jump straight to the newly styled playlist viewport!
-    openPlaylist(newId);
-  }
+    // save
+  }*/
 
   return (
-    <div className="space-y-3 min-h-full text-white select-none animate-fade-in bg-surface">
+    <div className="min-h-full text-white select-none animate-fade-in bg-surface">
       <div
         style={{
           background: `linear-gradient(to bottom, ${bgColor} 0%, ${gradientColor || '#121212'} 100%)`,
@@ -74,7 +62,7 @@ const NewPlaylistPage: React.FC = () => {
           }
         </div>
 
-        <div className="mt-auto">
+        <div className="mt-auto w-full">
           <span className="block mb-3 text-sm font-semibol">
             Lista {isPrivate ? 'privada' : 'pública'}
           </span>
@@ -85,9 +73,9 @@ const NewPlaylistPage: React.FC = () => {
             Mi lista  #6
           </h1>
 
-          <div className="mt-5">
+          <div className="mt-5 flex items-center">
             <button
-              className="bg-[#262626] p-1.5 rounded-full"
+              className="bg-[#ffffff36] p-1.5 rounded-full"
               type="button"
             >
               <PlusIcon className="w-4 h-4" />
@@ -99,8 +87,13 @@ const NewPlaylistPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="p-6 space-y-6">
-        <div className="text-sm text-[#adaaaa] flex items-center justify-between">
+      <div className="p-6 space-y-6 relative">
+        <div
+          // style={{
+          //   background: `linear-gradient(to bottom, ${gradientColor} 0%, #0e0e0e 100%)`,
+          // }}
+          className="text-sm text-[#adaaaa] flex items-center justify-between relative"
+        >
           <div className="relative">
             <button
               onClick={() => setIsOpenAction(!isOpenAction)}
@@ -115,9 +108,11 @@ const NewPlaylistPage: React.FC = () => {
                 onIsEdit={() => {
                   setIsEdit(true);
                   setIsOpenAction(false);
+                  setIsBackground(false);
                 }}
                 onChangeVisibility={() => setIsPrivate(!isPrivate)}
                 onClose={() => setIsOpenAction(!isOpenAction)}
+                onIsBackground={() => setIsBackground(!isBackground)}
               />
             }
           </div>
@@ -163,6 +158,15 @@ const NewPlaylistPage: React.FC = () => {
             }
           </div>
         </div>
+
+        {isBackground &&
+          <StyleConfig
+            bgColor={bgColor}
+            gradientColor={gradientColor}
+            setBgColor={setBgColor}
+            setGradientColor={setGradientColor}
+            onClose={() => setIsBackground(false)}
+          />}
       </div>
 
       {isEdit &&

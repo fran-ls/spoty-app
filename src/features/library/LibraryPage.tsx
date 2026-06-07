@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
-import { usePlayer } from '../../shared/context/PlayerContext';
 import { Search, ListFilter, Play, Heart, LayoutGrid, List, Rows3 } from 'lucide-react';
-import { mockArtists, mockPodcasts, mockAlbums, mockTracks } from '../../shared/data/music.data';
+import { mockArtists, mockPodcasts, mockAlbums } from '../../shared/data/music.data';
 
 type FilterType = 'All' | 'Playlists' | 'Podcasts' | 'Artists' | 'Albums';
 type LayoutMode = 'grid' | 'list' | 'compact';
 
 const LibraryPage: React.FC = () => {
-  const { openPlaylist, playTrack, setView, likedTrackIds, allPlaylists } = usePlayer();
+  const allPlaylists = [] as any[];
+
   const [activeFilter, setActiveFilter] = useState<FilterType>('All');
   const [showSearchBox, setShowSearchBox] = useState<boolean>(false);
   const [searchLibraryQuery, setSearchLibraryQuery] = useState<string>('');
@@ -15,16 +15,6 @@ const LibraryPage: React.FC = () => {
 
   const handleTabClick = (filter: FilterType) => {
     setActiveFilter(filter);
-  }
-
-  const handlePlayLikedSongs = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    const likedSongs = mockTracks.filter(track => likedTrackIds.includes(track.id));
-    if (likedSongs.length > 0) {
-      playTrack(likedSongs[0], likedSongs);
-    } else {
-      alert("No Liked Songs yet! Try exploring track selections in Rock Classics and clicking the Hearts.");
-    }
   }
 
   const matchFilter = (itemType: FilterType) => {
@@ -37,6 +27,8 @@ const LibraryPage: React.FC = () => {
     return text.toLowerCase().includes(searchLibraryQuery.toLowerCase());
   }
 
+  const likedTrackIdsLength = 10;
+
   return (
     <div
       className="p-8 pb-10 min-h-full bg-surface text-white select-none scroll-smooth animate-fade-in"
@@ -47,7 +39,6 @@ const LibraryPage: React.FC = () => {
           Your Library
         </h1>
         <button
-          onClick={() => setView('create-playlist')}
           className="bg-primary hover:bg-[#63ef82] text-black font-black text-xs px-5 py-2.5 rounded-full transition-all flex items-center gap-1.5 hover:scale-105 active:scale-95 shadow-xl cursor-pointer font-headline"
         >
           Create Playlist
@@ -139,14 +130,6 @@ const LibraryPage: React.FC = () => {
           {/* Liked Songs Span Card */}
           {matchFilter('Playlists') && filterBySearch('Liked Songs') && (
             <div
-              onClick={() => {
-                const likedSongs = mockTracks.filter(track => likedTrackIds.includes(track.id));
-                if (likedSongs.length > 0) {
-                  playTrack(likedSongs[0], likedSongs);
-                } else {
-                  setView('home');
-                }
-              }}
               className="col-span-2 row-span-1 p-6 rounded-2xl bg-linear-to-br from-[#450af5] to-[#8e8ee5] flex flex-col justify-end group cursor-pointer hover:shadow-2xl transition-all duration-300 relative overflow-hidden min-h-55 active:scale-98 select-none font-headline"
             >
               <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#ffffff_1px,transparent_1px)] background-size:16px_16px pointer-events-none" />
@@ -157,13 +140,12 @@ const LibraryPage: React.FC = () => {
                 </p>
                 <p className="text-white/85 font-medium text-sm mt-3 flex items-center gap-1.5">
                   <Heart size={14} fill="currentColor" />
-                  {likedTrackIds.length} songs
+                  {likedTrackIdsLength} songs
                 </p>
               </div>
 
               <div className="absolute bottom-6 right-6 opacity-0 group-hover:opacity-100 translate-y-3 group-hover:translate-y-0 transition-all duration-300">
                 <button
-                  onClick={handlePlayLikedSongs}
                   className="w-12 h-12 flex items-center justify-center rounded-full bg-primary text-black shadow-2xl scale-110 hover:scale-115 active:scale-90 cursor-pointer"
                 >
                   <Play size={20} fill="currentColor" stroke="none" className="translate-x-px" />
@@ -173,10 +155,9 @@ const LibraryPage: React.FC = () => {
           )}
 
           {/* Dynamic Playlists list from workshop state */}
-          {matchFilter('Playlists') && allPlaylists.filter(p => filterBySearch(p.name)).map(playlist => (
+          {matchFilter('Playlists') && allPlaylists.filter((p: any) => filterBySearch(p.name)).map(playlist => (
             <div
               key={playlist.id}
-              onClick={() => openPlaylist(playlist.id)}
               className="p-4 rounded-xl bg-[#131313] hover:bg-[#262626] transition-all duration-300 group cursor-pointer flex flex-col active:scale-98 border border-white/5"
             >
               <div className="relative aspect-square mb-4 rounded-lg overflow-hidden bg-[#262626]">
@@ -188,14 +169,6 @@ const LibraryPage: React.FC = () => {
                 />
                 <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300">
                   <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (playlist.tracks.length > 0) {
-                        playTrack(playlist.tracks[0], playlist.tracks);
-                      } else {
-                        openPlaylist(playlist.id);
-                      }
-                    }}
                     className="w-12 h-12 flex items-center justify-center rounded-full bg-primary text-black shadow-xl"
                   >
                     <Play size={18} fill="currentColor" stroke="none" className="translate-x-px" />
@@ -215,7 +188,6 @@ const LibraryPage: React.FC = () => {
           {matchFilter('Artists') && mockArtists.filter(a => filterBySearch(a.name)).map(artist => (
             <div
               key={artist.id}
-              onClick={() => openPlaylist('rock_classics')}
               className="p-4 rounded-xl bg-[#131313] hover:bg-[#262626] transition-all duration-300 group cursor-pointer flex flex-col items-center text-center active:scale-98 border border-white/5"
             >
               <div className="relative aspect-square w-full mb-4 rounded-full overflow-hidden bg-[#262626] shadow-xl">
@@ -263,7 +235,6 @@ const LibraryPage: React.FC = () => {
           {matchFilter('Albums') && mockAlbums.filter(a => filterBySearch(a.title)).map(album => (
             <div
               key={album.id}
-              onClick={() => openPlaylist('rock_classics')}
               className="p-4 rounded-xl bg-[#131313] hover:bg-[#262626] transition-all duration-300 group cursor-pointer flex flex-col active:scale-98 border border-white/5"
             >
               <div className="relative aspect-square mb-4 rounded-lg overflow-hidden bg-[#2d2d2d] shadow-lg">
@@ -293,14 +264,6 @@ const LibraryPage: React.FC = () => {
           {/* Liked Songs row */}
           {matchFilter('Playlists') && filterBySearch('Liked Songs') && (
             <div
-              onClick={() => {
-                const likedSongs = mockTracks.filter(track => likedTrackIds.includes(track.id));
-                if (likedSongs.length > 0) {
-                  playTrack(likedSongs[0], likedSongs);
-                } else {
-                  setView('home');
-                }
-              }}
               className="flex items-center gap-4 p-4 rounded-xl bg-linear-to-r from-[#450af5] to-[#8e8ee5]/40 hover:from-[#5113fa] hover:to-[#8e8ee5]/60 transition-all group cursor-pointer border border-[#8e8ee5]/20"
             >
               <div className="w-16 h-16 rounded-lg bg-linear-to-br from-[#450af5] to-[#8e8ee5] flex items-center justify-center shadow-lg shrink-0">
@@ -309,12 +272,11 @@ const LibraryPage: React.FC = () => {
               <div className="flex-1 min-w-0">
                 <h3 className="font-bold text-white text-base">Liked Songs</h3>
                 <p className="text-xs text-white/70 font-semibold mt-1">
-                  Playlist • By You • {likedTrackIds.length} tracks
+                  Playlist • By You • {10} tracks
                 </p>
               </div>
               <div className="opacity-0 group-hover:opacity-100 transition-opacity">
                 <button
-                  onClick={handlePlayLikedSongs}
                   className="w-10 h-10 flex items-center justify-center rounded-full bg-primary text-black transition-transform hover:scale-105 active:scale-95"
                 >
                   <Play size={16} fill="currentColor" stroke="none" className="translate-x-px" />
@@ -327,7 +289,6 @@ const LibraryPage: React.FC = () => {
           {matchFilter('Playlists') && allPlaylists.filter(p => filterBySearch(p.name)).map(playlist => (
             <div
               key={playlist.id}
-              onClick={() => openPlaylist(playlist.id)}
               className="flex items-center gap-4 p-4 rounded-xl bg-[#131313] hover:bg-[#262626] transition-all group cursor-pointer border border-white/5"
             >
               <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-[#262626]">
@@ -346,14 +307,6 @@ const LibraryPage: React.FC = () => {
               </div>
               <div className="opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap gap-3 flex items-center">
                 <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (playlist.tracks.length > 0) {
-                      playTrack(playlist.tracks[0], playlist.tracks);
-                    } else {
-                      openPlaylist(playlist.id);
-                    }
-                  }}
                   className="w-10 h-10 flex items-center justify-center rounded-full bg-primary text-black cursor-pointer hover:scale-105 active:scale-95 transition-all"
                 >
                   <Play size={16} fill="currentColor" stroke="none" className="translate-x-px" />
@@ -366,7 +319,6 @@ const LibraryPage: React.FC = () => {
           {matchFilter('Artists') && mockArtists.filter(a => filterBySearch(a.name)).map(artist => (
             <div
               key={artist.id}
-              onClick={() => openPlaylist('rock_classics')}
               className="flex items-center gap-4 p-4 rounded-xl bg-[#131313] hover:bg-[#262626] transition-all group cursor-pointer border border-white/5 animate-fade-in"
             >
               <div className="w-16 h-16 rounded-full overflow-hidden shrink-0 bg-[#262626]">
@@ -408,7 +360,6 @@ const LibraryPage: React.FC = () => {
           {matchFilter('Albums') && mockAlbums.filter(a => filterBySearch(a.title)).map(album => (
             <div
               key={album.id}
-              onClick={() => openPlaylist('rock_classics')}
               className="flex items-center gap-4 p-4 rounded-xl bg-[#131313] hover:bg-[#262626] transition-all group cursor-pointer border border-white/5 animate-fade-in"
             >
               <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-[#2d2d2d]">
@@ -434,14 +385,6 @@ const LibraryPage: React.FC = () => {
           {/* Liked Songs Line */}
           {matchFilter('Playlists') && filterBySearch('Liked Songs') && (
             <div
-              onClick={() => {
-                const likedSongs = mockTracks.filter(track => likedTrackIds.includes(track.id));
-                if (likedSongs.length > 0) {
-                  playTrack(likedSongs[0], likedSongs);
-                } else {
-                  setView('home');
-                }
-              }}
               className="flex items-center justify-between gap-4 py-2 px-3 rounded-xl hover:bg-white/5 transition-all cursor-pointer font-medium text-xs text-[#adaaaa]"
             >
               <div className="flex items-center gap-3 min-w-0">
@@ -452,7 +395,7 @@ const LibraryPage: React.FC = () => {
                 <span className="text-white/20 select-none">•</span>
                 <span>By You</span>
                 <span className="text-white/10 select-none">|</span>
-                <span>{likedTrackIds.length} songs favorited</span>
+                <span>{likedTrackIdsLength} songs favorited</span>
               </div>
               <span className="text-[10px] text-primary font-black uppercase tracking-widest bg-primary/10 px-2 py-0.5 rounded border border-primary/20">Liked List</span>
             </div>
@@ -462,7 +405,6 @@ const LibraryPage: React.FC = () => {
           {matchFilter('Playlists') && allPlaylists.filter(p => filterBySearch(p.name)).map(playlist => (
             <div
               key={playlist.id}
-              onClick={() => openPlaylist(playlist.id)}
               className="flex items-center justify-between gap-4 py-2 px-3 rounded-xl hover:bg-white/5 transition-all cursor-pointer font-medium text-xs text-[#adaaaa]"
             >
               <div className="flex items-center gap-3 min-w-0">
@@ -483,7 +425,6 @@ const LibraryPage: React.FC = () => {
           {matchFilter('Artists') && mockArtists.filter(a => filterBySearch(a.name)).map(artist => (
             <div
               key={artist.id}
-              onClick={() => openPlaylist('rock_classics')}
               className="flex items-center justify-between gap-4 py-2 px-3 rounded-xl hover:bg-white/5 transition-all cursor-pointer font-medium text-xs text-[#adaaaa]"
             >
               <div className="flex items-center gap-3 min-w-0">
@@ -521,7 +462,6 @@ const LibraryPage: React.FC = () => {
           {matchFilter('Albums') && mockAlbums.filter(a => filterBySearch(a.title)).map(album => (
             <div
               key={album.id}
-              onClick={() => openPlaylist('rock_classics')}
               className="flex items-center justify-between gap-4 py-2 px-3 rounded-xl hover:bg-white/5 transition-all cursor-pointer font-medium text-xs text-[#adaaaa]"
             >
               <div className="flex items-center gap-3 min-w-0">

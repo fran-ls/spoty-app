@@ -1,41 +1,14 @@
 import React, { useState } from 'react';
-import { usePlayer } from '../../shared/context/PlayerContext';
 import { Play, Heart, Clock, Plus, Check } from 'lucide-react';
-import { mockGenres, mockTracks } from '../../shared/data/music.data';
+import { mockGenres, mockPlaylists, mockTracks } from '../../shared/data/music.data';
 
 const SearchPage: React.FC = () => {
-  const {
-    searchQuery,
-    setSearchQuery,
-    openPlaylist,
-    playTrack,
-    currentTrack,
-    likedTrackIds,
-    toggleLikeTrack,
-    allPlaylists,
-    addTrackToPlaylist,
-    setView
-  } = usePlayer();
-
+  const searchQuery = '';
   const [activeTrackAddMenuId, setActiveTrackAddMenuId] = useState<string | null>(null);
 
-  const handleGenreClick = (genreId: string) => {
-    // Highly interactive linkage - clicking rock, pop or related opens a matching curated playlist
-    if (genreId === 'rock') {
-      openPlaylist('rock_classics');
-    } else if (genreId === 'pop' || genreId === 'electronic' || genreId === 'jazz') {
-      openPlaylist('techno_bunker');
-    } else {
-      openPlaylist('rock_classics'); // fallback to show beautiful playlist
-    }
-  }
-
   // Live query evaluation across our available mock tracks database
-  const filteredTracks = mockTracks.filter(track =>
-    track.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    track.artist.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    track.album.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const allPlaylists = mockPlaylists;
+  const filteredTracks = mockTracks;
 
   return (
     <div
@@ -56,7 +29,6 @@ const SearchPage: React.FC = () => {
                 Check spelling or try a different song or artist.
               </p>
               <button
-                onClick={() => setSearchQuery('')}
                 className="mt-6 px-4 py-2 bg-white text-black text-xs font-bold rounded-full select-none cursor-pointer"
               >
                 Reset Search
@@ -76,13 +48,12 @@ const SearchPage: React.FC = () => {
               {/* Tracks List */}
               <div className="flex flex-col gap-1">
                 {filteredTracks.map((track, i) => {
-                  const isCurrent = currentTrack?.id === track.id;
-                  const isTrackLiked = likedTrackIds.includes(track.id);
+                  const isCurrent = '' === track.id;
+                  const isTrackLiked = true
 
                   return (
                     <div
                       key={track.id}
-                      onClick={() => playTrack(track, filteredTracks)}
                       className="grid grid-cols-[40px_minmax(200px,2fr)_minmax(120px,1fr)_80px_80px] gap-4 px-4 py-3 items-center rounded-lg hover:bg-white/5 transition-colors group cursor-pointer relative"
                     >
                       {/* Row track index or playing action */}
@@ -119,7 +90,6 @@ const SearchPage: React.FC = () => {
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            toggleLikeTrack(track.id);
                           }}
                           className="text-[#adaaaa] hover:text-white cursor-pointer transition-transform hover:scale-110 active:scale-95"
                           title="Like track"
@@ -155,7 +125,6 @@ const SearchPage: React.FC = () => {
                                 <button
                                   onClick={() => {
                                     setActiveTrackAddMenuId(null);
-                                    setView('create-playlist');
                                   }}
                                   className="text-[10px] text-primary hover:underline font-bold text-left"
                                 >
@@ -169,12 +138,6 @@ const SearchPage: React.FC = () => {
                                   return (
                                     <button
                                       key={playlist.id}
-                                      onClick={() => {
-                                        if (!isAdded) {
-                                          addTrackToPlaylist(playlist.id, track);
-                                        }
-                                        setActiveTrackAddMenuId(null);
-                                      }}
                                       className="w-full text-left text-xs font-bold px-2 py-1.5 rounded hover:bg-primary hover:text-black transition-all flex items-center justify-between gap-2 cursor-pointer text-white"
                                     >
                                       <span className="truncate">{playlist.name}</span>
@@ -218,7 +181,6 @@ const SearchPage: React.FC = () => {
             {mockGenres.map((genre) => (
               <div
                 key={genre.id}
-                onClick={() => handleGenreClick(genre.id)}
                 style={{ backgroundColor: genre.bgColor }}
                 className="group relative h-[12vw] min-h-[170px] rounded-xl overflow-hidden cursor-pointer transition-all duration-300 hover:scale-[1.03] shadow-lg flex flex-col justify-between p-4 selection:bg-none"
               >
@@ -244,7 +206,6 @@ const SearchPage: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* New Release item */}
               <div
-                onClick={() => openPlaylist('rock_classics')}
                 className="flex items-center gap-6 p-6 rounded-2xl bg-[#131313] hover:bg-[#262626] border border-white/5 transition-all duration-300 group cursor-pointer active:scale-98 shadow-xl"
               >
                 <div className="relative w-32 h-32 shrink-0 bg-[#2d2d2d] rounded-xl overflow-hidden shadow-2xl">
@@ -277,7 +238,6 @@ const SearchPage: React.FC = () => {
 
               {/* Editor's pick item */}
               <div
-                onClick={() => openPlaylist('rock_classics')}
                 className="flex items-center gap-6 p-6 rounded-2xl bg-[#131313] hover:bg-[#262626] border border-white/5 transition-all duration-300 group cursor-pointer active:scale-98 shadow-xl"
               >
                 <div className="relative w-32 h-32 shrink-0 bg-[#2d2d2d] rounded-xl overflow-hidden shadow-2xl">

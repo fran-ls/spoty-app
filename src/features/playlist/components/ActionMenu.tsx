@@ -1,13 +1,15 @@
-import { CircleMinusIcon, GlobeIcon, LockIcon, PenIcon } from "lucide-react";
+import { CircleMinusIcon, GlobeIcon, LockIcon, PaletteIcon, PenIcon } from "lucide-react";
 
 interface CustomMenuProps {
   isPrivate: boolean;
   onChangeVisibility: () => void;
   onIsEdit: () => void;
   onClose: () => void;
+  onIsBackground: () => void;
 }
 
-const ActionMenu = ({ isPrivate, onIsEdit, onChangeVisibility, onClose }: CustomMenuProps) => {
+const ActionMenu = (props: CustomMenuProps) => {
+  const { isPrivate, onIsEdit, onChangeVisibility, onClose, onIsBackground } = props;
 
   return (
     <>
@@ -18,6 +20,19 @@ const ActionMenu = ({ isPrivate, onIsEdit, onChangeVisibility, onClose }: Custom
 
       <div className="w-42 z-15 bg-[#282828] text-sm p-1 rounded absolute top-0 left-0">
         <ul className="text-[#adaaaa] flex flex-col items-center justify-between">
+          <li className="w-full font-medium hover:text-white hover:bg-white/10 rounded-xs">
+            <button
+              onClick={() => {
+                onIsBackground();
+                onClose();
+              }}
+              className="w-full flex items-center gap-2 cursor-pointer px-3 py-2"
+              type="button"
+            >
+              <PaletteIcon className="w-4 h-4" />
+              <span>Fondo</span>
+            </button>
+          </li>
           <li className="w-full font-medium hover:text-white hover:bg-white/10 rounded-xs">
             <button
               onClick={onIsEdit}

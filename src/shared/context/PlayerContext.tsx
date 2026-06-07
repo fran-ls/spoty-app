@@ -1,185 +1,127 @@
-import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
-import type { Track, Playlist } from '../types/music.types';
-import { mockPlaylists, mockTracks } from '../data/music.data';
-import apiService from '../services/api.service';
+import { createContext, useContext, useMemo, useRef, useState } from 'react'
+import type { Song } from '../../features/song/song.types';
+import apiService from '../services/api.service'
 
 export type ViewType = 'home' | 'search' | 'library' | 'playlist' | 'create-playlist' | 'songs';
 
 interface PlayerContextType {
+  currentSong: Song | null;
+  isPlaying: boolean;
+  queue: Song[];
+  currentIndex: number;
+  progress: number;
+  duration: number;
+  volume: number;
+  isMuted: boolean;
+  isQueue: boolean;
+  seek: (time: number) => void;
+  play: (songs: Song[], index: number) => void;
+  togglePlay: () => void;
+  next: () => void;
+  prev: () => void;
+  toggleMute: () => void;
+  setVolume: React.Dispatch<React.SetStateAction<number>>;
+  setIsPlaying: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsMuted: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsQueue: React.Dispatch<React.SetStateAction<boolean>>;
+  playQueueSong: (song: Song, index: number) => void;
+
   currentView: ViewType;
   setView: (view: ViewType) => void;
-  selectedPlaylistId: string | null;
-  openPlaylist: (playlistId: string) => void;
-  activePlaylist: Playlist | null;
-
-  currentTrack: Track | null;
-  isPlaying: boolean;
-  playTrack: (track: Track, tracksQueue?: Track[]) => void;
-  togglePlay: () => void;
-  playNext: () => void;
-  playPrevious: () => void;
-
-  progress: number;
-  setProgress: (sec: number) => void;
-  volume: number;
-  setVolume: (vol: number) => void;
-  isMuted: boolean;
-  toggleMute: () => void;
-
-  searchQuery: string;
-  setSearchQuery: (query: string) => void;
-
-  likedTrackIds: string[];
-  toggleLikeTrack: (trackId: string) => void;
-
-  isShuffle: boolean;
-  toggleShuffle: () => void;
-  isRepeat: boolean;
-  toggleRepeat: () => void;
-
-  allPlaylists: Playlist[];
-  createPlaylist: (name: string, description: string, coverUrl: string, bgColor?: string, gradientColor?: string) => string;
-  updatePlaylist: (id: string, updatedFields: Partial<Playlist>) => void;
-  addTrackToPlaylist: (playlistId: string, track: Track) => void;
-  removeTrackFromPlaylist: (playlistId: string, trackId: string) => void;
 }
 
-const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
+export const PlayerContext = createContext<PlayerContextType | null>(null)
 
-export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [currentView, setViewState] = useState<ViewType>('home');
-  const [selectedPlaylistId, setSelectedPlaylistId] = useState<string | null>(null);
-  const [playlists, setPlaylists] = useState<Playlist[]>(mockPlaylists);
-  const [activePlaylist, setActivePlaylist] = useState<Playlist | null>(null);
+export const PlayerProvider = ({ children }: any) => {
+  const [queue, setQueue] = useState<Song[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentSong, setCurrentSong] = useState<Song | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [volume, setVolume] = useState(1);
+  const [isMuted, setIsMuted] = useState(false);
+  const [prevVolume, setPrevVolume] = useState<number>(1);
+  const [isQueue, setIsQueue] = useState(true);
 
-  // Choose standard initial track from "Rock Classics" - Stairway to Heaven as in screenshot
-  const [currentTrack, setCurrentTrack] = useState<Track | null>(mockTracks[0]);
-  const [isPlaying, setIsPlaying] = useState<boolean>(false);
-  const [queue, setQueue] = useState<Track[]>(mockTracks);
-  const [queueIndex, setQueueIndex] = useState<number>(0);
+  const [currentView, setView] = useState<ViewType>('home');
 
-  const [progress, setProgress] = useState<number>(165); // starts at 2:45 as in screenshot for Rock Classics
-  const [volume, setVolume] = useState<number>(0.75);
-  const [prevVolume, setPrevVolume] = useState<number>(0.75);
-  const [isMuted, setIsMuted] = useState<boolean>(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const [likedTrackIds, setLikedTrackIds] = useState<string[]>(['stairway', 'dreamon', 'sweetchild']);
-
-  const [isShuffle, setIsShuffle] = useState<boolean>(false);
-  const [isRepeat, setIsRepeat] = useState<boolean>(false);
-
-  const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null)
-
-  // Set active playlist when ID or playlists change
-  useEffect(() => {
-    if (selectedPlaylistId) {
-      const found = playlists.find(p => p.id === selectedPlaylistId) ||
-        playlists[0]; // fallback
-      setActivePlaylist(found);
-    } else {
-      setActivePlaylist(null);
-    }
-  }, [selectedPlaylistId, playlists]);
-
-  // Wrapper for switching view that clears specific contextual view choices if appropriate
-  const setView = (view: ViewType) => {
-    setViewState(view);
-    if (view !== 'playlist') {
-      // Keep selectedPlaylistId intact so we can return to it, but update view
-    }
-  }
-
-  const openPlaylist = (playlistId: string) => {
-    setSelectedPlaylistId(playlistId);
-    setViewState('playlist');
-  }
-
-  const playTrack = (track: Track, tracksQueue?: Track[]) => {
+  const playQueueSong = (track: Song, index: number) => {
     if (!audioRef.current) return;
+
+    setCurrentIndex(index);
+    setCurrentSong(track);
 
     audioRef.current.src = apiService.streamUrl(track.id);
     audioRef.current.play();
 
-    setCurrentTrack(track);
     setIsPlaying(true);
-    setProgress(0);
+  }
 
-    const activeQueue = tracksQueue || queue;
-    setQueue(activeQueue);
+  const seek = (time: number) => {
+    if (!audioRef.current) return;
+    audioRef.current.currentTime = time;
+    setProgress(time);
+  }
 
-    const idx = activeQueue.findIndex(t => t.id === track.id);
-    if (idx !== -1) {
-      setQueueIndex(idx);
-    } else {
-      setQueue([...activeQueue, track]);
-      setQueueIndex(activeQueue.length);
-    }
+  const play = (tracks: Song[], index: number) => {
+    if (!audioRef.current) return;
+    const track = tracks[index];
+    setQueue(tracks);
+    playQueueSong(track, index);
   }
 
   const togglePlay = () => {
-    setIsPlaying(prev => !prev);
-  }
+    if (!audioRef.current || !currentSong) return;
 
-  const playNext = () => {
-    if (queue.length === 0) return;
-
-    let nextIdx = queueIndex + 1;
-    if (isShuffle) {
-      nextIdx = Math.floor(Math.random() * queue.length);
-    } else if (nextIdx >= queue.length) {
-      nextIdx = 0; // Wrap around
-    }
-
-    setQueueIndex(nextIdx);
-    setCurrentTrack(queue[nextIdx]);
-    setProgress(0);
-  }
-
-  const playPrevious = () => {
-    if (queue.length === 0) return;
-
-    let prevIdx = queueIndex - 1;
-    if (prevIdx < 0) {
-      prevIdx = queue.length - 1; // Wrap around
-    }
-
-    setQueueIndex(prevIdx);
-    setCurrentTrack(queue[prevIdx]);
-    setProgress(0);
-  }
-
-  // Simulated playback progress
-  useEffect(() => {
-    if (isPlaying && currentTrack) {
-      progressIntervalRef.current = setInterval(() => {
-        setProgress(prev => {
-          const limit = currentTrack.durationSec;
-          if (prev >= limit) {
-            if (isRepeat) {
-              return 0; // repeat current track
-            } else {
-              // delay slightly and play next
-              setTimeout(() => playNext(), 50);
-              return prev;
-            }
-          }
-          return prev + 1;
-        });
-      }, 1000);
+    if (isPlaying) {
+      audioRef.current.pause();
+      setIsPlaying(false);
     } else {
-      if (progressIntervalRef.current) {
-        clearInterval(progressIntervalRef.current);
-      }
+      audioRef.current.play();
+      setIsPlaying(true);
+    }
+  }
+
+  const next = () => {
+    // if (currentIndex >= queue.length - 1) return;
+
+    const newIndex = currentIndex >= queue.length - 1 ? 0 : currentIndex + 1;
+    const song = queue[newIndex];
+
+    setCurrentIndex(newIndex);
+    setCurrentSong(song);
+
+    if (!isPlaying && currentIndex !== queue.length - 1) {
+      setIsPlaying(true);
     }
 
-    return () => {
-      if (progressIntervalRef.current) {
-        clearInterval(progressIntervalRef.current);
-      }
+    if (audioRef.current) {
+      audioRef.current.src = apiService.streamUrl(song.id);
+      audioRef.current.play();
     }
-  }, [isPlaying, currentTrack, queueIndex, isShuffle, isRepeat]);
+  }
+
+  const prev = () => {
+    // if (currentIndex <= 0) return;
+
+    const newIndex = currentIndex <= 0 ? queue.length - 1 : currentIndex - 1;
+    const song = queue[newIndex];
+
+    setCurrentIndex(newIndex);
+    setCurrentSong(song);
+
+    if (!isPlaying && currentIndex !== 0) {
+      setIsPlaying(true);
+    }
+
+    if (audioRef.current) {
+      audioRef.current.src = apiService.streamUrl(song.id);
+      audioRef.current.play();
+    }
+  }
 
   const toggleMute = () => {
     if (isMuted) {
@@ -192,128 +134,60 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   }
 
-  const toggleLikeTrack = (trackId: string) => {
-    setLikedTrackIds(prev => {
-      if (prev.includes(trackId)) {
-        return prev.filter(id => id !== trackId);
-      } else {
-        return [...prev, trackId];
-      }
-    });
-  }
-
-  const toggleShuffle = () => setIsShuffle(!isShuffle);
-  const toggleRepeat = () => setIsRepeat(!isRepeat);
-
-  const createPlaylist = (name: string, description: string, coverUrl: string, bgColor?: string, gradientColor?: string) => {
-    const id = `playlist_${Date.now()}`;
-    const newPlaylist: Playlist = {
-      id,
-      name: name || 'My Playlist',
-      description: description || 'A playlist curated by franklemus.',
-      coverUrl: coverUrl || 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=300&auto=format&fit=crop&q=60',
-      creator: 'You',
-      likes: '0 likes',
-      songCount: 0,
-      durationText: '0 min',
-      tracks: [],
-      bgColor: bgColor || '#2a3a4a',
-      gradientColor: gradientColor || '#0e1217'
+  useMemo(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = volume;
     }
-    setPlaylists(prev => [newPlaylist, ...prev]);
-    return id;
-  }
+  }, [volume]);
 
-  const updatePlaylist = (id: string, updatedFields: Partial<Playlist>) => {
-    setPlaylists(prev => prev.map(p => {
-      if (p.id === id) {
-        return { ...p, ...updatedFields }
-      }
-      return p;
-    }));
-  }
-
-  const addTrackToPlaylist = (playlistId: string, track: Track) => {
-    setPlaylists(prev => prev.map(p => {
-      if (p.id === playlistId) {
-        if (p.tracks.some(t => t.id === track.id)) return p;
-        const updatedTracks = [...p.tracks, track];
-        const totalDurationSec = updatedTracks.reduce((sum, t) => sum + t.durationSec, 0);
-        const mins = Math.floor(totalDurationSec / 60);
-        const durationText = `${mins} min`;
-        return {
-          ...p,
-          tracks: updatedTracks,
-          songCount: updatedTracks.length,
-          durationText
-        }
-      }
-      return p;
-    }));
-  }
-
-  const removeTrackFromPlaylist = (playlistId: string, trackId: string) => {
-    setPlaylists(prev => prev.map(p => {
-      if (p.id === playlistId) {
-        const updatedTracks = p.tracks.filter(t => t.id !== trackId);
-        const totalDurationSec = updatedTracks.reduce((sum, t) => sum + t.durationSec, 0);
-        const mins = Math.floor(totalDurationSec / 60);
-        const durationText = `${mins} min`;
-        return {
-          ...p,
-          tracks: updatedTracks,
-          songCount: updatedTracks.length,
-          durationText
-        }
-      }
-      return p;
-    }));
-  }
+  // useEffect(() => {
+  //   if (audioRef.current) {
+  //     audioRef.current.volume = volume;
+  //   }
+  // }, [volume]);
 
   return (
     <PlayerContext.Provider
       value={{
-        currentView,
-        setView,
-        selectedPlaylistId,
-        openPlaylist,
-        activePlaylist,
-        currentTrack,
-        isPlaying,
-        playTrack,
-        togglePlay,
-        playNext,
-        playPrevious,
-        progress,
-        setProgress,
-        volume,
-        setVolume,
-        isMuted,
-        toggleMute,
-        searchQuery,
-        setSearchQuery,
-        likedTrackIds,
-        toggleLikeTrack,
-        isShuffle,
-        toggleShuffle,
-        isRepeat,
-        toggleRepeat,
-        allPlaylists: playlists,
-        createPlaylist,
-        updatePlaylist,
-        addTrackToPlaylist,
-        removeTrackFromPlaylist
+        queue,
+        progress, duration,
+        currentSong, currentIndex,
+        isPlaying, setIsPlaying,
+        volume, setVolume,
+        isMuted, setIsMuted,
+        isQueue, setIsQueue,
+        play, togglePlay,
+        next, prev,
+        seek, toggleMute,
+        playQueueSong,
+
+        currentView, setView
       }}
     >
       {children}
+
+      <audio
+        ref={audioRef}
+        onTimeUpdate={() => {
+          if (!audioRef.current) return;
+          setProgress(audioRef.current.currentTime);
+        }}
+        onLoadedMetadata={() => {
+          if (!audioRef.current) return;
+          setDuration(audioRef.current.duration);
+        }}
+        onEnded={next} // 🔥 autoplay siguiente
+      />
     </PlayerContext.Provider>
   )
 }
 
 export const usePlayer = () => {
-  const context = useContext(PlayerContext);
+  const context = useContext(PlayerContext)!;
+
   if (context === undefined) {
     throw new Error('usePlayer must be used within a PlayerProvider');
   }
+
   return context;
 }

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { usePlayer } from '../../shared/context/PlayerContext';
 import { ChevronLeft, ChevronRight, Bell, Users, User, Search, Sparkles, XIcon, GlobeIcon } from 'lucide-react';
 import { routes } from '../utils/routes';
 
@@ -9,8 +8,8 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ onExplorePremiumClick }) => {
-  const { searchQuery, setSearchQuery } = usePlayer();
   const [showUserDropdown, setShowUserDropdown] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const navigate = useNavigate();
 
@@ -43,7 +42,7 @@ export const Header: React.FC<HeaderProps> = ({ onExplorePremiumClick }) => {
 
           <input
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            // onChange={(e) => setSearchQuery(e.target.value)}
             className="bg-[#262626] border-none rounded-full py-3 pl-12 pr-22 w-full text-sm font-medium focus:ring-2 focus:ring-white/20 text-white placeholder:text-[#adaaaa] transition-all outline-none"
             placeholder="¿Qué quieres escuchar?"
             type="text"

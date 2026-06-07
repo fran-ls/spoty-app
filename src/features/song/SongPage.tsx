@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Play, Pause, Heart, Clock, MusicIcon } from 'lucide-react';
-import type { Song } from '../../shared/types/song.types';
+import type { Song } from './song.types';
 import apiService from '../../shared/services/api.service';
-import { usePlayer } from '../../shared/context/PlayerContextMe';
+import { usePlayer } from '../../shared/context/PlayerContext';
 import { formatTime } from '../../shared/utils/formatTime';
 import { getFmtDate } from '../../shared/utils/getFormatDate';
 import { STYLES } from '../../shared/utils/styles';
@@ -54,31 +54,39 @@ const SongPage: React.FC = () => {
           </button>
         </div>
 
-        {/* Table */}
-        <div className={`max-h-[calc(100vh-88px-64px-88px-24px)] min-h-[calc(100vh-88px-64px-88px-24px)] min-w-full  overflow-auto`}>
-          <div className="grid grid-cols-[40px_minmax(200px,2fr)_minmax(120px,1fr)_minmax(120px,1fr)_80px] gap-4 px-4 py-3 mx-8 border-b border-white/10 text-[#adaaaa] text-sm font-bold tracking-wider mb-4 select-none">
-            <span>#</span>
-            <span>Título</span>
-            <span>Álbum</span>
-            <span>Fecha de publicación</span>
-            <div className="flex justify-end pr-1">
-              <Clock size={16} />
-            </div>
-          </div>
-
-          {songs.length === 0 ? (
-            <div className="flex flex-col items-center justify-center px-32 py-20 bg-white/3 rounded-xl border border-white/5 select-none animate-fade-in text-center">
-              <p className="text-[#adaaaa] font-bold text-sm">No tracks inside this custom layout yet</p>
+        {songs.length === 0 ? (
+          <div
+            style={{
+              height: `calc(100vh - ${STYLES.heightHeader}px - ${STYLES.heightFooter}px - 112px)`
+            }}
+          >
+            <div className="max-w-2xl m-auto flex flex-col items-center justify-center p-20 bg-white/3 rounded-xl border border-white/5 select-none animate-fade-in text-center">
+              <p className="text-[#adaaaa] font-bold text-sm">
+                Aún no hay pistas dentro de este diseño personalizado
+              </p>
               <p className="text-xs text-[#adaaaa]/60 mt-1 max-w-md">
-                Navigate to the <strong>Search Tab</strong> or home collections, click the context menus or like any specific track to list them here in real-time!
+                {/* Navigate to the <strong>Search Tab</strong> or home collections, click the context menus or like any specific track to list them here in real-time! */}
+                Navegue a la pestaña <strong>Buscar</strong> o a las colecciones de inicio, haga clic en los menús contextuales o marque como favorito cualquier pista específica para listarlas aquí en tiempo real
               </p>
               <button
                 className="mt-6 px-5 py-2 bg-white text-black text-xs font-black rounded-full cursor-pointer hover:scale-105 transition-all"
               >
-                Browse & Add Tracks
+                Explora y añade pistas
               </button>
             </div>
-          ) : (
+          </div>
+        ) : (
+          <div className={`max-h-[calc(100vh-88px-64px-88px-24px)] min-h-[calc(100vh-88px-64px-88px-24px)] min-w-full  overflow-auto`}>
+            <div className="grid grid-cols-[40px_minmax(200px,2fr)_minmax(120px,1fr)_minmax(120px,1fr)_80px] gap-4 px-4 py-3 mx-8 border-b border-white/10 text-[#adaaaa] text-sm font-bold tracking-wider mb-4 select-none">
+              <span>#</span>
+              <span>Título</span>
+              <span>Álbum</span>
+              <span>Fecha de publicación</span>
+              <div className="flex justify-end pr-1">
+                <Clock size={16} />
+              </div>
+            </div>
+
             <div className="px-8 flex flex-col gap-1 animate-fade-in">
               {songs.map((track, i) => {
                 const isCurrentPlayingRow = currentSong?.id === track.id;
@@ -86,7 +94,7 @@ const SongPage: React.FC = () => {
                 return (
                   <div
                     key={track.id}
-                    onClick={() => play && play(songs, i)}
+                    onClick={() => play(songs, i)}
                     className="grid grid-cols-[40px_minmax(200px,2fr)_minmax(120px,1fr)_minmax(120px,1fr)_80px] gap-4 px-4 py-2.5 items-center rounded-lg hover:bg-white/5 group cursor-pointer transition-colors duration-200"
                   >
                     {/* # column - shows number or nice Play/Pause icon on hover */}
@@ -148,11 +156,11 @@ const SongPage: React.FC = () => {
                       </span>
                     </div>
                   </div>
-                );
+                )
               })}
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   )

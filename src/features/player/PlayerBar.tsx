@@ -1,15 +1,15 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   Play, Pause, SkipBack, SkipForward, Shuffle, Repeat, Heart,
   Volume2, VolumeX, List, Radio, Laptop,
   MusicIcon,
 } from 'lucide-react';
-import { usePlayer } from '../../shared/context/PlayerContextMe';
+import { usePlayer } from '../../shared/context/PlayerContext';
 import { formatTime } from '../../shared/utils/formatTime';
 
 export const PlayerBar: React.FC = () => {
   const {
-    currentSong, progress, duration, isPlaying, volume, isMuted, queue, currentIndex, isQueue,
+    currentSong, progress, duration, isPlaying, volume, isMuted, isQueue,
     seek, next, prev, togglePlay, setVolume, toggleMute, setIsQueue
   } = usePlayer();
 
@@ -106,11 +106,11 @@ export const PlayerBar: React.FC = () => {
   const progressPercent = Math.min(100, (progress / duration) * 100);
   const volumePercent = volume * 100;
 
-  useEffect(() => {
-    if (currentIndex >= queue.length - 1 && progress === duration) {
-      // setIsPlaying(false);
-    }
-  }, [progress]);
+  // useEffect(() => {
+  //   if (currentIndex >= queue.length - 1 && progress === duration) {
+  //     // setIsPlaying(false);
+  //   }
+  // }, [progress]);
 
   return (
     <footer

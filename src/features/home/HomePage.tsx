@@ -1,18 +1,15 @@
 import React from 'react';
 import { Play } from 'lucide-react';
-import { usePlayer } from '../../shared/context/PlayerContext';
 import { mockPlaylists, mockMadeForYou, mockRecentlyPlayed } from '../../shared/data/music.data';
 
 const HomePage: React.FC = () => {
-  const { openPlaylist, playTrack } = usePlayer();
-
   const handleQuickPlay = (e: React.MouseEvent, playlistId: string) => {
     e.stopPropagation();
     const pl = mockPlaylists.find(p => p.id === playlistId) || mockMadeForYou.find(p => p.id === playlistId);
     if (pl && pl.tracks.length > 0) {
-      playTrack(pl.tracks[0], pl.tracks);
+      // playTrack(pl.tracks[0], pl.tracks);
     } else {
-      openPlaylist(playlistId);
+      // openPlaylist(playlistId);
     }
   }
 
@@ -40,7 +37,7 @@ const HomePage: React.FC = () => {
           {quickAccessGrid.map((item) => (
             <div
               key={item.id}
-              onClick={() => openPlaylist(item.id)}
+              // onClick={() => openPlaylist(item.id)}
               className="group flex items-center bg-white/5 hover:bg-white/10 rounded-lg overflow-hidden transition-all duration-300 cursor-pointer relative pr-16 active:scale-98"
             >
               <div className="w-20 h-20 bg-[#262626] shrink-0 relative overflow-hidden">
@@ -79,7 +76,7 @@ const HomePage: React.FC = () => {
           {mockMadeForYou.map((playlist) => (
             <div
               key={playlist.id}
-              onClick={() => openPlaylist(playlist.id)}
+              // onClick={() => openPlaylist(playlist.id)}
               className="group bg-[#1a1a1a] p-4 rounded-xl hover:bg-[#262626] transition-all duration-300 cursor-pointer flex flex-col h-full active:scale-98"
             >
               <div className="relative mb-4 aspect-square rounded-md overflow-hidden bg-[#262626]">
@@ -125,9 +122,9 @@ const HomePage: React.FC = () => {
                 // If the item represents a mock playlist or album, open appropriate playlist state or play mock track
                 if (item.id === 'moonlight_trails') {
                   // Play custom song or open standard playlist
-                  openPlaylist('rock_classics');
+                  // openPlaylist('rock_classics');
                 } else {
-                  openPlaylist('rock_classics');
+                  // openPlaylist('rock_classics');
                 }
               }}
               className="group cursor-pointer select-none active:scale-98 flex flex-col"

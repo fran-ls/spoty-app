@@ -1,21 +1,10 @@
 import React, { useState } from 'react';
-import { usePlayer } from '../../shared/context/PlayerContext';
 import { Play, Pause, Heart, Clock, Disc, Paintbrush, Check, Trash2 } from 'lucide-react';
+import { mockPlaylists } from '../../../shared/data/music.data';
 
 const PlaylistPage: React.FC = () => {
-  const {
-    activePlaylist,
-    currentTrack,
-    isPlaying,
-    playTrack,
-    togglePlay,
-    likedTrackIds,
-    toggleLikeTrack,
-    setView,
-    allPlaylists,
-    updatePlaylist,
-    removeTrackFromPlaylist
-  } = usePlayer();
+  const allPlaylists = mockPlaylists;
+  const activePlaylist: any = null;
 
   const [playlistLiked, setPlaylistLiked] = useState<boolean>(false);
   const [stylePaneOpen, setStylePaneOpen] = useState<boolean>(false);
@@ -29,7 +18,6 @@ const PlaylistPage: React.FC = () => {
         <Disc size={64} className="animate-spin text-primary opacity-30" />
         <p className="mt-4 text-[#adaaaa] font-semibold text-sm">Loading playlist context...</p>
         <button
-          onClick={() => setView('home')}
           className="mt-6 px-4 py-2 bg-white text-black text-xs font-bold rounded-full cursor-pointer hover:scale-105 transition-all"
         >
           Go Back Home
@@ -37,22 +25,6 @@ const PlaylistPage: React.FC = () => {
       </div>
     );
   }
-
-  const handlePlaylistPlay = () => {
-    if (playlist.tracks.length === 0) return;
-
-    // Check if a song from this playlist is already active
-    const isSongFromPlaylistActive = playlist.tracks.some(t => t.id === currentTrack?.id);
-
-    if (isSongFromPlaylistActive) {
-      togglePlay();
-    } else {
-      // Play first track of playlist
-      playTrack(playlist.tracks[0], playlist.tracks);
-    }
-  }
-
-  const isCurrentPlaylistPlaying = isPlaying && playlist.tracks.some(t => t.id === currentTrack?.id);
 
   return (
     <div
@@ -109,12 +81,11 @@ const PlaylistPage: React.FC = () => {
         <div className="flex items-center gap-6 mb-8 flex-wrap" id="playlist-action-bar">
           <button
             disabled={playlist.tracks.length === 0}
-            onClick={handlePlaylistPlay}
             className={`w-14 h-14 rounded-full flex items-center justify-center scale-100 hover:scale-105 active:scale-95 transition-all shadow-lg text-black cursor-pointer ${playlist.tracks.length === 0 ? 'bg-[#adaaaa]/40 opacity-50 cursor-not-allowed' : 'bg-primary hover:bg-[#63ef82]'
               }`}
             title="Play Playlist"
           >
-            {isCurrentPlaylistPlaying ? (
+            {true ? (
               <Pause size={24} fill="currentColor" stroke="none" className="translate-x-0" />
             ) : (
               <Play size={24} fill="currentColor" stroke="none" className="translate-x-px" />
@@ -167,7 +138,6 @@ const PlaylistPage: React.FC = () => {
                   <input
                     type="text"
                     value={playlist.name}
-                    onChange={(e) => updatePlaylist(playlist.id, { name: e.target.value })}
                     className="bg-[#282828] text-white text-xs font-semibold px-3 py-2.5 rounded-lg border border-white/5 focus:border-primary/40 focus:outline-none transition-all"
                   />
                 </div>
@@ -177,7 +147,6 @@ const PlaylistPage: React.FC = () => {
                   <textarea
                     rows={2}
                     value={playlist.description}
-                    onChange={(e) => updatePlaylist(playlist.id, { description: e.target.value })}
                     className="bg-[#282828] text-white text-xs font-medium px-3 py-2 rounded-lg border border-white/5 focus:border-primary/40 focus:outline-none transition-all resize-none"
                   />
                 </div>
@@ -187,7 +156,6 @@ const PlaylistPage: React.FC = () => {
                   <input
                     type="text"
                     value={playlist.coverUrl}
-                    onChange={(e) => updatePlaylist(playlist.id, { coverUrl: e.target.value })}
                     className="bg-[#282828] text-white text-xs font-semibold px-3 py-2 rounded-lg border border-white/5 focus:outline-none focus:border-primary/40"
                   />
                 </div>
@@ -211,7 +179,6 @@ const PlaylistPage: React.FC = () => {
                     return (
                       <button
                         key={col.name}
-                        onClick={() => updatePlaylist(playlist.id, { bgColor: col.bgColor, gradientColor: col.gradientColor })}
                         style={{ background: `linear-gradient(135deg, ${col.bgColor} 0%, ${col.gradientColor} 100%)` }}
                         className="h-10 rounded-lg flex items-center justify-center border border-white/10 hover:scale-105 active:scale-95 transition-all text-left relative cursor-pointer"
                       >
@@ -234,7 +201,6 @@ const PlaylistPage: React.FC = () => {
                     <input
                       type="color"
                       value={playlist.bgColor || '#1c1c1c'}
-                      onChange={(e) => updatePlaylist(playlist.id, { bgColor: e.target.value })}
                       className="w-full h-8 rounded bg-transparent border-none cursor-pointer"
                     />
                   </div>
@@ -243,7 +209,6 @@ const PlaylistPage: React.FC = () => {
                     <input
                       type="color"
                       value={playlist.gradientColor || '#0e0e0e'}
-                      onChange={(e) => updatePlaylist(playlist.id, { gradientColor: e.target.value })}
                       className="w-full h-8 rounded bg-transparent border-none cursor-pointer"
                     />
                   </div>
@@ -272,7 +237,6 @@ const PlaylistPage: React.FC = () => {
               Navigate to the <strong>Search Tab</strong> or home collections, click the context menus or like any specific track to list them here in real-time!
             </p>
             <button
-              onClick={() => setView('search')}
               className="mt-6 px-5 py-2 bg-white text-black text-xs font-black rounded-full cursor-pointer hover:scale-105 transition-all"
             >
               Browse & Add Tracks
@@ -280,14 +244,13 @@ const PlaylistPage: React.FC = () => {
           </div>
         ) : (
           <div className="flex flex-col gap-1 pb-20 animate-fade-in">
-            {playlist.tracks.map((track, i) => {
-              const isCurrentPlayingRow = currentTrack?.id === track.id;
-              const isTrackLiked = likedTrackIds.includes(track.id);
+            {playlist.tracks.map((track: any, i: any) => {
+              const isCurrentPlayingRow = '' === track.id;
+              const isTrackLiked = true;
 
               return (
                 <div
                   key={track.id}
-                  onClick={() => playTrack(track, playlist.tracks)}
                   className="grid grid-cols-[40px_minmax(200px,2fr)_minmax(120px,1fr)_minmax(120px,1fr)_80px] gap-4 px-4 py-2.5 items-center rounded-lg hover:bg-white/5 group cursor-pointer transition-colors duration-200"
                 >
                   {/* # column - shows number or nice Play/Pause icon on hover */}
@@ -330,7 +293,6 @@ const PlaylistPage: React.FC = () => {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        toggleLikeTrack(track.id);
                       }}
                       className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer text-[#adaaaa] hover:text-white"
                       title="Like song"
@@ -346,7 +308,6 @@ const PlaylistPage: React.FC = () => {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        removeTrackFromPlaylist(playlist.id, track.id);
                       }}
                       className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer text-red-500 hover:text-red-400"
                       title="Remove song"
