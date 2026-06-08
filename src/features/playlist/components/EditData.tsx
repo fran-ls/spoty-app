@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { EllipsisIcon, GlobeIcon, LockIcon, MusicIcon, PenIcon, XIcon } from "lucide-react";
-import type { PlayListDTO } from "../playlist.type";
+import type { PlayListDTO } from "../playlist.types";
 
 interface EditDataProps {
   form: PlayListDTO;

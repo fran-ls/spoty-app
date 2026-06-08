@@ -12,10 +12,9 @@ const SearchPage: React.FC = () => {
 
   return (
     <div
-      className="px-8 pt-6 pb-10 min-h-full bg-surface text-white select-none scroll-smooth animate-fade-in"
+      className="px-[27px] pt-6 pb-10 min-h-full bg-surface text-white select-none scroll-smooth animate-fade-in"
       id="spotify-search-stage"
     >
-      {/* Search active results layout */}
       {searchQuery ? (
         <section className="animate-fade-in" id="search-results-section">
           <h1 className="text-xl text-[#adaaaa] font-medium mb-6">
@@ -56,13 +55,11 @@ const SearchPage: React.FC = () => {
                       key={track.id}
                       className="grid grid-cols-[40px_minmax(200px,2fr)_minmax(120px,1fr)_80px_80px] gap-4 px-4 py-3 items-center rounded-lg hover:bg-white/5 transition-colors group cursor-pointer relative"
                     >
-                      {/* Row track index or playing action */}
                       <div className="text-[#adaaaa] text-sm font-medium flex items-center">
                         <span className="group-hover:hidden">{i + 1}</span>
                         <Play size={13} fill="currentColor" className="hidden group-hover:block text-white" />
                       </div>
 
-                      {/* Cover & title */}
                       <div className="flex items-center gap-4 overflow-hidden">
                         <img
                           alt={track.title}
@@ -80,12 +77,10 @@ const SearchPage: React.FC = () => {
                         </div>
                       </div>
 
-                      {/* Album */}
                       <div className="text-[#adaaaa] text-sm truncate group-hover:text-white transition-colors">
                         {track.album}
                       </div>
 
-                      {/* Liking & Adding actions */}
                       <div className="flex items-center justify-center gap-3 relative">
                         <button
                           onClick={(e) => {
@@ -155,19 +150,17 @@ const SearchPage: React.FC = () => {
                         )}
                       </div>
 
-                      {/* Duration */}
                       <div className="text-[#adaaaa] text-sm flex justify-end">
                         {track.duration}
                       </div>
                     </div>
-                  );
+                  )
                 })}
               </div>
             </div>
           )}
         </section>
       ) : (
-        /* Normal genre list view */
         <>
           {/* Bento Grid Header */}
           <div className="flex justify-between items-end mb-10">
@@ -177,12 +170,13 @@ const SearchPage: React.FC = () => {
           </div>
 
           {/* Grid list */}
-          <div className="grid grid-cols-[repeat(auto-fit,minmax(254px,1fr))] gap-6">
+          <div className="grid grid-cols-[repeat(4,270px)] gap-4.5">
+          {/* <div className="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-6"> */}
             {mockGenres.map((genre) => (
               <div
                 key={genre.id}
                 style={{ backgroundColor: genre.bgColor }}
-                className="group relative h-[12vw] min-h-[170px] rounded-xl overflow-hidden cursor-pointer transition-all duration-300 hover:scale-[1.03] shadow-lg flex flex-col justify-between p-4 selection:bg-none"
+                className="group relative h-[12vw] max-h-37.5 min-h-31 rounded-xl overflow-hidden cursor-pointer transition-all duration-300 hover:scale-[1.03] shadow-lg flex flex-col justify-between p-4 selection:bg-none"
               >
                 <div className="text-2xl font-headline font-extrabold text-white tracking-tight leading-snug wrap-break-word">
                   {genre.name}

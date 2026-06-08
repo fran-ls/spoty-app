@@ -15,7 +15,7 @@ export const Header: React.FC<HeaderProps> = ({ onExplorePremiumClick }) => {
 
   return (
     <header
-      className="flex justify-between items-center px-4 py-2 w-full h-16 bg-black backdrop-blur-xl transition-all duration-300"
+      className="flex justify-between items-center px-4 py-2 w-full h-16 bg-black transition-all duration-300"
       id="spotify-header"
     >
       <div className="flex items-center gap-4 max-w-140 w-[50%]">
@@ -42,7 +42,7 @@ export const Header: React.FC<HeaderProps> = ({ onExplorePremiumClick }) => {
 
           <input
             value={searchQuery}
-            // onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => setSearchQuery(e.target.value)}
             className="bg-[#262626] border-none rounded-full py-3 pl-12 pr-22 w-full text-sm font-medium focus:ring-2 focus:ring-white/20 text-white placeholder:text-[#adaaaa] transition-all outline-none"
             placeholder="¿Qué quieres escuchar?"
             type="text"
@@ -89,7 +89,7 @@ export const Header: React.FC<HeaderProps> = ({ onExplorePremiumClick }) => {
           <div className="relative select-none">
             <button
               onClick={() => setShowUserDropdown(!showUserDropdown)}
-              className="text-[#adaaaa] hover:text-white hover:bg-[#262626] rounded-full p-1.5 transition-all flex items-center justify-center cursor-pointer border border-[#adaaaa]/10 bg-black/20"
+              className="text-[#adaaaa] hover:text-white hover:bg-[#181717] rounded-full p-1.5 transition-all flex items-center justify-center cursor-pointer border border-[#adaaaa]/10 bg-black/20"
             >
               <User size={20} className="text-white" />
             </button>
@@ -97,13 +97,16 @@ export const Header: React.FC<HeaderProps> = ({ onExplorePremiumClick }) => {
             {showUserDropdown && (
               <>
                 <div
-                  className="fixed inset-0 z-40"
+                  className="backdrop--blur z-50 min-h-screen min-w-full top-0 left-0 fixed inset-0"
                   onClick={() => setShowUserDropdown(false)}
                 />
-                <div className="absolute right-0 mt-2 w-48 rounded-md shadow-2xl bg-[#282828] border border-[#3e3e3e] py-1 text-sm text-on-surface-variant font-medium z-50 animate-scale-up">
+
+                <div className="z-50 absolute right-0 mt-2 w-48 rounded-md shadow-2xl bg-[#282828] border border-[#3e3e3e] py-1 text-sm text-on-surface-variant font-medium animate-scale-up">
                   <div className="px-4 py-2 border-b border-[#3e3e3e] text-xs text-[#adaaaa]">
                     Signed in as <br />
-                    <span className="text-white font-bold block truncate mt-0.5">franklemus196@gmail.com</span>
+                    <span className="text-white font-bold block truncate mt-0.5">
+                      franklemus196@gmail.com
+                    </span>
                   </div>
                   <button
                     onClick={() => { setShowUserDropdown(false); }}

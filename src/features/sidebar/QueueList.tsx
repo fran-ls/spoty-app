@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MusicIcon, XIcon, PauseIcon, PlayIcon, ChevronLeft, PanelTopOpenIcon, PanelTopCloseIcon } from 'lucide-react';
+import { MusicIcon, XIcon, PauseIcon, PlayIcon, PanelTopCloseIcon } from 'lucide-react';
 import { usePlayer } from '../../shared/context/PlayerContext';
 
 export const QueueList: React.FC = () => {
@@ -10,7 +10,7 @@ export const QueueList: React.FC = () => {
 
   return (
     <aside
-      className={`${isCollapsed ? 'w-18' : 'w-72'} rounded-lg hidden md:flex h-full overflow-hidden flex-col bg-[#131313] border-none select-none shrink-0 transition-all duration-300 ease-in-out relative`}
+      className={`${isCollapsed ? 'w-13' : 'w-72'} rounded-lg hidden md:flex h-full overflow-hidden flex-col bg-[#131313] border-none select-none shrink-0 transition-all duration-300 ease-in-out relative`}
       id="spotify-sidebar"
     >
       <div className="rounded-lg min-h-[calc(100vh-64px-88px)] max-h-[calc(100vh-64px-88px)]">

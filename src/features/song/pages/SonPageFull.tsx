@@ -1,24 +1,28 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Play, Pause, Heart, Clock, MusicIcon } from 'lucide-react';
-import type { Song } from './song.types';
-import apiService from '../../shared/services/api.service';
-import { usePlayer } from '../../shared/context/PlayerContext';
-import { formatTime } from '../../shared/utils/formatTime';
-import { getFmtDate } from '../../shared/utils/getFormatDate';
-import { STYLES } from '../../shared/utils/styles';
+import type { Song } from '../song.types';
+// import apiService from '../../../shared/services/api.service';
+import { usePlayer } from '../../../shared/context/PlayerContext';
+import { formatTime } from '../../../shared/utils/formatTime';
+import { getFmtDate } from '../../../shared/utils/getFormatDate';
+import { STYLES } from '../../../shared/utils/styles';
 
-const SongPage: React.FC = () => {
+interface SongPageFullProps {
+  songs: Song[];
+}
+
+const SongPageFull: React.FC<SongPageFullProps> = ({ songs }) => {
   const { currentSong, isPlaying, play, togglePlay } = usePlayer();
 
   const [playlistLiked, setPlaylistLiked] = useState<boolean>(false);
-  const [songs, setSongs] = useState<Song[]>([]);
+  // const [songs, setSongs] = useState<Song[]>([]);
 
   const isTrackLiked = true;
   const playlist = { bgColor: '#000000' }
 
-  useEffect(() => {
-    apiService.searchSongs().then(({ data }) => setSongs(data));
-  }, []);
+  // useEffect(() => {
+  //   apiService.searchSongs({ artistName: 'lady gaga' }).then(({ data }) => setSongs(data));
+  // }, []);
 
   return (
     <div
@@ -166,4 +170,4 @@ const SongPage: React.FC = () => {
   )
 }
 
-export default SongPage;
+export default SongPageFull;

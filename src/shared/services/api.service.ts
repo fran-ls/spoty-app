@@ -13,24 +13,22 @@ class ApiService {
       return {
         status,
         statusText,
-        data,
+        data
       }
     }
 
-    let query = '';
+    const params: Record<string, any> = {}
 
     for (const f in filters) {
-      if (filters[f]) query += `${f}=${encodeURIComponent(filters[f])}&`;
+      if (filters[f]) params[f] = filters[f];
     }
 
-    query = query.slice(0, -1);
-
-    const { data, status, statusText } = await api.get(`/songs/search?${query}`);
+    const { data, status, statusText } = await api.get(`/songs/search`, { params });
 
     return {
       status,
       statusText,
-      data,
+      data
     }
   }
 

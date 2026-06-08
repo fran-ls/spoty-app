@@ -1,12 +1,17 @@
 import React, { useState } from 'react';
 import { EllipsisIcon, ListIcon, MusicIcon, PenIcon, PlusIcon, SearchIcon, XIcon } from 'lucide-react';
-import type { PlayListDTO } from '../playlist.type';
+import type { PlayListDTO } from '../playlist.types';
 import LayoutMenu from '../components/LayoutMenu';
 import ActionMenu from '../components/ActionMenu';
 import EditData from '../components/EditData';
 import StyleConfig from '../components/StyleConfig';
 
-const NewPlaylistPage: React.FC = () => {
+interface NewPlaylistPageProps {
+  children?: React.ReactNode;
+  isSearch?: boolean;
+}
+
+const NewPlaylistPage: React.FC<NewPlaylistPageProps> = ({ children, isSearch = true }) => {
   const [form, setForm] = useState<PlayListDTO>({
     name: '',
     description: '',
@@ -46,7 +51,7 @@ const NewPlaylistPage: React.FC = () => {
         <div
           onPointerEnter={() => setIsHover(true)}
           onMouseLeave={() => setIsHover(false)}
-          className="md:min-w-58 md:w-58 md:h-58 w-[25vw] h-[25vw] min-w-37.5 min-h-37.5 rounded bg-[#262626] relative"
+          className="min-[925px]:max-w-58 min-[925px]:max-h-58 min-[925px]:min-w-58 min-[925px]:min-h-58 w-[25vw] h-[25vw] min-w-[25vw] min-h-[25vw] rounded bg-[#262626] relative"
         >
           {!isHover
             ?
@@ -63,14 +68,14 @@ const NewPlaylistPage: React.FC = () => {
         </div>
 
         <div className="mt-auto w-full">
-          <span className="block mb-3 text-sm font-semibol">
+          <span className="block mb-3 text-sm font-medium">
             Lista {isPrivate ? 'privada' : 'pública'}
           </span>
           <h1
             onClick={() => setIsEdit(true)}
-            className="text-6xl md:text-7xl lg:text-8xl font-black cursor-pointer"
+            className="playlist-title font-black cursor-pointer"
           >
-            Mi lista  #6
+            Mi lista  #5
           </h1>
 
           <div className="mt-5 flex items-center">
@@ -80,20 +85,22 @@ const NewPlaylistPage: React.FC = () => {
             >
               <PlusIcon className="w-4 h-4" />
             </button>
-            <span className="text-sm ml-2 font-medium">
-              <a href="#">Fran Lemus</a>
-            </span>
+            <a href="#">
+              <span className="text-sm ml-2 font-bold">
+                Fran Lemus
+              </span>
+            </a>
           </div>
         </div>
       </div>
 
-      <div className="p-6 space-y-6 relative">
-        <div
-          // style={{
-          //   background: `linear-gradient(to bottom, ${gradientColor} 0%, #0e0e0e 100%)`,
-          // }}
-          className="text-sm text-[#adaaaa] flex items-center justify-between relative"
-        >
+      <div
+        className="p-6 space-y-6 relative"
+      // style={{
+      //   background: `linear-gradient(to bottom, ${gradientColor} 0%, #0e0e0e 100%)`,
+      // }}
+      >
+        <div className="text-sm text-[#adaaaa] flex items-center justify-between relative">
           <div className="relative">
             <button
               onClick={() => setIsOpenAction(!isOpenAction)}
@@ -132,32 +139,36 @@ const NewPlaylistPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="h-px bg-white/10" />
+        {isSearch &&
+          <>
+            <div className="h-px bg-white/10" />
 
-        <div className="my-4">
-          <label className="my-3 text-[22px] font-bold block" htmlFor="query">
-            Encontremos algo para tu lista
-          </label>
-          <div className="text-[#adaaaa] px-3 py-2.5 text-sm w-full max-w-82 bg-[#1f1f1f] gap-2 flex items-center rounded">
-            <SearchIcon className="min-w-5 w-5 h-5" />
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="w-full min-h-full"
-              placeholder="Buscar canciones"
-              name="query"
-              type="text"
-            />
-            {query &&
-              <button
-                onClick={() => setQuery('')}
-                type="button"
-              >
-                <XIcon className="min-w-5 w-5 h-5" />
-              </button>
-            }
-          </div>
-        </div>
+            <div className="my-4">
+              <label className="my-3 text-[22px] font-bold block" htmlFor="query">
+                Encontremos algo para tu lista
+              </label>
+              <div className="text-[#adaaaa] px-3 py-2.5 text-sm w-full max-w-82 bg-[#1f1f1f] gap-2 flex items-center rounded">
+                <SearchIcon className="min-w-5 w-5 h-5" />
+                <input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  className="w-full min-h-full"
+                  placeholder="Buscar canciones"
+                  name="query"
+                  type="text"
+                />
+                {query &&
+                  <button
+                    onClick={() => setQuery('')}
+                    type="button"
+                  >
+                    <XIcon className="min-w-5 w-5 h-5" />
+                  </button>
+                }
+              </div>
+            </div>
+          </>
+        }
 
         {isBackground &&
           <StyleConfig
@@ -166,7 +177,8 @@ const NewPlaylistPage: React.FC = () => {
             setBgColor={setBgColor}
             setGradientColor={setGradientColor}
             onClose={() => setIsBackground(false)}
-          />}
+          />
+        }
       </div>
 
       {isEdit &&
@@ -178,6 +190,8 @@ const NewPlaylistPage: React.FC = () => {
           onClose={() => setIsEdit(false)}
         />
       }
+
+      {children && children}
     </div>
   )
 }
