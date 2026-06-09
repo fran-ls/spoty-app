@@ -6,6 +6,8 @@ import {
 } from 'lucide-react';
 import { usePlayer } from '../../shared/context/PlayerContext';
 import { formatTime } from '../../shared/utils/formatTime';
+import apiService from '../../shared/services/api.service';
+import { showMusicIcon } from '../../shared/utils/showMusicIcon';
 
 export const PlayerBar: React.FC = () => {
   const {
@@ -105,6 +107,7 @@ export const PlayerBar: React.FC = () => {
 
   const progressPercent = Math.min(100, (progress / duration) * 100);
   const volumePercent = volume * 100;
+  const songCover = currentSong ? apiService.songCoverUrl(currentSong.id, currentSong.cover) : '';
 
   // useEffect(() => {
   //   if (currentIndex >= queue.length - 1 && progress === duration) {
@@ -114,23 +117,23 @@ export const PlayerBar: React.FC = () => {
 
   return (
     <footer
-      className="px-4 py-2 fixed bottom-0 left-0 w-full z-50 h-22 bg-black backdrop-blur-3xl flex justify-between items-center select-none"
+      className="px-4 py-2 fixed bottom-0 left-0 w-full z-50 h-22 bg-black backdrop-blur-3xl flex justify-between items-center select-none playback-bar"
       id="spotify-playback-bar"
     >
       {/* LEFT: Track Info */}
       <div className="flex items-center gap-4 w-[30%] min-w-50">
         <div className="w-14 h-14 bg-[#262626] rounded overflow-hidden shadow-2xl shrink-0 group relative cursor-pointer">
-          {currentSong?.cover
-            ?
+          <MusicIcon className={`${!songCover ? '' : 'hidden opacity-0'} text-white absolute top-1/2 left-1/2 -translate-1/2 music-icon`} />
+
+          {songCover && (
             <img
-              alt={currentSong?.title}
-              src={currentSong?.cover}
+              onError={(e) => showMusicIcon(e.currentTarget, '.playback-bar')}
+              src={songCover}
               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
               referrerPolicy="no-referrer"
+              alt=""
             />
-            :
-            <MusicIcon className="text-white absolute top-1/2 left-1/2 -translate-1/2" />
-          }
+          )}
         </div>
 
         {currentSong &&

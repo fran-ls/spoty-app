@@ -36,6 +36,16 @@ class ApiService {
     return `${envs.API_URL}/songs/stream/${songId}`;
   }
 
+  songCoverUrl(songId: string, cover: string | null | undefined) {
+    if (!cover || typeof cover !== 'string') {
+      return '';
+    }
+    if (!cover.includes('/api/')) {
+      return cover || '';
+    }
+    return `${envs.API_URL}/songs/cover/${songId}`;
+  }
+
   async uploadSong(data: any) {
     return await api.post('/songs/upload', data);
   }

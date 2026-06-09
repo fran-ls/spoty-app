@@ -13,7 +13,7 @@ const SongPage: React.FC = () => {
   const bgColor = '#0a0808'; // #131313, #000000, #3a3a3a, #0a0808
 
   useEffect(() => {
-    apiService.searchSongs({ artistName: 'lady gaga' }).then(({ data }) => setSongs(data));
+    apiService.searchSongs().then(({ data }) => setSongs(data));
   }, []);
 
   return (

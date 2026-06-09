@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { usePlayer } from '../../shared/context/PlayerContext';
-import { Library, MusicIcon, PlusIcon, SearchIcon, ListIcon, XIcon, PauseIcon, PlayIcon, PanelTopCloseIcon, PanelTopOpenIcon } from 'lucide-react';
+import { MusicIcon, PlusIcon, SearchIcon, ListIcon, XIcon, PauseIcon, PlayIcon, PanelTopCloseIcon, PanelTopOpenIcon, ListMusicIcon } from 'lucide-react';
 import { routes } from '../../shared/utils/routes';
 import CustomMenu from './CustomMenu';
 
@@ -132,7 +132,7 @@ export const Playlists: React.FC = () => {
                   }`}
                 title={isCollapsed ? "Canciones" : undefined}
               >
-                <Library size={22} className={currentView === 'songs' ? 'text-primary' : ''} />
+                <ListMusicIcon size={22} className={currentView === 'songs' ? 'text-primary' : ''} />
                 {!isCollapsed && <span>Canciones</span>}
               </button>
             </li>
@@ -149,10 +149,19 @@ export const Playlists: React.FC = () => {
 
                   {hoverIndex !== null && hoverIndex === i &&
                     <div className="text-white badge w-full h-full absolute top-0 left-0 bg-black/50 flex items-center justify-center">
-                      {!isPlaying
-                        ? <PlayIcon fill="currentColor" className="min-w-5.5 w-5.5 h-5.5" stroke="0" />
-                        : <PauseIcon fill="currentColor" className="min-w-5 w-5 h-5" stroke="0" />
-                      }
+                      {!isPlaying ? (
+                        <PlayIcon
+                          className="min-w-5.5 w-5.5 h-5.5"
+                          fill="currentColor"
+                          stroke="0"
+                        />
+                      ) : (
+                        <PauseIcon
+                          className="min-w-5 w-5 h-5"
+                          fill="currentColor"
+                          stroke="0"
+                        />
+                      )}
                     </div>
                   }
                 </div>
