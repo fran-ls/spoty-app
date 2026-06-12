@@ -1,22 +1,28 @@
 import { Play, Heart, Clock, MusicIcon } from 'lucide-react';
 import type { Song } from '../song.types';
+import type { SearchMeta } from '../../../shared/types/common.types';
 import { usePlayer } from '../../../shared/context/PlayerContext';
 import { formatTime } from '../../../shared/utils/formatTime';
 import { getFmtDate } from '../../../shared/utils/getFormatDate';
 import apiService from '../../../shared/services/api.service';
 import { showMusicIcon } from '../../../shared/utils/showMusicIcon';
+import Loader from '../../../shared/components/Loader';
+import { useInfiniteScroll } from '../../../shared/hooks/useInfiniteScroll';
 
 interface SongListProps {
   songs: Song[];
+  searchMeta: SearchMeta;
+  loadMore: () => void;
 }
 
-const SongList: React.FC<SongListProps> = ({ songs }) => {
+const SongList: React.FC<SongListProps> = ({ songs, searchMeta, loadMore }) => {
   const { currentSong, play } = usePlayer();
+  const { loaderRef } = useInfiniteScroll(() => loadMore());
   const isTrackLiked = true;
 
   return (
-    <div className={`min-w-full overflow-auto pb-8`}>
-      <div className="grid grid-cols-[40px_minmax(200px,2fr)_minmax(120px,1fr)_minmax(120px,1fr)_80px] gap-4 px-4 py-3 mx-8 border-b border-white/10 text-[#adaaaa] text-sm font-bold tracking-wider select-none">
+    <div className="min-w-full overflow-auto pb-8">
+      <div className="grid grid-cols-[40px_minmax(200px,2fr)_minmax(120px,1fr)_minmax(120px,1fr)_80px] gap-4 px-4 py-3 mx-8 border-b border-white/10 text-[#adaaaa] text-sm font-medium tracking-wider select-none">
         <span>#</span>
         <span>Título</span>
         <span>Álbum</span>
@@ -112,6 +118,19 @@ const SongList: React.FC<SongListProps> = ({ songs }) => {
           )
         })}
       </div>
+
+      {searchMeta.page < searchMeta.totalPages &&
+        <div
+          className="flex items-center justify-center px-6 py-1 overflow-hidden"
+          ref={loaderRef}
+        >
+          <Loader
+            className="border-transparent border-t-slate-200"
+            size={20}
+            stroke={2}
+          />
+        </div>
+      }
     </div>
   )
 }

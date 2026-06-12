@@ -16,7 +16,7 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
       <div className="px-2 flex gap-2 select-none rounded-lg">
         <Playlists />
 
-        <main className="w-full rounded-lg bg-linear-to-b from-[#1c1c1c] via-surface to-black overflow-hidden">
+        <main className="w-full rounded-lg bg-linear-to-b from-[#1c1c1c] via-surface to-[#131313] overflow-hidden">
           <div className={`${STYLES.maxHeightMain} ${STYLES.minHeightMain} flex-1 overflow-y-auto`}>
             {children}
           </div>

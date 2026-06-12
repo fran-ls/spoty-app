@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { EllipsisIcon, ListIcon, MusicIcon, PenIcon, PlusIcon, SearchIcon, XIcon } from 'lucide-react';
 import type { PlayListDTO } from '../playlist.types';
 import LayoutMenu from '../components/LayoutMenu';
 import ActionMenu from '../components/ActionMenu';
 import EditData from '../components/EditData';
 import StyleConfig from '../components/StyleConfig';
+import apiService from '../../../shared/services/api.service';
+import { fileToDataURL } from '../../../shared/utils/fileToDataURL';
 
 interface NewPlaylistPageProps {
   children?: React.ReactNode;
@@ -12,33 +15,54 @@ interface NewPlaylistPageProps {
 }
 
 const NewPlaylistPage: React.FC<NewPlaylistPageProps> = ({ children, isSearch = true }) => {
+  const [gradientColor, setGradientColor] = useState('#121212');
+  const [bgColor, setBgColor] = useState('#3a3a3a');
+  const [isPublic, setIsPublic] = useState(false);
   const [form, setForm] = useState<PlayListDTO>({
     name: '',
     description: '',
-    coverUrl: ''
+    cover: '',
+    isPublic,
+    gradientColor,
+    bgColor,
+    userId: '',
+    file: null
   });
-
-  const [bgColor, setBgColor] = useState('#3a3a3a');
-  const [gradientColor, setGradientColor] = useState('#121212');
 
   const [isBackground, setIsBackground] = useState(false);
   const [isOpenAction, setIsOpenAction] = useState(false);
-  const [isPrivate, setIsPrivate] = useState(false);
   const [isHover, setIsHover] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [query, setQuery] = useState('');
 
-  const onFormChange = (field: keyof PlayListDTO, value: any) => {
-    setForm({ ...form, [field]: value });
+  const coverInputRef = useRef<HTMLInputElement>(null);
+  const { playlistId } = useParams();
+
+  const onFileChange = (e: React.ChangeEvent<HTMLInputElement, HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+
+    file && fileToDataURL(file).then((url) => {
+      setForm({ ...form, file, cover: url });
+    });
   }
 
-  /*const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const finalName = form.name.trim() || 'My Curated Playlist';
-    const finalDesc = form.description.trim() || 'Custom playlist styled by me.';
-    // save
-  }*/
+  const onSavePlaylist = async () => {
+    const r = await apiService.newPlaylist({
+      ...form,
+      name: form.name.trim(),
+      description: form.description.trim(),
+      isPublic
+    });
+
+    console.log(r)
+  }
+
+  useEffect(() => {
+    playlistId && apiService.getPlaylist(playlistId).then(({ data }) => {
+      data?.id && setForm(data);
+    });
+  }, [playlistId]);
 
   return (
     <div className="min-h-full text-white select-none animate-fade-in bg-surface">
@@ -51,36 +75,53 @@ const NewPlaylistPage: React.FC<NewPlaylistPageProps> = ({ children, isSearch = 
         <div
           onPointerEnter={() => setIsHover(true)}
           onMouseLeave={() => setIsHover(false)}
-          className="min-[925px]:max-w-58 min-[925px]:max-h-58 min-[925px]:min-w-58 min-[925px]:min-h-58 w-[25vw] h-[25vw] min-w-[25vw] min-h-[25vw] rounded bg-[#262626] relative"
+          className="min-[925px]:max-w-58 min-[925px]:max-h-58 min-[925px]:min-w-58 min-[925px]:min-h-58 w-[25vw] h-[25vw] min-w-[25vw] min-h-[25vw] rounded bg-[#262626] overflow-hidden relative"
         >
-          {!isHover
-            ?
-            <MusicIcon className="w-1/4 h-1/4 absolute top-1/2 left-1/2 -translate-1/2" />
+          {form.cover ?
+            <img
+              className="object-cover w-full h-full"
+              src={form.cover}
+              alt=""
+            />
             :
+            <MusicIcon className="w-1/4 h-1/4 absolute top-1/2 left-1/2 -translate-1/2" />
+          }
+
+          {isHover &&
             <button
-              className="hover:text-white w-full h-full flex flex-col items-center gap-1 justify-center absolute top-1/2 left-1/2 -translate-1/2"
+              onClick={() => coverInputRef.current?.click()}
+              className={`${form.cover ? 'bg-black/50' : 'bg-[#262626]'} hover:text-white w-full h-full flex flex-col items-center gap-1 justify-center absolute top-1/2 left-1/2 -translate-1/2`}
               type="button"
             >
               <PenIcon className="w-10 h-10" />
               <span>Elegir foto</span>
             </button>
           }
+
+          <input
+            onChange={onFileChange}
+            ref={coverInputRef}
+            className="hidden"
+            accept="image/*"
+            name="cover"
+            type="file"
+          />
         </div>
 
         <div className="mt-auto w-full">
-          <span className="block mb-3 text-sm font-medium">
-            Lista {isPrivate ? 'privada' : 'pública'}
+          <span className="block text-sm font-medium">
+            Lista {isPublic ? 'pública' : 'privada'}
           </span>
           <h1
             onClick={() => setIsEdit(true)}
-            className="playlist-title font-black cursor-pointer"
+            className="playlist-title google-sans-flex-font font-black cursor-pointer"
           >
-            Mi lista  #5
+            {form.name}
           </h1>
 
-          <div className="mt-5 flex items-center">
+          <div className="mt-2 flex items-center">
             <button
-              className="bg-[#ffffff36] p-1.5 rounded-full"
+              className="bg-[#ffffff36] p-1 rounded-full"
               type="button"
             >
               <PlusIcon className="w-4 h-4" />
@@ -96,9 +137,9 @@ const NewPlaylistPage: React.FC<NewPlaylistPageProps> = ({ children, isSearch = 
 
       <div
         className="p-6 space-y-6 relative"
-      // style={{
-      //   background: `linear-gradient(to bottom, ${gradientColor} 0%, #0e0e0e 100%)`,
-      // }}
+        style={{
+          background: `linear-gradient(to bottom, ${gradientColor} 0%, #0e0e0e 100%)`,
+        }}
       >
         <div className="text-sm text-[#adaaaa] flex items-center justify-between relative">
           <div className="relative">
@@ -109,15 +150,16 @@ const NewPlaylistPage: React.FC<NewPlaylistPageProps> = ({ children, isSearch = 
             >
               <EllipsisIcon className="w-8 h-8" />
             </button>
+
             {isOpenAction &&
               <ActionMenu
-                isPrivate={isPrivate}
+                isPublic={isPublic}
                 onIsEdit={() => {
                   setIsEdit(true);
                   setIsOpenAction(false);
                   setIsBackground(false);
                 }}
-                onChangeVisibility={() => setIsPrivate(!isPrivate)}
+                onChangeVisibility={() => setIsPublic(!isPublic)}
                 onClose={() => setIsOpenAction(!isOpenAction)}
                 onIsBackground={() => setIsBackground(!isBackground)}
               />
@@ -133,6 +175,7 @@ const NewPlaylistPage: React.FC<NewPlaylistPageProps> = ({ children, isSearch = 
               <span>Lista</span>
               <ListIcon className="inline-flex w-5 h-5" />
             </button>
+
             {isOpen &&
               <LayoutMenu onClose={() => setIsOpen(!isOpen)} />
             }
@@ -184,9 +227,11 @@ const NewPlaylistPage: React.FC<NewPlaylistPageProps> = ({ children, isSearch = 
       {isEdit &&
         <EditData
           form={form}
-          isPrivate={isPrivate}
-          onFormChange={onFormChange}
-          onChangeVisibility={() => setIsPrivate(!isPrivate)}
+          isPublic={isPublic}
+          setForm={setForm}
+          onChangeVisibility={() => setIsPublic(!isPublic)}
+          coverInputRef={coverInputRef}
+          onSavePlaylist={onSavePlaylist}
           onClose={() => setIsEdit(false)}
         />
       }

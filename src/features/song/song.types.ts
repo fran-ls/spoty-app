@@ -12,3 +12,8 @@ export interface Song {
   artist: Artist;
   // album: Album;
 }
+
+export type SongCover = {
+  id: string;
+  url: string;
+}

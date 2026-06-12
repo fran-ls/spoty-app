@@ -211,8 +211,8 @@ export default function GradientEditor({ isBackground, setGradientCSS, onClose }
   const divRef = useRef<HTMLDivElement>(null);
 
   const [stops, setStops] = useState<GradientEditorStop[]>([
-    { color: "#ff2200", pos: 0 },
-    { color: "#8b0000", pos: 50 },
+    { color: "#3a3a3a", pos: 0 },
+    { color: "#121212", pos: 50 },
     { color: "#131313", pos: 100 },
   ]);
   const [direction, setDirection] = useState<string>("to bottom");

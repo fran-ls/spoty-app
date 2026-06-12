@@ -1,5 +1,10 @@
 export interface PlayListDTO {
   name: string;
   description: string;
-  coverUrl: string;
+  cover: string;
+  bgColor: string;
+  gradientColor: string;
+  isPublic: boolean;
+  userId: string;
+  file: File | null;
 }

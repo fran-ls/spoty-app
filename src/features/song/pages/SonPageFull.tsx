@@ -1,28 +1,24 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Play, Pause, Heart, Clock, MusicIcon } from 'lucide-react';
 import type { Song } from '../song.types';
-// import apiService from '../../../shared/services/api.service';
+import apiService from '../../../shared/services/api.service';
 import { usePlayer } from '../../../shared/context/PlayerContext';
 import { formatTime } from '../../../shared/utils/formatTime';
 import { getFmtDate } from '../../../shared/utils/getFormatDate';
 import { STYLES } from '../../../shared/utils/styles';
 
-interface SongPageFullProps {
-  songs: Song[];
-}
-
-const SongPageFull: React.FC<SongPageFullProps> = ({ songs }) => {
+const SongPageFull: React.FC = () => {
   const { currentSong, isPlaying, play, togglePlay } = usePlayer();
 
   const [playlistLiked, setPlaylistLiked] = useState<boolean>(false);
-  // const [songs, setSongs] = useState<Song[]>([]);
+  const [songs, setSongs] = useState<Song[]>([]);
 
   const isTrackLiked = true;
   const playlist = { bgColor: '#000000' }
 
-  // useEffect(() => {
-  //   apiService.searchSongs({ artistName: 'lady gaga' }).then(({ data }) => setSongs(data));
-  // }, []);
+  useEffect(() => {
+    apiService.searchSongs().then(({ data }) => setSongs(data.items));
+  }, []);
 
   return (
     <div
@@ -80,7 +76,7 @@ const SongPageFull: React.FC<SongPageFullProps> = ({ songs }) => {
             </div>
           </div>
         ) : (
-          <div className={`max-h-[calc(100vh-88px-64px-88px-24px)] min-h-[calc(100vh-88px-64px-88px-24px)] min-w-full  overflow-auto`}>
+          <div className={`max-h-[calc(100vh-88px-64px-88px-24px)] min-h-[calc(100vh-88px-64px-88px-24px)] min-w-full  overflow-auto pb-8`}>
             <div className="grid grid-cols-[40px_minmax(200px,2fr)_minmax(120px,1fr)_minmax(120px,1fr)_80px] gap-4 px-4 py-3 mx-8 border-b border-white/10 text-[#adaaaa] text-sm font-bold tracking-wider mb-4 select-none">
               <span>#</span>
               <span>Título</span>
@@ -97,9 +93,9 @@ const SongPageFull: React.FC<SongPageFullProps> = ({ songs }) => {
 
                 return (
                   <div
-                    key={track.id}
                     onClick={() => play(songs, i)}
                     className="grid grid-cols-[40px_minmax(200px,2fr)_minmax(120px,1fr)_minmax(120px,1fr)_80px] gap-4 px-4 py-2.5 items-center rounded-lg hover:bg-white/5 group cursor-pointer transition-colors duration-200"
+                    key={track.id}
                   >
                     {/* # column - shows number or nice Play/Pause icon on hover */}
                     <div className={`${isCurrentPlayingRow ? 'text-primary' : 'text-[#adaaaa] hover:text-[#72fe8f]'} text-sm font-medium flex items-center`}>
@@ -109,17 +105,23 @@ const SongPageFull: React.FC<SongPageFullProps> = ({ songs }) => {
 
                     {/* TITLE column - thumb, name status highlights */}
                     <div className="flex items-center gap-4 overflow-hidden">
-                      {track.cover
-                        ?
-                        <img
-                          className="w-10 h-10 rounded-sm object-cover bg-[#262626] shadow"
-                          src={track.cover}
-                          alt=""
-                          referrerPolicy="no-referrer"
-                        />
-                        :
-                        <MusicIcon className="" />
-                      }
+                      <div className="min-w-10 w-10 h-10 bg-[#262626] rounded-sm shadow overflow-hidden relative">
+                        {track.cover
+                          ?
+                          <img
+                            className="w-full h-full object-cover"
+                            src={track.cover}
+                            alt=""
+                            referrerPolicy="no-referrer"
+                          />
+                          :
+                          <MusicIcon
+                            className="absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-[calc(50%+1px)]"
+                            size={20}
+                          />
+                        }
+                      </div>
+
                       <div className="flex flex-col min-w-0 select-none">
                         <span className={`font-semibold truncate text-sm leading-tight ${isCurrentPlayingRow ? 'text-primary' : 'text-white'
                           }`}>

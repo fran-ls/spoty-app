@@ -1,328 +1,252 @@
-import React, { useState } from 'react';
-import { Play, Pause, Heart, Clock, Disc, Paintbrush, Check, Trash2 } from 'lucide-react';
-import { mockPlaylists } from '../../../shared/data/music.data';
+import React, { useEffect, useRef, useState } from 'react';
+import { MusicIcon, PenIcon, PlusIcon, SearchIcon, XIcon } from 'lucide-react';
+import type { PlayListDTO } from '../playlist.types';
+import type { Song, SongCover } from '../../song/song.types';
+import type { SearchMeta } from '../../../shared/types/common.types';
+import EditData from '../components/EditData';
+import GradientEditor from '../components/GradientEditor';
+import Header from '../components/Header';
+import { getTimeParts } from '../../../shared/utils/formatTime';
+import SongList from '../../song/components/SongList';
+import apiService from '../../../shared/services/api.service';
+import SongListEmpty from '../../song/components/SongListEmpty';
+import { usePlayer } from '../../../shared/context/PlayerContext';
 
 const PlaylistPage: React.FC = () => {
-  const allPlaylists = mockPlaylists;
-  const activePlaylist: any = null;
+  const { setQueueTotal } = usePlayer();
 
-  const [playlistLiked, setPlaylistLiked] = useState<boolean>(false);
-  const [stylePaneOpen, setStylePaneOpen] = useState<boolean>(false);
+  const [gradientCSS, setGradientCSS] = useState<string>('');
+  const [isPublic, setIsPublic] = useState(false);
+  const [form, setForm] = useState<PlayListDTO>({
+    name: 'Canciones',
+    description: '',
+    cover: '',
+    isPublic: false,
+    gradientColor: '',
+    bgColor: '',
+    userId: '',
+    file: null
+  });
 
-  // If there is no active playlist yet, fallback to the first playlist loaded (Rock Classics)
-  const playlist = activePlaylist || allPlaylists[0];
+  const [isBackground, setIsBackground] = useState(false);
+  const [isSearch, _setIsSearch] = useState(false);
+  const [isHover, setIsHover] = useState(false);
+  const [isEdit, setIsEdit] = useState(false);
+  const [query, setQuery] = useState('');
 
-  if (!playlist) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full text-white bg-surface select-none pb-40">
-        <Disc size={64} className="animate-spin text-primary opacity-30" />
-        <p className="mt-4 text-[#adaaaa] font-semibold text-sm">Loading playlist context...</p>
-        <button
-          className="mt-6 px-4 py-2 bg-white text-black text-xs font-bold rounded-full cursor-pointer hover:scale-105 transition-all"
-        >
-          Go Back Home
-        </button>
-      </div>
-    );
+  const [page, setPage] = useState(0);
+  const [songs, setSongs] = useState<Song[]>([]);
+  const [searchMeta, setSearchMeta] = useState<SearchMeta>({
+    page: 0,
+    limit: 10,
+    total: 0,
+    totalPages: 0,
+    totalDuration: 0,
+    hasNextPage: false,
+    hasPrevPage: false
+  });
+  const [coverImages, setCoverImages] = useState<SongCover[]>([]);
+  const duration = getTimeParts(searchMeta?.totalDuration ?? 0);
+
+  const coverInputRef = useRef<HTMLInputElement>(null);
+
+  async function getSongs(page: number) {
+    const { data } = await apiService.searchSongs({ limit: 10, page });
+    setSearchMeta(data.meta);
+
+    if (page > 1) {
+      setSongs((prev) => [...prev, ...data.items])
+      return;
+    }
+
+    setQueueTotal(data.meta.total);
+    setSongs(data.items);
   }
 
+  const getPlaylistCover = () => {
+    const images: SongCover[] = [];
+
+    for (const song of songs) {
+      if (song.cover) {
+        images.push({ id: song.id, url: song.cover });
+      }
+
+      if (images.length === 4) {
+        break;
+      }
+    }
+
+    setCoverImages(images);
+  }
+
+  useEffect(() => { getSongs(1) }, []);
+  useEffect(() => { getPlaylistCover() }, [songs]);
+
   return (
-    <div
-      style={{
-        background: `linear-gradient(to bottom, ${playlist.bgColor ? `${playlist.bgColor}55` : '#1c1c1c'} 0%, #121212 400px, #0e0e0e 100%)`
-      }}
-      className="pb-32 min-h-full text-white select-none scroll-smooth animate-fade-in"
-      id="spotify-playlist-stage"
-    >
-      {/* Dynamic atmospheric hero banner */}
+    // ${STYLES.minHeightMain} relative
+    <div className="min-w-full text-white select-none scroll-smooth animate-fade-in">
       <div
-        style={{
-          background: `linear-gradient(to bottom, ${playlist.bgColor || '#3a3a3a'} 0%, ${playlist.gradientColor || '#121212'} 100%)`
-        }}
-        className="relative px-8 pt-10 pb-8 flex flex-col md:flex-row items-end gap-8 overflow-hidden transition-all duration-500"
-        id="playlist-header-banner"
+        style={{ background: gradientCSS }}
+        className="p-6 pb-44 flex items-center gap-6"
       >
-        {/* Floating rounded XL cover image with dramatic shadow */}
-        <div className="shrink-0 shadow-2xl relative group select-none">
-          <img
-            alt={playlist.name}
-            src={playlist.coverUrl}
-            className="w-48 h-48 md:w-60 md:h-60 rounded-xl object-cover shadow-3xl select-none transition-transform duration-300 hover:scale-102"
-            referrerPolicy="no-referrer"
-          />
-        </div>
+        <div
+          onPointerEnter={() => setIsHover(true)}
+          onMouseLeave={() => setIsHover(false)}
+          className="min-[925px]:max-w-58 min-[925px]:max-h-58 min-[925px]:min-w-58 min-[925px]:min-h-58 w-[25vw] h-[25vw] min-w-[25vw] min-h-[25vw] rounded bg-[#262626] relative overflow-hidden"
+        >
+          {form.cover ? (
+            <img
+              className="object-cover w-full h-full"
+              src={form.cover || 'lady-gaga.jpg'}
+              alt=""
+            />
+          ) : (
+            <MusicIcon className="w-1/4 h-1/4 absolute top-1/2 left-1/2 -translate-1/2" />
+          )}
 
-        {/* Playlist meta statistics */}
-        <div className="flex flex-col gap-2 min-w-0 flex-1 select-none z-10">
-          <span className="text-xs font-bold uppercase tracking-widest text-[#72fe8f] font-label select-none">
-            {playlist.creator === 'You' ? 'Personal Playlist' : 'Spotify Curated'}
-          </span>
-          <h1 className="text-4xl sm:text-5xl md:text-7xl font-black font-headline tracking-tighter text-white leading-none wrap-break-word select-none">
-            {playlist.name}
-          </h1>
-          <p className="text-white/80 text-xs sm:text-sm md:text-base mt-2 max-w-2xl font-medium leading-relaxed select-none">
-            {playlist.description}
-          </p>
-          <div className="flex flex-wrap items-center gap-1.5 text-xs sm:text-sm mt-3 text-white font-semibold select-none">
-            <span className="font-bold hover:underline cursor-pointer">{playlist.creator}</span>
-            <span className="text-white/40 select-none">•</span>
-            <span>{playlist.likes}</span>
-            <span className="text-white/40 select-none">•</span>
-            <span>{playlist.songCount} {playlist.songCount === 1 ? 'song' : 'songs'},</span>
-            <span className="text-white/60 font-normal select-none">{playlist.durationText}</span>
-          </div>
-        </div>
-      </div>
+          {coverImages?.map((d, i) => {
+            const className = i === 0
+              ? 'top-0 left-0' : i === 1
+                ? 'top-0 right-0' : i === 3
+                  ? 'bottom-0 left-0' : 'bottom-0 right-0';
 
-      {/* Main content table area */}
-      <div className="px-8 mt-6">
+            return (
+              <img
+                className={`${className} absolute w-1/2 h-1/2 object-cover`}
+                src={d.url}
+                alt=""
+                key={d.id}
+              />
+            )
+          })}
 
-        {/* Action Button Controls Bar */}
-        <div className="flex items-center gap-6 mb-8 flex-wrap" id="playlist-action-bar">
-          <button
-            disabled={playlist.tracks.length === 0}
-            className={`w-14 h-14 rounded-full flex items-center justify-center scale-100 hover:scale-105 active:scale-95 transition-all shadow-lg text-black cursor-pointer ${playlist.tracks.length === 0 ? 'bg-[#adaaaa]/40 opacity-50 cursor-not-allowed' : 'bg-primary hover:bg-[#63ef82]'
-              }`}
-            title="Play Playlist"
-          >
-            {true ? (
-              <Pause size={24} fill="currentColor" stroke="none" className="translate-x-0" />
-            ) : (
-              <Play size={24} fill="currentColor" stroke="none" className="translate-x-px" />
-            )}
-          </button>
-
-          <button
-            onClick={() => setPlaylistLiked(!playlistLiked)}
-            className={`transition-all hover:scale-115 active:scale-90 cursor-pointer ${playlistLiked ? 'text-primary' : 'text-[#adaaaa] hover:text-white'
-              }`}
-            title="Like Playlist"
-          >
-            <Heart size={30} fill={playlistLiked ? '#72fe8f' : 'transparent'} />
-          </button>
-
-          {/* Theme customizer workspace toggle */}
-          <button
-            onClick={() => setStylePaneOpen(!stylePaneOpen)}
-            className={`flex items-center gap-2 border text-xs font-black tracking-wide px-4 py-3 rounded-full transition-all cursor-pointer ${stylePaneOpen
-              ? 'border-primary bg-primary text-black hover:scale-102 hover:bg-[#63ef82]'
-              : 'border-white/10 hover:border-white/30 hover:bg-white/5 text-[#adaaaa] hover:text-white hover:scale-102'
-              }`}
-            title="Configure Styles"
-          >
-            <Paintbrush size={15} />
-            Configure Styles
-          </button>
-        </div>
-
-        {/* Dynamic Theme customizer block */}
-        {stylePaneOpen && (
-          <div className="bg-[#181818] border border-white/10 p-6 rounded-xl mb-8 flex flex-col gap-6 animate-scale-up">
-            <div className="flex justify-between items-center border-b border-white/10 pb-3">
-              <h3 className="font-bold text-sm tracking-wide text-primary uppercase flex items-center gap-2">
-                <Paintbrush size={16} /> Live Playlist Personalizer & Themes
-              </h3>
-              <button
-                onClick={() => setStylePaneOpen(false)}
-                className="text-xs text-[#adaaaa] hover:text-white font-bold bg-white/5 hover:bg-white/10 px-3 py-1 rounded-full whitespace-nowrap cursor-pointer"
-              >
-                Close Panel
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Left Side: Inputs */}
-              <div className="flex flex-col gap-4">
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] font-bold text-[#adaaaa] uppercase">Playlist Title</label>
-                  <input
-                    type="text"
-                    value={playlist.name}
-                    className="bg-[#282828] text-white text-xs font-semibold px-3 py-2.5 rounded-lg border border-white/5 focus:border-primary/40 focus:outline-none transition-all"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] font-bold text-[#adaaaa] uppercase">Description</label>
-                  <textarea
-                    rows={2}
-                    value={playlist.description}
-                    className="bg-[#282828] text-white text-xs font-medium px-3 py-2 rounded-lg border border-white/5 focus:border-primary/40 focus:outline-none transition-all resize-none"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] font-bold text-[#adaaaa] uppercase">Cover Artwork Connection URL</label>
-                  <input
-                    type="text"
-                    value={playlist.coverUrl}
-                    className="bg-[#282828] text-white text-xs font-semibold px-3 py-2 rounded-lg border border-white/5 focus:outline-none focus:border-primary/40"
-                  />
-                </div>
-              </div>
-
-              {/* Right Side: Preset colors and custom specifications */}
-              <div className="flex flex-col gap-4">
-                <label className="text-[10px] font-bold text-[#adaaaa] uppercase">Curate Aura theme colors</label>
-                <div className="grid grid-cols-4 gap-2">
-                  {[
-                    { name: 'Deep Space', bgColor: '#16192b', gradientColor: '#090a10' },
-                    { name: 'Sunset Fusion', bgColor: '#bf226e', gradientColor: '#300f2e' },
-                    { name: 'Forest Calm', bgColor: '#0e4a36', gradientColor: '#051d14' },
-                    { name: 'Crimson Storm', bgColor: '#8b1321', gradientColor: '#1d0205' },
-                    { name: 'Gold Luxury', bgColor: '#d4af37', gradientColor: '#1c1704' },
-                    { name: 'Cyberpunk Neon', bgColor: '#7928ca', gradientColor: '#0b0c10' },
-                    { name: 'Arctic Ice', bgColor: '#2575fc', gradientColor: '#12192a' },
-                    { name: 'Obsidian Matte', bgColor: '#3b3b3b', gradientColor: '#111111' }
-                  ].map(col => {
-                    const isActive = playlist.bgColor === col.bgColor && playlist.gradientColor === col.gradientColor;
-                    return (
-                      <button
-                        key={col.name}
-                        style={{ background: `linear-gradient(135deg, ${col.bgColor} 0%, ${col.gradientColor} 100%)` }}
-                        className="h-10 rounded-lg flex items-center justify-center border border-white/10 hover:scale-105 active:scale-95 transition-all text-left relative cursor-pointer"
-                      >
-                        <span className="text-[8px] font-bold bg-black/60 px-1 py-0.5 rounded text-white leading-none">
-                          {col.name}
-                        </span>
-                        {isActive && (
-                          <div className="absolute top-1 right-1 bg-primary text-black rounded-full p-0.5 scale-75">
-                            <Check size={8} strokeWidth={4} />
-                          </div>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-
-                <div className="grid grid-cols-2 gap-3 border-t border-white/5 pt-3">
-                  <div className="flex flex-col gap-1">
-                    <span className="text-[9px] text-[#adaaaa]">Custom Hex Core</span>
-                    <input
-                      type="color"
-                      value={playlist.bgColor || '#1c1c1c'}
-                      className="w-full h-8 rounded bg-transparent border-none cursor-pointer"
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <span className="text-[9px] text-[#adaaaa]">Custom Hex Secondary</span>
-                    <input
-                      type="color"
-                      value={playlist.gradientColor || '#0e0e0e'}
-                      className="w-full h-8 rounded bg-transparent border-none cursor-pointer"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Table column headers */}
-        <div className="grid grid-cols-[40px_minmax(200px,2fr)_minmax(120px,1fr)_minmax(120px,1fr)_80px] gap-4 px-4 py-3 border-b border-white/10 text-[#adaaaa] text-[11px] font-bold uppercase tracking-wider mb-4 select-none">
-          <span>#</span>
-          <span>Title</span>
-          <span>Album</span>
-          <span>Date Added</span>
-          <div className="flex justify-end pr-1">
-            <Clock size={16} />
-          </div>
-        </div>
-
-        {/* Tracks List entries */}
-        {playlist.tracks.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 bg-white/3 rounded-xl border border-white/5 select-none animate-fade-in text-center px-4">
-            <p className="text-[#adaaaa] font-bold text-sm">No tracks inside this custom layout yet</p>
-            <p className="text-xs text-[#adaaaa]/60 mt-1 max-w-md">
-              Navigate to the <strong>Search Tab</strong> or home collections, click the context menus or like any specific track to list them here in real-time!
-            </p>
+          {isHover &&
             <button
-              className="mt-6 px-5 py-2 bg-white text-black text-xs font-black rounded-full cursor-pointer hover:scale-105 transition-all"
+              className={`${coverImages.length > 0 ? 'bg-black/50' : 'bg-[#262626]'} hover:text-white w-full h-full flex flex-col items-center gap-1 justify-center absolute top-1/2 left-1/2 -translate-1/2`}
+              type="button"
             >
-              Browse & Add Tracks
+              <PenIcon className="w-10 h-10" />
+              <span>Elegir foto</span>
             </button>
+          }
+        </div>
+
+        <div className="mt-auto w-full">
+          <span className="block text-sm font-medium">
+            Lista {isPublic ? 'pública' : 'privada'}
+          </span>
+          <h1
+            onClick={() => setIsEdit(true)}
+            className="playlist-title font-black cursor-pointer google-sans-flex-font"
+          >
+            {form.name}
+          </h1>
+
+          <div className="mt-2 flex items-center">
+            <button
+              className="bg-[#ffffff36] p-1 rounded-full"
+              type="button"
+            >
+              <PlusIcon className="w-4 h-4" />
+            </button>
+            <a href="#">
+              <span className="text-sm ml-2 font-bold">
+                Fran Lemus
+              </span>
+              <span className="text-sm ml-2 font-bold">
+                •
+              </span>
+              <span className="text-sm ml-2">
+                {searchMeta.total || 0} canciones, {duration.min} min {duration.stringSecs}s
+              </span>
+            </a>
           </div>
-        ) : (
-          <div className="flex flex-col gap-1 pb-20 animate-fade-in">
-            {playlist.tracks.map((track: any, i: any) => {
-              const isCurrentPlayingRow = '' === track.id;
-              const isTrackLiked = true;
-
-              return (
-                <div
-                  key={track.id}
-                  className="grid grid-cols-[40px_minmax(200px,2fr)_minmax(120px,1fr)_minmax(120px,1fr)_80px] gap-4 px-4 py-2.5 items-center rounded-lg hover:bg-white/5 group cursor-pointer transition-colors duration-200"
-                >
-                  {/* # column - shows number or nice Play/Pause icon on hover */}
-                  <div className="text-[#adaaaa] text-sm font-medium flex items-center">
-                    <span className="group-hover:hidden select-none">{i + 1}</span>
-                    <Play size={13} fill="currentColor" stroke="none" className="hidden group-hover:block text-white" />
-                  </div>
-
-                  {/* TITLE column - thumb, name status highlights */}
-                  <div className="flex items-center gap-4 overflow-hidden">
-                    <img
-                      alt=""
-                      className="w-10 h-10 rounded-sm object-cover bg-[#262626] shadow"
-                      src={track.coverUrl}
-                      referrerPolicy="no-referrer"
-                    />
-                    <div className="flex flex-col min-w-0 select-none">
-                      <span className={`font-semibold truncate text-sm leading-tight ${isCurrentPlayingRow ? 'text-primary' : 'text-white'
-                        }`}>
-                        {track.title}
-                      </span>
-                      <span className="text-[#adaaaa] text-xs truncate hover:text-white hover:underline mt-0.5">
-                        {track.artist}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* ALBUM column */}
-                  <div className="text-[#adaaaa] text-sm truncate hover:text-white transition-colors select-none">
-                    {track.album}
-                  </div>
-
-                  {/* DATE ADDED column */}
-                  <div className="text-[#adaaaa] text-sm truncate select-none">
-                    {track.addedDate || 'Jan 10, 2024'}
-                  </div>
-
-                  {/* DURATION & LIKE column (Combines hover Like triggers nicely + Remove Action) */}
-                  <div className="text-sm text-[#adaaaa] flex items-center justify-end gap-3">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                      }}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer text-[#adaaaa] hover:text-white"
-                      title="Like song"
-                    >
-                      <Heart
-                        size={15}
-                        fill={isTrackLiked ? '#72fe8f' : 'transparent'}
-                        className={isTrackLiked ? 'text-primary' : 'text-[#adaaaa] hover:text-[#72fe8f]'}
-                      />
-                    </button>
-
-                    {/* Delete track layout option */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                      }}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer text-red-500 hover:text-red-400"
-                      title="Remove song"
-                    >
-                      <Trash2 size={15} />
-                    </button>
-
-                    <span className="w-10 text-right pr-1 select-none">{track.duration}</span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
+        </div>
       </div>
+
+      <div
+        className="min-w-full absolute top-[calc(100%-150px)] bg-[#0a080820]"
+        style={{
+          // background: `linear-gradient(to bottom, ${gradientColor} 0%, #0e0e0e 100%)`,
+        }}
+      >
+        <div className="p-6 space-y-6">
+          <Header
+            isPublic={isPublic}
+            isBackground={isBackground}
+            setIsEdit={setIsEdit}
+            setIsPublic={setIsPublic}
+            setIsBackground={setIsBackground}
+          />
+
+          {isSearch &&
+            <>
+              <div className="h-px bg-white/10" />
+
+              <div className="my-4">
+                <label className="my-3 text-[22px] font-bold block" htmlFor="query">
+                  Encontremos algo para tu lista
+                </label>
+                <div className="text-[#adaaaa] px-3 py-2.5 text-sm w-full max-w-82 bg-[#1f1f1f] gap-2 flex items-center rounded">
+                  <SearchIcon className="min-w-5 w-5 h-5" />
+                  <input
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    className="w-full min-h-full"
+                    placeholder="Buscar canciones"
+                    name="query"
+                    type="text"
+                  />
+                  {query &&
+                    <button
+                      onClick={() => setQuery('')}
+                      type="button"
+                    >
+                      <XIcon className="min-w-5 w-5 h-5" />
+                    </button>
+                  }
+                </div>
+              </div>
+            </>
+          }
+        </div>
+
+        <div className="text-white select-none scroll-smooth animate-fade-in">
+          {songs.length === 0 ? (
+            <SongListEmpty />
+          ) : (
+            <SongList
+              songs={songs}
+              searchMeta={searchMeta}
+              loadMore={() => {
+                if (page < searchMeta.totalPages) {
+                  const nextPage = page + 1;
+                  getSongs(nextPage);
+                  setPage(nextPage);
+                }
+              }}
+            />
+          )}
+        </div>
+      </div>
+
+      {isEdit &&
+        <EditData
+          form={form}
+          isPublic={isPublic}
+          setForm={setForm}
+          onChangeVisibility={() => setIsPublic(!isPublic)}
+          coverInputRef={coverInputRef}
+          onClose={() => setIsEdit(false)}
+          onSavePlaylist={() => { }}
+        />
+      }
+
+      <GradientEditor
+        isBackground={isBackground}
+        setGradientCSS={setGradientCSS}
+        onClose={() => setIsBackground(false)}
+      />
     </div>
   )
 }

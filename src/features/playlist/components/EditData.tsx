@@ -4,15 +4,25 @@ import type { PlayListDTO } from "../playlist.types";
 
 interface EditDataProps {
   form: PlayListDTO;
-  isPrivate: boolean;
-  onClose: () => void;
+  isPublic: boolean;
+  coverInputRef: React.RefObject<HTMLInputElement | null>
+  setForm: React.Dispatch<React.SetStateAction<PlayListDTO>>;
   onChangeVisibility: () => void;
-  onFormChange: (field: keyof PlayListDTO, value: any) => void;
+  onSavePlaylist: () => void;
+  onClose: () => void;
 }
 
 const EditData = (props: EditDataProps) => {
-  const { isPrivate, form, onFormChange, onChangeVisibility, onClose } = props;
+  const {
+    isPublic, form, coverInputRef, setForm,
+    onChangeVisibility, onClose, onSavePlaylist
+  } = props;
+
   const [isHover, setIsHover] = useState(false);
+
+  const onFormChange = (field: keyof PlayListDTO, value: any) => {
+    setForm({ ...form, [field]: value });
+  }
 
   return (
     <>
@@ -37,27 +47,39 @@ const EditData = (props: EditDataProps) => {
             onMouseLeave={() => setIsHover(false)}
             className="text-[#adaaaa] font-medium text-center min-w-45 w-45 h-45 rounded bg-[#282828] overflow-hidden relative"
           >
-            {!isHover
-              ?
+            {form.cover ? (
+              <img
+                className="object-cover w-full h-full"
+                src={form.cover}
+                alt=""
+              />
+            ) : (
               <MusicIcon className="w-1/4 h-1/4 absolute top-1/2 left-1/2 -translate-1/2" />
-              :
+            )}
+
+            {isHover && (
               <>
                 <button
-                  className="hover:text-white bg-black w-7 h-7 rounded-full flex flex-col items-center gap-1 justify-center absolute top-2 right-2"
-                  type="button"
-                >
-                  <EllipsisIcon className="w-5 h-5" />
-                </button>
-
-                <button
-                  className="hover:text-white w-full h-full flex flex-col items-center gap-1 justify-center absolute top-1/2 left-1/2 -translate-1/2"
+                  onClick={() => coverInputRef.current?.click()}
+                  className={`${form.cover ? 'bg-black/50' : 'bg-[#282828]'} hover:text-white w-full h-full flex flex-col items-center gap-1 justify-center absolute top-1/2 left-1/2 -translate-1/2`}
                   type="button"
                 >
                   <PenIcon className="w-8 h-8" />
                   <span>Elegir foto</span>
                 </button>
+
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setForm({ ...form, file: null, cover: '' });
+                  }}
+                  className="hover:text-white bg-black w-7 h-7 rounded-full flex flex-col items-center gap-1 justify-center absolute top-2 right-2"
+                  type="button"
+                >
+                  <EllipsisIcon className="w-5 h-5" />
+                </button>
               </>
-            }
+            )}
           </div>
           <div className="text-sm mt-1 w-full">
             <div className="mb-3.5 relative input-group">
@@ -101,23 +123,23 @@ const EditData = (props: EditDataProps) => {
             className="hover:bg-[#3e3e3e] border-[#3e3e3e] border rounded-full transition-all duration-100 flex items-center gap-2 cursor-pointer px-4 py-2"
             type="button"
           >
-            {
-              isPrivate
-                ? <GlobeIcon className="w-4 h-4" />
-                : <LockIcon className="w-4 h-4" />
+            {!isPublic
+              ? <GlobeIcon className="w-4 h-4" />
+              : <LockIcon className="w-4 h-4" />
             }
             <span>
-              {isPrivate ? 'Hacer pública' : 'Hacer privada'}
+              {isPublic ? 'Hacer privada' : 'Hacer pública'}
             </span>
           </button>
           <button
+            onClick={onSavePlaylist}
             className="text-black font-bold bg-white rounded-full px-4 py-2 ml-auto inline-block cursor-pointer"
             type="button"
           >
             Guardar
           </button>
         </div>
-      </div>
+      </div >
     </>
   )
 }

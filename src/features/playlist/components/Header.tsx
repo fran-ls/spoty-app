@@ -5,15 +5,15 @@ import ActionMenu from './ActionMenu';
 import LayoutMenu from './LayoutMenu';
 
 interface HeaderProps {
-  isPrivate: boolean;
+  isPublic: boolean;
   isBackground: boolean;
   setIsEdit: React.Dispatch<React.SetStateAction<boolean>>;
-  setIsPrivate: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsPublic: React.Dispatch<React.SetStateAction<boolean>>;
   setIsBackground: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const Header: React.FC<HeaderProps> = (props: HeaderProps) => {
-  const { isBackground, isPrivate, setIsEdit, setIsPrivate, setIsBackground } = props;
+  const { isBackground, isPublic, setIsEdit, setIsPublic, setIsBackground } = props;
   const { queue, isPlaying, togglePlay } = usePlayer();
 
   const [isOpenAction, setIsOpenAction] = useState(false);
@@ -59,13 +59,13 @@ const Header: React.FC<HeaderProps> = (props: HeaderProps) => {
 
         {isOpenAction &&
           <ActionMenu
-            isPrivate={isPrivate}
+            isPublic={isPublic}
             onIsEdit={() => {
               setIsEdit(true);
               setIsOpenAction(false);
               setIsBackground(false);
             }}
-            onChangeVisibility={() => setIsPrivate(!isPrivate)}
+            onChangeVisibility={() => setIsPublic(!isPublic)}
             onClose={() => setIsOpenAction(!isOpenAction)}
             onIsBackground={() => setIsBackground(!isBackground)}
           />

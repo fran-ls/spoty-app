@@ -1,7 +1,7 @@
 import { CircleMinusIcon, GlobeIcon, LockIcon, PaletteIcon, PenIcon } from "lucide-react";
 
 interface CustomMenuProps {
-  isPrivate: boolean;
+  isPublic: boolean;
   onChangeVisibility: () => void;
   onIsEdit: () => void;
   onClose: () => void;
@@ -9,7 +9,7 @@ interface CustomMenuProps {
 }
 
 const ActionMenu = (props: CustomMenuProps) => {
-  const { isPrivate, onIsEdit, onChangeVisibility, onClose, onIsBackground } = props;
+  const { isPublic, onIsEdit, onChangeVisibility, onClose, onIsBackground } = props;
 
   return (
     <>
@@ -58,13 +58,12 @@ const ActionMenu = (props: CustomMenuProps) => {
               className="w-full flex items-center gap-2 cursor-pointer px-3 py-2"
               type="button"
             >
-              {
-                isPrivate
-                  ? <GlobeIcon className="w-4 h-4" />
-                  : <LockIcon className="w-4 h-4" />
+              {!isPublic
+                ? <GlobeIcon className="w-4 h-4" />
+                : <LockIcon className="w-4 h-4" />
               }
               <span>
-                {isPrivate ? 'Hacer pública' : 'Hacer privada'}
+                {isPublic ? 'Hacer privada' : 'Hacer pública'}
               </span>
             </button>
           </li>

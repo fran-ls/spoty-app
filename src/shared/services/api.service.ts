@@ -1,15 +1,57 @@
+import type { PlayListDTO } from "../../features/playlist/playlist.types";
 import type { Song } from "../../features/song/song.types";
+import type { SearchResponse } from "../types/common.types";
 import { api } from "../utils/api";
 import { envs } from "../utils/envs";
 
 class ApiService {
-  async getSongs() {
-    return await api.get('/songs');
+  playlistCover(id: string) {
+    return `${envs.API_URL}/playlists/cover/${id}`;
   }
 
-  async searchSongs(filters: any = undefined) {
+  async getPlaylist(id: string) {
+    const { status, statusText, data } = await api.get(`/playlists/${id}`);
+    return {
+      status,
+      statusText,
+      data: {
+        ...data,
+        cover: data.cover ? this.playlistCover(id) : data.cover
+      }
+    }
+  }
+
+  async newPlaylist(playlist: PlayListDTO, force = false) {
+    const formData = new FormData();
+
+    if (playlist.file) {
+      formData.append('cover', playlist.file);
+    }
+
+    for (const f in playlist) {
+      if (f !== 'file') {
+        formData.append(f, (playlist as any)[f]);
+      }
+    }
+
+    const { status, statusText, data } = await api.post('/playlists', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      },
+      params: { force }
+    });
+
+    return {
+      status,
+      statusText,
+      data
+    }
+  }
+
+  async searchSongs(filters: Record<string, any> | undefined = undefined) {
     if (!filters) {
-      const { data, status, statusText } = await api.get<Song[]>('/songs/search');
+      const { data, status, statusText } = await api.get<SearchResponse<Song[]>>('/songs/search');
+
       return {
         status,
         statusText,
@@ -23,7 +65,7 @@ class ApiService {
       if (filters[f]) params[f] = filters[f];
     }
 
-    const { data, status, statusText } = await api.get(`/songs/search`, { params });
+    const { data, status, statusText } = await api.get<SearchResponse<Song[]>>(`/songs/search`, { params });
 
     return {
       status,

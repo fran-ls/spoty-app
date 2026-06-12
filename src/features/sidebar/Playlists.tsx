@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { usePlayer } from '../../shared/context/PlayerContext';
 import { MusicIcon, PlusIcon, SearchIcon, ListIcon, XIcon, PauseIcon, PlayIcon, PanelTopCloseIcon, PanelTopOpenIcon, ListMusicIcon } from 'lucide-react';
+import { usePlayer } from '../../shared/context/PlayerContext';
 import { routes } from '../../shared/utils/routes';
 import CustomMenu from './CustomMenu';
+import apiService from '../../shared/services/api.service';
 
 export const Playlists: React.FC = () => {
   const [isCollapsed, setIsCollapsed] = useState<boolean>(true);
@@ -15,6 +16,23 @@ export const Playlists: React.FC = () => {
   const { currentView, setView, isPlaying } = usePlayer();
   const navigate = useNavigate();
 
+  const onSavePlaylist = async () => {
+    const { data } = await apiService.newPlaylist({
+      name: '',
+      description: '',
+      cover: '',
+      isPublic: false,
+      gradientColor: '',
+      bgColor: '',
+      userId: '34ff1011-a38f-4238-b462-02516f959ac9',
+      file: null
+    }, true);
+
+    if (data?.id) {
+      navigate(`${routes.playlists}/${data.id}`)
+    }
+  }
+
   return (
     <aside
       onClick={() => !query && setIsSearch(false)}
@@ -22,9 +40,7 @@ export const Playlists: React.FC = () => {
       id="spotify-sidebar"
     >
       <div className="rounded-lg min-h-[calc(100vh-64px-88px)] max-h-[calc(100vh-64px-88px)]">
-        <header
-          className={`p-4 text-[#adaaaa] relative`}
-        >
+        <header className="p-4 text-[#adaaaa] relative">
           <div className={`${isCollapsed ? 'flex-col gap-4' : 'flex-row'} flex items-center justify-between`}>
             <button
               onClick={() => setIsCollapsed(!isCollapsed)}
@@ -35,8 +51,7 @@ export const Playlists: React.FC = () => {
                 <PanelTopOpenIcon
                   className="-rotate-90"
                   size={20}
-                />
-                :
+                /> :
                 <PanelTopCloseIcon
                   className="-rotate-90"
                   size={20}
@@ -53,7 +68,7 @@ export const Playlists: React.FC = () => {
             }
 
             <button
-              onClick={() => navigate(routes.newPlaylist)}
+              onClick={onSavePlaylist}
               className={`${isCollapsed ? 'p-2' : 'p-2'} cursor-pointer bg-[#1f1f1f] text-sm font-medium rounded-full gap-2 flex items-center`}
               title="Crea una lista"
               type="button"
@@ -61,7 +76,9 @@ export const Playlists: React.FC = () => {
               <PlusIcon className="w-5 h-5" />
 
               {!isCollapsed &&
-                <span className="text-white hidden">Lista</span>
+                <span className="text-white hidden">
+                  Lista
+                </span>
               }
             </button>
           </div>
@@ -132,7 +149,10 @@ export const Playlists: React.FC = () => {
                   }`}
                 title={isCollapsed ? "Canciones" : undefined}
               >
-                <ListMusicIcon size={22} className={currentView === 'songs' ? 'text-primary' : ''} />
+                <ListMusicIcon
+                  className={currentView === 'songs' ? 'text-primary' : ''}
+                  size={22}
+                />
                 {!isCollapsed && <span>Canciones</span>}
               </button>
             </li>
@@ -149,19 +169,18 @@ export const Playlists: React.FC = () => {
 
                   {hoverIndex !== null && hoverIndex === i &&
                     <div className="text-white badge w-full h-full absolute top-0 left-0 bg-black/50 flex items-center justify-center">
-                      {!isPlaying ? (
+                      {!isPlaying ?
                         <PlayIcon
                           className="min-w-5.5 w-5.5 h-5.5"
                           fill="currentColor"
                           stroke="0"
-                        />
-                      ) : (
+                        /> :
                         <PauseIcon
                           className="min-w-5 w-5 h-5"
                           fill="currentColor"
                           stroke="0"
                         />
-                      )}
+                      }
                     </div>
                   }
                 </div>

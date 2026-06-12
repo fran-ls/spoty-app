@@ -129,7 +129,7 @@ export const PlayerBar: React.FC = () => {
             <img
               onError={(e) => showMusicIcon(e.currentTarget, '.playback-bar')}
               src={songCover}
-              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+              className="w-full h-full object-cover transition-transform duration-300"
               referrerPolicy="no-referrer"
               alt=""
             />

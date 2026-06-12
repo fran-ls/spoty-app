@@ -97,7 +97,7 @@ export const Header: React.FC<HeaderProps> = ({ onExplorePremiumClick }) => {
             {showUserDropdown && (
               <>
                 <div
-                  className="backdrop--blur z-50 min-h-screen min-w-full top-0 left-0 fixed inset-0"
+                  className="z-50 min-h-screen min-w-full top-0 left-0 fixed inset-0"
                   onClick={() => setShowUserDropdown(false)}
                 />
 

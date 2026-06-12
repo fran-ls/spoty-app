@@ -1,21 +1,54 @@
-import React, { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { MusicIcon, XIcon, PauseIcon, PlayIcon, PanelTopCloseIcon } from 'lucide-react';
+import { showMusicIcon } from '../../shared/utils/showMusicIcon';
 import { usePlayer } from '../../shared/context/PlayerContext';
 import apiService from '../../shared/services/api.service';
-import { showMusicIcon } from '../../shared/utils/showMusicIcon';
+import Loader from '../../shared/components/Loader';
+import { useInfiniteScroll } from '../../shared/hooks/useInfiniteScroll';
 
 export const QueueList: React.FC = () => {
   const {
-    queue, isPlaying, isQueue, currentSong,
-    setIsQueue, playQueueSong, togglePlay
+    queue, queueTotal, isPlaying, isQueue, currentSong, currentIndex,
+    setQueue, setIsQueue, playQueueSong, togglePlay, setQueueTotal
   } = usePlayer();
+
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+
+  const { loaderRef } = useInfiniteScroll(() => {
+    if (page < totalPages) {
+      const nextPage = page + 1;
+      getQueueSongs(nextPage);
+      setPage(nextPage);
+    }
+  });
+
   const isCollapsed = isQueue;
 
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
+  const [isHoverQueue, setIsHoverQueue] = useState(false);
+
+  async function getQueueSongs(page: number) {
+    const { data } = await apiService.searchSongs({ limit: 10, page });
+    setTotalPages(data.meta.totalPages);
+    setQueueTotal(data.meta.total);
+
+    (page > 1)
+      ? setQueue((prev) => [...prev, ...data.items])
+      : setQueue(data.items);
+  }
+
+  useEffect(() => {
+    const lastIndex = queue.length - 1;
+
+    if (currentIndex === lastIndex && queue.length < queueTotal) {
+      getQueueSongs(page);
+    }
+  }, [currentIndex]);
 
   return (
     <aside
-      className={`${isCollapsed ? 'w-13' : 'w-72'} rounded-lg hidden md:flex h-full overflow-hidden flex-col bg-[#131313] border-none select-none shrink-0 transition-all duration-300 ease-in-out relative`}
+      className={`${isCollapsed ? 'w-18' : 'w-72'} rounded-lg hidden md:flex h-full overflow-hidden flex-col bg-[#131313] border-none select-none shrink-0 transition-all duration-300 ease-in-out relative`}
       id="spotify-sidebar"
     >
       <div className="rounded-lg min-h-[calc(100vh-64px-88px)] max-h-[calc(100vh-64px-88px)]">
@@ -44,7 +77,11 @@ export const QueueList: React.FC = () => {
           </div>
         </header>
 
-        <nav className={`${isCollapsed ? 'h-[calc(100vh-64px-88px-64px)]' : 'h-[calc(100vh-64px-88px-64px)]'} overflow-y-auto overflow-x-hidden relative`}>
+        <nav
+          onMouseEnter={() => setIsHoverQueue(true)}
+          onMouseLeave={() => setIsHoverQueue(false)}
+          className={`${isCollapsed ? 'h-[calc(100vh-64px-88px-64px)]' : 'h-[calc(100vh-64px-88px-64px)]'} ${isHoverQueue ? '' : 'hide---scrollbar'} overflow-y-auto overflow-x-hidden relative sidebar-queue`}
+        >
           <ul className={`${isCollapsed ? 'pl-0 pb-0' : 'pl-2 pb-2'} w-full absolute top-0 left-0`}>
             {queue.map((track, i) => {
               const cover = apiService.songCoverUrl(track.id, track.cover);
@@ -138,6 +175,20 @@ export const QueueList: React.FC = () => {
                 </li>
               )
             })}
+
+            {(queue.length > 0 && page < totalPages) && (
+              <li
+                className="flex items-center justify-center px-6 py-1 overflow-hidden"
+                ref={loaderRef}
+              >
+
+                <Loader
+                  className="border-transparent border-t-slate-200"
+                  size={20}
+                  stroke={2}
+                />
+              </li>
+            )}
           </ul>
         </nav>
       </div>

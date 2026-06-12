@@ -14,17 +14,20 @@ interface PlayerContextType {
   volume: number;
   isMuted: boolean;
   isQueue: boolean;
+  queueTotal: number;
   seek: (time: number) => void;
   play: (songs: Song[], index: number) => void;
   togglePlay: () => void;
   next: () => void;
   prev: () => void;
   toggleMute: () => void;
+  playQueueSong: (song: Song, index: number) => void;
+  setQueue: React.Dispatch<React.SetStateAction<Song[]>>;
+  setQueueTotal: React.Dispatch<React.SetStateAction<number>>;
   setVolume: React.Dispatch<React.SetStateAction<number>>;
   setIsPlaying: React.Dispatch<React.SetStateAction<boolean>>;
   setIsMuted: React.Dispatch<React.SetStateAction<boolean>>;
   setIsQueue: React.Dispatch<React.SetStateAction<boolean>>;
-  playQueueSong: (song: Song, index: number) => void;
 
   currentView: ViewType;
   setView: (view: ViewType) => void;
@@ -34,6 +37,7 @@ export const PlayerContext = createContext<PlayerContextType | null>(null)
 
 export const PlayerProvider = ({ children }: any) => {
   const [queue, setQueue] = useState<Song[]>([]);
+  const [queueTotal, setQueueTotal] = useState(0);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -149,13 +153,14 @@ export const PlayerProvider = ({ children }: any) => {
   return (
     <PlayerContext.Provider
       value={{
-        queue,
         progress, duration,
         currentSong, currentIndex,
+        queue, setQueue,
         isPlaying, setIsPlaying,
         volume, setVolume,
         isMuted, setIsMuted,
         isQueue, setIsQueue,
+        queueTotal, setQueueTotal,
         play, togglePlay,
         next, prev,
         seek, toggleMute,
