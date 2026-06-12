@@ -42,6 +42,8 @@ body {
   overflow: hidden;
 }
 
+
+/* GOOGLE FONTS */
 .google-sans-flex-font {
   font-family: "Google Sans Flex", sans-serif;
   font-optical-sizing: auto;
@@ -54,11 +56,12 @@ body {
     "ROND" 0;
 }
 
+
+/* SCROLLBAR */
 .hide-scrollbar::-webkit-scrollbar {
   display: none !important;
 }
 
-/* Custom premium scrollbars that contrast beautifully with dark layout */
 ::-webkit-scrollbar {
   width: 12px;
   height: 12px;
@@ -82,7 +85,20 @@ body {
   background: #b8b8b8;
 }
 
-/* Soft transitions for premium interactive layers */
+#playlist-background-presets::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+/* .sidebar-queue::-webkit-scrollbar  {
+  position: absolute;
+  top: 0;
+  right: 0;
+  right: 0;
+} */
+
+
+/* ANIMATIONS */
 .animate-fade-in {
   animation: fadeIn 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
@@ -130,13 +146,8 @@ body {
   font-family: 'DM Sans', 'Segoe UI', sans-serif;
 }
 
-/* .sidebar-queue::-webkit-scrollbar  {
-  position: absolute;
-  top: 0;
-  right: 0;
-  right: 0;
-} */
 
+/* RESPONSIVE */
 @media(width>=1280px) {
   .playlist-title {
     font-size: 96px;

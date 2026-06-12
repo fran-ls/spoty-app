@@ -138,7 +138,7 @@ export const PlayerBar: React.FC = () => {
 
         {currentSong &&
           <>
-            <div className="flex flex-col truncate min-w-0 pr-2">
+            <div className="flex flex-col truncate min-w-0 pr-2 max-w-64">
               <span className="text-sm font-bold text-white hover:underline cursor-pointer truncate">
                 {currentSong?.title}
               </span>
@@ -219,7 +219,7 @@ export const PlayerBar: React.FC = () => {
         </div>
 
         {/* Timeline Slider Progress */}
-        <div className="flex items-center justify-between gap-2.5 w-full group">
+        <div className="max-w-125 flex items-center justify-between gap-2.5 w-full group">
           <span className="text-[12px] text-[#adaaaa] w-8 text-right select-none">
             {formatTime(progress ?? 0)}
           </span>

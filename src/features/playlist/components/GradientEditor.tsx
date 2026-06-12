@@ -1,6 +1,7 @@
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { XIcon } from "lucide-react";
-import type { DragOrigin, GradientEditorDirection, GradientEditorPos, GradientEditorStop, GradientEditorStopKey } from "../gradientEditor.types";
+import type { GradientEditorDirection, GradientEditorStop, GradientEditorStopKey } from "../gradientEditor.types";
+import DraggableWidget from "../../../shared/components/DraggableWidget";
 
 interface ColorStopProps {
   stop: GradientEditorStop;
@@ -8,12 +9,6 @@ interface ColorStopProps {
   canRemove: boolean;
   onChange: (index: number, key: GradientEditorStopKey, value: string | number) => void;
   onRemove: (index: number) => void;
-}
-
-interface DraggableWidgetProps {
-  isBackground: boolean;
-  children: React.ReactNode;
-  divRef: React.RefObject<HTMLDivElement | null>;
 }
 
 const DIRECTIONS: GradientEditorDirection[] = [
@@ -108,99 +103,6 @@ function ColorStop({ stop, index, canRemove, onChange, onRemove }: ColorStopProp
   )
 }
 
-function DraggableWidget({ children }: DraggableWidgetProps) {
-  const [pos, setPos] = useState<GradientEditorPos>({ x: 0, y: 0 });
-  const [dragging, setDragging] = useState<boolean>(false);
-  const dragStart = useRef<DragOrigin | null>(null);
-
-  const onMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    if ((e.target as HTMLElement).closest("input, button, select")) return;
-    e.preventDefault();
-    setDragging(true);
-    dragStart.current = {
-      mx: e.clientX,
-      my: e.clientY,
-      px: pos.x,
-      py: pos.y
-    }
-  }, [pos]);
-
-  useEffect(() => {
-    if (!dragging) return;
-
-    const onMove = (e: MouseEvent) => {
-      if (!dragStart.current) return;
-      setPos({
-        x: dragStart.current.px + (e.clientX - dragStart.current.mx),
-        y: dragStart.current.py + (e.clientY - dragStart.current.my),
-      });
-    }
-
-    const onUp = () => setDragging(false);
-    window.addEventListener("mousemove", onMove);
-    window.addEventListener("mouseup", onUp);
-
-    return () => {
-      window.removeEventListener("mousemove", onMove);
-      window.removeEventListener("mouseup", onUp);
-    }
-  }, [dragging]);
-
-  useEffect(() => {
-    if (!dragging) return;
-
-    const onTouch = (e: TouchEvent) => {
-      if (!dragStart.current) return;
-      const t = e.touches[0];
-      setPos({
-        x: dragStart.current.px + (t.clientX - dragStart.current.mx),
-        y: dragStart.current.py + (t.clientY - dragStart.current.my),
-      });
-    }
-
-    const onTouchEnd = () => setDragging(false);
-    window.addEventListener("touchmove", onTouch);
-    window.addEventListener("touchend", onTouchEnd);
-
-    return () => {
-      window.removeEventListener("touchmove", onTouch);
-      window.removeEventListener("touchend", onTouchEnd);
-    }
-  }, [dragging]);
-
-  const onTouchStart = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
-    if ((e.target as HTMLElement).closest("input, button, select")) return;
-    const t = e.touches[0];
-    setDragging(true);
-    dragStart.current = {
-      mx: t.clientX,
-      my: t.clientY,
-      px: pos.x,
-      py: pos.y
-    }
-  }, [pos]);
-
-  return (
-    <div
-      onMouseDown={onMouseDown}
-      onTouchStart={onTouchStart}
-      style={{
-        transform: `translate(${pos.x}px, ${pos.y}px)`,
-        cursor: dragging ? "grabbing" : "grab",
-        userSelect: "none",
-        transition: dragging ? "none" : "box-shadow 0.2s",
-        position: "absolute",
-        top: 100,
-        right: 20,
-        zIndex: dragging ? 100 : 1,
-        overflow: 'hidden',
-      }}
-    >
-      {children}
-    </div>
-  )
-}
-
 interface GradientEditorProps {
   isBackground: boolean;
   onClose: () => void;
@@ -236,10 +138,7 @@ export default function GradientEditor({ isBackground, setGradientCSS, onClose }
   useEffect(() => { setGradientCSS(gradientCSS) }, [stops, direction]);
 
   return (
-    <DraggableWidget
-      divRef={divRef}
-      isBackground={isBackground}
-    >
+    <DraggableWidget isBackground={isBackground}>
       <div
         style={{
           background: "rgba(10,10,10,0.72)",

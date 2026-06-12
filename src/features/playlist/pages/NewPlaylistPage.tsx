@@ -5,16 +5,11 @@ import type { PlayListDTO } from '../playlist.types';
 import LayoutMenu from '../components/LayoutMenu';
 import ActionMenu from '../components/ActionMenu';
 import EditData from '../components/EditData';
-import StyleConfig from '../components/StyleConfig';
+import BackgroundColor from '../components/BackgroundColor';
 import apiService from '../../../shared/services/api.service';
 import { fileToDataURL } from '../../../shared/utils/fileToDataURL';
 
-interface NewPlaylistPageProps {
-  children?: React.ReactNode;
-  isSearch?: boolean;
-}
-
-const NewPlaylistPage: React.FC<NewPlaylistPageProps> = ({ children, isSearch = true }) => {
+const NewPlaylistPage: React.FC = () => {
   const [gradientColor, setGradientColor] = useState('#121212');
   const [bgColor, setBgColor] = useState('#3a3a3a');
   const [isPublic, setIsPublic] = useState(false);
@@ -34,6 +29,8 @@ const NewPlaylistPage: React.FC<NewPlaylistPageProps> = ({ children, isSearch = 
   const [isHover, setIsHover] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
+
+  const [isSearch, _setIsSearch] = useState(false);
   const [query, setQuery] = useState('');
 
   const coverInputRef = useRef<HTMLInputElement>(null);
@@ -212,17 +209,18 @@ const NewPlaylistPage: React.FC<NewPlaylistPageProps> = ({ children, isSearch = 
             </div>
           </>
         }
-
-        {isBackground &&
-          <StyleConfig
-            bgColor={bgColor}
-            gradientColor={gradientColor}
-            setBgColor={setBgColor}
-            setGradientColor={setGradientColor}
-            onClose={() => setIsBackground(false)}
-          />
-        }
       </div>
+
+      {isBackground &&
+        <BackgroundColor
+          bgColor={bgColor}
+          gradientColor={gradientColor}
+          isBackground={isBackground}
+          setBgColor={setBgColor}
+          setGradientColor={setGradientColor}
+          onClose={() => setIsBackground(false)}
+        />
+      }
 
       {isEdit &&
         <EditData
@@ -235,8 +233,6 @@ const NewPlaylistPage: React.FC<NewPlaylistPageProps> = ({ children, isSearch = 
           onClose={() => setIsEdit(false)}
         />
       }
-
-      {children && children}
     </div>
   )
 }
