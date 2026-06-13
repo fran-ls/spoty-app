@@ -14,4 +14,13 @@ export interface SearchMeta extends PaginationMeta {
 export type SearchResponse<T> = {
   items: T;
   meta: SearchMeta;
-}; 
+};
+
+export interface ApiResponse<T> {
+  status: any;
+  statusText: string;
+  error: any;
+  data: T | null;
+}
+
+export type ApiRes<T> = Promise<ApiResponse<T>>

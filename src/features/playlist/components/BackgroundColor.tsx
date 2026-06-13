@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { CheckIcon, Maximize2Icon, Minimize2Icon, XIcon } from "lucide-react";
+import { CheckIcon, CloudUpload, Maximize2Icon, Minimize2Icon, XIcon } from "lucide-react";
 import { STYLE_PRESETS } from "../../../shared/data/stylePresets";
 import DraggableWidget from "../../../shared/components/DraggableWidget";
 
@@ -10,10 +10,11 @@ interface BackgroundColorProps {
   setBgColor: React.Dispatch<React.SetStateAction<string>>;
   setGradientColor: React.Dispatch<React.SetStateAction<string>>;
   onClose: () => void;
+  onSave: () => void;
 }
 
 const BackgroundColor = (props: BackgroundColorProps) => {
-  const { bgColor, gradientColor, isBackground, setBgColor, setGradientColor, onClose } = props;
+  const { bgColor, gradientColor, isBackground, setBgColor, setGradientColor, onClose, onSave } = props;
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [_wrapSize, setWrapSize] = useState({ width: 0, height: 0 });
   const [size, setSize] = useState({ width: 0, height: 0 });
@@ -84,11 +85,20 @@ const BackgroundColor = (props: BackgroundColorProps) => {
 
           <div className="flex items-center gap-2">
             <button
+              onClick={onSave}
+              className="text-xs font-bold p-1 rounded-full transition-all cursor-pointer text-[#adaaaa] hover:bg-white/10"
+              title="Guardar"
+              type="button"
+            >
+              <CloudUpload size={20} />
+            </button>
+
+            <button
               onClick={(e) => {
                 e.stopPropagation();
                 setIsCollapsed(!isCollapsed)
               }}
-              className={`text-xs font-bold p-1.5 rounded-full transition-all cursor-pointer text-[#adaaaa] hover:bg-white/10`}
+              className="text-xs font-bold p-1.5 rounded-full transition-all cursor-pointer text-[#adaaaa] hover:bg-white/10"
               title={isCollapsed ? 'Maximizar' : 'Minimizar'}
               type="button"
             >
@@ -96,9 +106,11 @@ const BackgroundColor = (props: BackgroundColorProps) => {
                 ? <Minimize2Icon size={16} />
                 : <Maximize2Icon size={16} />}
             </button>
+
             <button
               onClick={onClose}
-              className={`text-xs font-bold p-1 rounded-full transition-all cursor-pointer text-[#adaaaa] hover:bg-white/10`}
+              className="text-xs font-bold p-1 rounded-full transition-all cursor-pointer text-[#adaaaa] hover:bg-white/10"
+              title="Cerrar"
               type="button"
             >
               <XIcon size={20} />
@@ -205,8 +217,8 @@ const BackgroundColor = (props: BackgroundColorProps) => {
               return (
                 <button
                   onClick={() => {
-                    setBgColor(preset.bgColor);
-                    setGradientColor(preset.gradientColor);
+                    onBgColorChange(preset.bgColor);
+                    onGradientColorChange(preset.gradientColor);
                   }}
                   style={{
                     background: `linear-gradient(135deg, ${preset.bgColor} 0%, ${preset.gradientColor} 100%)`

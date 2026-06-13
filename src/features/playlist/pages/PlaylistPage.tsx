@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { MusicIcon, PenIcon, PlusIcon, SearchIcon, XIcon } from 'lucide-react';
-import type { PlayListDTO } from '../playlist.types';
+import type { PlaylistDTO } from '../playlist.types';
 import type { Song, SongCover } from '../../song/song.types';
 import type { SearchMeta } from '../../../shared/types/common.types';
 import EditData from '../components/EditData';
@@ -17,7 +17,7 @@ const PlaylistPage: React.FC = () => {
 
   const [gradientCSS, setGradientCSS] = useState<string>('');
   const [isPublic, setIsPublic] = useState(false);
-  const [form, setForm] = useState<PlayListDTO>({
+  const [form, setForm] = useState<PlaylistDTO>({
     name: 'Canciones',
     description: '',
     cover: '',
@@ -234,11 +234,12 @@ const PlaylistPage: React.FC = () => {
         <EditData
           form={form}
           isPublic={isPublic}
+          currentCover={''}
           setForm={setForm}
           onChangeVisibility={() => setIsPublic(!isPublic)}
           coverInputRef={coverInputRef}
           onClose={() => setIsEdit(false)}
-          onSavePlaylist={() => { }}
+          onSave={() => { }}
         />
       }
 

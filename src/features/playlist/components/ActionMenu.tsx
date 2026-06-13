@@ -3,13 +3,14 @@ import { CircleMinusIcon, GlobeIcon, LockIcon, PaletteIcon, PenIcon } from "luci
 interface CustomMenuProps {
   isPublic: boolean;
   onChangeVisibility: () => void;
+  onIsBackground: () => void;
   onIsEdit: () => void;
   onClose: () => void;
-  onIsBackground: () => void;
+  onRemove: () => void;
 }
 
 const ActionMenu = (props: CustomMenuProps) => {
-  const { isPublic, onIsEdit, onChangeVisibility, onClose, onIsBackground } = props;
+  const { isPublic, onIsEdit, onChangeVisibility, onClose, onRemove, onIsBackground } = props;
 
   return (
     <>
@@ -45,6 +46,7 @@ const ActionMenu = (props: CustomMenuProps) => {
           </li>
           <li className="w-full font-medium hover:text-white hover:bg-white/10 rounded-xs">
             <button
+              onClick={onRemove}
               className="w-full flex items-center gap-2 cursor-pointer px-3 py-2"
               type="button"
             >

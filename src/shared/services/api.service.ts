@@ -1,6 +1,6 @@
-import type { PlayListDTO } from "../../features/playlist/playlist.types";
+import type { Playlist, PlaylistDTO } from "../../features/playlist/playlist.types";
 import type { Song } from "../../features/song/song.types";
-import type { SearchResponse } from "../types/common.types";
+import type { ApiRes, SearchResponse } from "../types/common.types";
 import { api } from "../utils/api";
 import { envs } from "../utils/envs";
 
@@ -9,19 +9,16 @@ class ApiService {
     return `${envs.API_URL}/playlists/cover/${id}`;
   }
 
-  async getPlaylist(id: string) {
-    const { status, statusText, data } = await api.get(`/playlists/${id}`);
-    return {
-      status,
-      statusText,
-      data: {
-        ...data,
-        cover: data.cover ? this.playlistCover(id) : data.cover
-      }
+  async removePlaylist(id: string): ApiRes<Playlist> {
+    try {
+      const r = await api.delete(`/playlists/${id}`);
+      return this.ApiResponse('success', r);
+    } catch (err) {
+      return this.ApiResponse('error', err);
     }
   }
 
-  async newPlaylist(playlist: PlayListDTO, force = false) {
+  async updatePlaylist(id: string, playlist: Partial<PlaylistDTO>): ApiRes<Playlist> {
     const formData = new FormData();
 
     if (playlist.file) {
@@ -34,17 +31,74 @@ class ApiService {
       }
     }
 
-    const { status, statusText, data } = await api.post('/playlists', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      },
-      params: { force }
-    });
+    try {
+      const r = await api.put(`/playlists/${id}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        },
+      });
 
-    return {
-      status,
-      statusText,
-      data
+      const data = r.data;
+
+      r.data = {
+        ...data,
+        cover: data.cover ? this.playlistCover(id) : data.cover
+      }
+
+      return this.ApiResponse('success', r);
+    } catch (err) {
+      return this.ApiResponse('error', err);
+    }
+  }
+
+  async getUserPlaylists(userId: string): ApiRes<Playlist[]> {
+    try {
+      const r = await api.get<Playlist[]>(`/playlists/u/${userId}`);
+      return this.ApiResponse('success', r);
+    } catch (err) {
+      return this.ApiResponse('error', err);
+    }
+  }
+
+  async getPlaylist(id: string): ApiRes<Playlist> {
+    try {
+      const r = await api.get<Playlist>(`/playlists/${id}`);
+      const data = r.data;
+
+      r.data = {
+        ...data,
+        cover: data.cover ? this.playlistCover(id) : data.cover
+      }
+
+      return this.ApiResponse('success', r);
+    } catch (err: any) {
+      return this.ApiResponse('error', err);
+    }
+  }
+
+  async newPlaylist(playlist: PlaylistDTO, force = false): ApiRes<Playlist> {
+    const formData = new FormData();
+
+    if (playlist.file) {
+      formData.append('cover', playlist.file);
+    }
+
+    for (const f in playlist) {
+      if (f !== 'file') {
+        formData.append(f, (playlist as any)[f]);
+      }
+    }
+
+    try {
+      const r = await api.post('/playlists', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        },
+        params: { force }
+      });
+      return this.ApiResponse('success', r);
+    } catch (err) {
+      return this.ApiResponse('error', err);
     }
   }
 
@@ -90,6 +144,27 @@ class ApiService {
 
   async uploadSong(data: any) {
     return await api.post('/songs/upload', data);
+  }
+
+  private ApiResponse<T = any>(type: 'success' | 'error', r: any): {
+    status: number;
+    statusText: string;
+    error: string | null;
+    data: T | null;
+  } {
+    if (type === 'error') return {
+      status: r.status || 0,
+      statusText: 'ERROR',
+      error: r.message,
+      data: null
+    }
+
+    return {
+      status: r.status,
+      statusText: r.statusText,
+      data: r.data as T,
+      error: null
+    }
   }
 }
 

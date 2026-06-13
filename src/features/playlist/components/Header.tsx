@@ -68,6 +68,7 @@ const Header: React.FC<HeaderProps> = (props: HeaderProps) => {
             onChangeVisibility={() => setIsPublic(!isPublic)}
             onClose={() => setIsOpenAction(!isOpenAction)}
             onIsBackground={() => setIsBackground(!isBackground)}
+            onRemove={() => { }}
           />
         }
       </div>

@@ -1,12 +1,15 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { MusicIcon, PlusIcon, SearchIcon, ListIcon, XIcon, PauseIcon, PlayIcon, PanelTopCloseIcon, PanelTopOpenIcon, ListMusicIcon } from 'lucide-react';
+import type { Playlist } from '../playlist/playlist.types';
 import { usePlayer } from '../../shared/context/PlayerContext';
 import { routes } from '../../shared/utils/routes';
 import CustomMenu from './CustomMenu';
 import apiService from '../../shared/services/api.service';
+import { showMusicIcon } from '../../shared/utils/showMusicIcon';
 
 export const Playlists: React.FC = () => {
+  const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [isCollapsed, setIsCollapsed] = useState<boolean>(true);
   const [isSearch, setIsSearch] = useState<boolean>(false);
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -16,6 +19,8 @@ export const Playlists: React.FC = () => {
   const { currentView, setView, isPlaying } = usePlayer();
   const navigate = useNavigate();
 
+  const userId = '34ff1011-a38f-4238-b462-02516f959ac9';
+
   const onSavePlaylist = async () => {
     const { data } = await apiService.newPlaylist({
       name: '',
@@ -24,14 +29,20 @@ export const Playlists: React.FC = () => {
       isPublic: false,
       gradientColor: '',
       bgColor: '',
-      userId: '34ff1011-a38f-4238-b462-02516f959ac9',
+      userId,
       file: null
     }, true);
 
     if (data?.id) {
-      navigate(`${routes.playlists}/${data.id}`)
+      navigate(`${routes.playlists}/${data.id}`);
     }
   }
+
+  useEffect(() => {
+    apiService.getUserPlaylists(userId).then(({ data }) => {
+      setPlaylists(data || []);
+    })
+  }, []);
 
   return (
     <aside
@@ -145,7 +156,7 @@ export const Playlists: React.FC = () => {
                 className={`w-full flex items-center ${isCollapsed ? 'justify-center p-3' : 'justify-start py-3 px-4 gap-4'
                   } rounded-lg font-headline text-sm font-bold tracking-tight transition-all duration-200 cursor-pointer ${currentView === 'songs'
                     ? 'text-white active:scale-95'
-                    : 'text-[#adaaaa] hover:text-white hover:bg-white/5 active:scale-95'
+                    : 'text-[#adaaaa] hover:text-white active:scale-95'
                   }`}
                 title={isCollapsed ? "Canciones" : undefined}
               >
@@ -157,15 +168,25 @@ export const Playlists: React.FC = () => {
               </button>
             </li>
 
-            {Array.from({ length: 7 }, (_, i) => (
+            {playlists.map((playlist, i) => (
               <li
-                className={`${isCollapsed ? 'justify-center' : 'justify-start'} p-2 cursor-pointer text-[#adaaaa] hover:bg-[#1f1f1f] rounded-md gap-3 flex items-center`}
+                onClick={() => navigate(`${routes.playlists}/${playlist.id}`)}
+                className={`${isCollapsed ? 'justify-center' : 'justify-start'} p-2 cursor-pointer text-[#adaaaa] hover:bg-[#1f1f1f] rounded-md gap-3 flex items-center playlist-item`}
                 onPointerEnter={() => setHoverIndex(i)}
                 onPointerLeave={() => setHoverIndex(null)}
-                key={i}
+                key={playlist.id}
               >
                 <div className="min-w-12 w-12 h-12 bg-[#262626] rounded relative overflow-hidden hover:badge:bg-blue-500">
-                  <MusicIcon className="absolute top-1/2 left-1/2 -translate-1/2" />
+                  <MusicIcon className={`${!playlist.cover ? '' : 'hidden opacity-0'} absolute top-1/2 left-1/2 -translate-1/2`} />
+
+                  {playlist.cover && (
+                    <img
+                      onError={(e) => showMusicIcon(e.currentTarget, '.playlist-item')}
+                      src={apiService.playlistCover(playlist.id)}
+                      className="object-cover w-full h-full"
+                      alt=""
+                    />
+                  )}
 
                   {hoverIndex !== null && hoverIndex === i &&
                     <div className="text-white badge w-full h-full absolute top-0 left-0 bg-black/50 flex items-center justify-center">
@@ -187,11 +208,21 @@ export const Playlists: React.FC = () => {
 
                 {!isCollapsed &&
                   <div>
-                    <h4 className="mt-1 text-white text-[15px] font-semibold">
-                      Lady Gaga
+                    <h4
+                      className="line-clamp-1 w-full mt-1 text-white text-[15px] font-semibold"
+                      title={playlist.name}
+                    >
+                      {playlist.name}
                     </h4>
-                    <div className="text-[13px] font-semibold">
-                      <span>Lista</span> • <span>Fran Lemus</span>
+                    <div className="text-[13px] font-semibold flex items-center gap-1">
+                      <span>Lista</span>
+                      <span>•</span>
+                      <span
+                        className="line-clamp-1 max-w-full"
+                      // title={playlist.name}
+                      >
+                        Fran Lemus
+                      </span>
                     </div>
                   </div>
                 }

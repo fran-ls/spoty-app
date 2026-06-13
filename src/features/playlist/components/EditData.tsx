@@ -1,26 +1,27 @@
 import { useState } from "react";
 import { EllipsisIcon, GlobeIcon, LockIcon, MusicIcon, PenIcon, XIcon } from "lucide-react";
-import type { PlayListDTO } from "../playlist.types";
+import type { PlaylistDTO } from "../playlist.types";
 
 interface EditDataProps {
-  form: PlayListDTO;
+  form: PlaylistDTO;
   isPublic: boolean;
+  currentCover: string | null;
   coverInputRef: React.RefObject<HTMLInputElement | null>
-  setForm: React.Dispatch<React.SetStateAction<PlayListDTO>>;
+  setForm: React.Dispatch<React.SetStateAction<PlaylistDTO>>;
   onChangeVisibility: () => void;
-  onSavePlaylist: () => void;
+  onSave: () => void;
   onClose: () => void;
 }
 
 const EditData = (props: EditDataProps) => {
   const {
-    isPublic, form, coverInputRef, setForm,
-    onChangeVisibility, onClose, onSavePlaylist
+    isPublic, form, coverInputRef, currentCover, setForm,
+    onChangeVisibility, onClose, onSave
   } = props;
 
   const [isHover, setIsHover] = useState(false);
 
-  const onFormChange = (field: keyof PlayListDTO, value: any) => {
+  const onFormChange = (field: keyof PlaylistDTO, value: any) => {
     setForm({ ...form, [field]: value });
   }
 
@@ -71,7 +72,11 @@ const EditData = (props: EditDataProps) => {
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    setForm({ ...form, file: null, cover: '' });
+                    setForm({
+                      ...form,
+                      file: null,
+                      cover: currentCover ? currentCover : ''
+                    });
                   }}
                   className="hover:text-white bg-black w-7 h-7 rounded-full flex flex-col items-center gap-1 justify-center absolute top-2 right-2"
                   type="button"
@@ -132,7 +137,7 @@ const EditData = (props: EditDataProps) => {
             </span>
           </button>
           <button
-            onClick={onSavePlaylist}
+            onClick={onSave}
             className="text-black font-bold bg-white rounded-full px-4 py-2 ml-auto inline-block cursor-pointer"
             type="button"
           >

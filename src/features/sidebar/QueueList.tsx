@@ -160,14 +160,6 @@ export const QueueList: React.FC = () => {
                       <div className="text-[13px] font-semibold">
                         <span className="line-clamp-1 w-full">
                           {track.artist.name}
-                          {/* {track.albumId} • {track.artist.name} */}
-                        </span>
-                      </div>
-                      <div className="hidden text-[13px] font-semibold className">
-                        <span className="line-clamp-1">
-                          {track.id}
-                        </span> • <span className="truncate">
-                          {track.artist.name}
                         </span>
                       </div>
                     </div>

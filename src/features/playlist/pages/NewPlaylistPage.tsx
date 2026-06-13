@@ -1,19 +1,22 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { EllipsisIcon, ListIcon, MusicIcon, PenIcon, PlusIcon, SearchIcon, XIcon } from 'lucide-react';
-import type { PlayListDTO } from '../playlist.types';
+import type { Playlist, PlaylistDTO } from '../playlist.types';
 import LayoutMenu from '../components/LayoutMenu';
 import ActionMenu from '../components/ActionMenu';
 import EditData from '../components/EditData';
 import BackgroundColor from '../components/BackgroundColor';
 import apiService from '../../../shared/services/api.service';
 import { fileToDataURL } from '../../../shared/utils/fileToDataURL';
+import { routes } from '../../../shared/utils/routes';
+import DeleteConfirm from '../components/DeleteConfirm';
 
 const NewPlaylistPage: React.FC = () => {
+  const [currentCover, setCurrentCover] = useState<string | null>(null);
   const [gradientColor, setGradientColor] = useState('#121212');
   const [bgColor, setBgColor] = useState('#3a3a3a');
   const [isPublic, setIsPublic] = useState(false);
-  const [form, setForm] = useState<PlayListDTO>({
+  const [form, setForm] = useState<PlaylistDTO>({
     name: '',
     description: '',
     cover: '',
@@ -26,15 +29,17 @@ const NewPlaylistPage: React.FC = () => {
 
   const [isBackground, setIsBackground] = useState(false);
   const [isOpenAction, setIsOpenAction] = useState(false);
+  const [isRemove, setIsRemove] = useState(false);
   const [isHover, setIsHover] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
 
-  const [isSearch, _setIsSearch] = useState(false);
+  const [isSearch, _setIsSearch] = useState(true);
   const [query, setQuery] = useState('');
 
   const coverInputRef = useRef<HTMLInputElement>(null);
   const { playlistId } = useParams();
+  const navigate = useNavigate();
 
   const onFileChange = (e: React.ChangeEvent<HTMLInputElement, HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
@@ -44,25 +49,74 @@ const NewPlaylistPage: React.FC = () => {
     });
   }
 
-  const onSavePlaylist = async () => {
-    const r = await apiService.newPlaylist({
+  const onSetForm = (data: Playlist) => {
+    setForm({
       ...form,
-      name: form.name.trim(),
-      description: form.description.trim(),
-      isPublic
+      ...data,
+      description: data.description || '',
+      cover: data.cover || ''
     });
 
-    console.log(r)
+    setBgColor(data.bgColor);
+    setGradientColor(data.gradientColor);
+    setIsPublic(data.isPublic);
+    setCurrentCover(data.cover);
   }
 
-  useEffect(() => {
-    playlistId && apiService.getPlaylist(playlistId).then(({ data }) => {
-      data?.id && setForm(data);
+  const getPlaylist = async () => {
+    if (!playlistId) return;
+
+    const r = await apiService.getPlaylist(playlistId);
+
+    if (r.status === 404) {
+      navigate(routes.home);
+      return;
+    }
+
+    if (r.data) {
+      onSetForm(r.data);
+    }
+  }
+
+  const onSavePlaylist = async (values: PlaylistDTO = form, isNew = false) => {
+    if (isNew) {
+      const r = await apiService.newPlaylist({
+        ...values,
+        name: values.name.trim(),
+        description: values.description.trim()
+      });
+
+      return r.data;
+    }
+
+    if (!playlistId) return null;
+
+    const r = await apiService.updatePlaylist(playlistId, {
+      ...values,
+      name: values.name.trim(),
+      description: values.description.trim()
     });
-  }, [playlistId]);
+
+    if (r.status === 200 && r.data) {
+      onSetForm(r.data);
+    }
+
+    return r.data;
+  }
+
+  const onRemovePlaylist = async () => {
+    if (!playlistId) return;
+    const { data } = await apiService.removePlaylist(playlistId);
+
+    if (data?.id) {
+      navigate(routes.home);
+    }
+  }
+
+  useEffect(() => { getPlaylist() }, [playlistId]);
 
   return (
-    <div className="min-h-full text-white select-none animate-fade-in bg-surface">
+    <div className="min-h-full text-white select-none animate-fade--in bg-surface">
       <div
         style={{
           background: `linear-gradient(to bottom, ${bgColor} 0%, ${gradientColor || '#121212'} 100%)`,
@@ -85,14 +139,31 @@ const NewPlaylistPage: React.FC = () => {
           }
 
           {isHover &&
-            <button
-              onClick={() => coverInputRef.current?.click()}
-              className={`${form.cover ? 'bg-black/50' : 'bg-[#262626]'} hover:text-white w-full h-full flex flex-col items-center gap-1 justify-center absolute top-1/2 left-1/2 -translate-1/2`}
-              type="button"
-            >
-              <PenIcon className="w-10 h-10" />
-              <span>Elegir foto</span>
-            </button>
+            <>
+              <button
+                onClick={() => coverInputRef.current?.click()}
+                className={`${form.cover ? 'bg-black/50' : 'bg-[#262626]'} hover:text-white w-full h-full flex flex-col items-center gap-1 justify-center absolute top-1/2 left-1/2 -translate-1/2`}
+                type="button"
+              >
+                <PenIcon className="w-10 h-10" />
+                <span>Elegir foto</span>
+              </button>
+
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setForm({
+                    ...form,
+                    file: null,
+                    cover: currentCover ? currentCover : ''
+                  });
+                }}
+                className="hover:text-white bg-black w-7 h-7 rounded-full flex flex-col items-center gap-1 justify-center absolute top-3 right-3"
+                type="button"
+              >
+                <EllipsisIcon className="w-5 h-5" />
+              </button>
+            </>
           }
 
           <input
@@ -112,6 +183,7 @@ const NewPlaylistPage: React.FC = () => {
           <h1
             onClick={() => setIsEdit(true)}
             className="playlist-title google-sans-flex-font font-black cursor-pointer"
+            title={form.name}
           >
             {form.name}
           </h1>
@@ -155,10 +227,19 @@ const NewPlaylistPage: React.FC = () => {
                   setIsEdit(true);
                   setIsOpenAction(false);
                   setIsBackground(false);
+                  setIsRemove(false);
                 }}
-                onChangeVisibility={() => setIsPublic(!isPublic)}
-                onClose={() => setIsOpenAction(!isOpenAction)}
                 onIsBackground={() => setIsBackground(!isBackground)}
+                onChangeVisibility={() => {
+                  onSavePlaylist({ ...form, isPublic: !isPublic })
+                }}
+                onClose={() => setIsOpenAction(!isOpenAction)}
+                onRemove={() => {
+                  setIsEdit(false);
+                  setIsOpenAction(false);
+                  setIsBackground(false);
+                  setIsRemove(true);
+                }}
               />
             }
           </div>
@@ -219,6 +300,10 @@ const NewPlaylistPage: React.FC = () => {
           setBgColor={setBgColor}
           setGradientColor={setGradientColor}
           onClose={() => setIsBackground(false)}
+          onSave={async () => {
+            const data = await onSavePlaylist({ ...form, bgColor, gradientColor });
+            if (data?.id) setIsBackground(false);
+          }}
         />
       }
 
@@ -226,11 +311,23 @@ const NewPlaylistPage: React.FC = () => {
         <EditData
           form={form}
           isPublic={isPublic}
+          currentCover={currentCover}
           setForm={setForm}
-          onChangeVisibility={() => setIsPublic(!isPublic)}
+          onChangeVisibility={() => {
+            onSavePlaylist({ ...form, isPublic: !isPublic })
+          }}
           coverInputRef={coverInputRef}
-          onSavePlaylist={onSavePlaylist}
+          onSave={() => onSavePlaylist()}
           onClose={() => setIsEdit(false)}
+        />
+      }
+
+      {isRemove &&
+        <DeleteConfirm
+          isOpen={isRemove}
+          playlistName={form.name}
+          onClose={() => setIsRemove(false)}
+          onConfirm={onRemovePlaylist}
         />
       }
     </div>

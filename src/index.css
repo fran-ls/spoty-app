@@ -136,6 +136,7 @@ body {
   font-size: clamp(1rem, 8vw, 6rem);
   /* font-family: 'DM Sans', 'Segoe UI', sans-serif; */
   /* font-weight: 900; */
+  overflow: hidden;
   display: -webkit-box;
   line-height: 1.25;
   -webkit-box-orient: vertical;
