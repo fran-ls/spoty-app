@@ -21,7 +21,7 @@ const SongList: React.FC<SongListProps> = ({ songs, searchMeta, loadMore }) => {
   const isTrackLiked = true;
 
   return (
-    <div className="min-w-full overflow-auto pb-8">
+    <div className="min-w-full overflow-auto">
       <div className="grid grid-cols-[40px_minmax(200px,2fr)_minmax(120px,1fr)_minmax(120px,1fr)_80px] gap-4 px-4 py-3 mx-8 border-b border-white/10 text-[#adaaaa] text-sm font-medium tracking-wider select-none">
         <span>#</span>
         <span>Título</span>
@@ -32,7 +32,7 @@ const SongList: React.FC<SongListProps> = ({ songs, searchMeta, loadMore }) => {
         </div>
       </div>
 
-      <div className="px-8 flex flex-col gap-1 animate-fade-in">
+      <div className="px-8 pb-8 flex flex-col gap-1 animate-fade-in bg-[#131313]">
         {songs.map((track, i) => {
           const isCurrentPlayingNow = currentSong?.id === track.id;
           const cover = apiService.songCoverUrl(track.id, track.cover);
@@ -40,7 +40,7 @@ const SongList: React.FC<SongListProps> = ({ songs, searchMeta, loadMore }) => {
           return (
             <div
               onClick={() => play(songs, i)}
-              className="grid grid-cols-[40px_minmax(200px,2fr)_minmax(120px,1fr)_minmax(120px,1fr)_80px] gap-4 px-4 py-2.5 items-center rounded-lg hover:bg-white/5 group cursor-pointer transition-colors duration-200 song-item"
+              className="grid grid-cols-[40px_minmax(200px,2fr)_minmax(120px,1fr)_minmax(120px,1fr)_80px] gap-4 px-4 py-2.5 items-center rounded hover:bg-white/5 group cursor-pointer transition-colors duration-200 song-item"
               key={track.id}
             >
               {/* # column - shows number or nice Play/Pause icon on hover */}
@@ -117,20 +117,20 @@ const SongList: React.FC<SongListProps> = ({ songs, searchMeta, loadMore }) => {
             </div>
           )
         })}
-      </div>
 
-      {searchMeta.page < searchMeta.totalPages &&
-        <div
-          className="flex items-center justify-center px-6 py-1 overflow-hidden"
-          ref={loaderRef}
-        >
-          <Loader
-            className="border-transparent border-t-slate-200"
-            size={20}
-            stroke={2}
-          />
-        </div>
-      }
+        {searchMeta.page < searchMeta.totalPages &&
+          <div
+            className="flex items-center justify-center px-6 py-1 overflow-hidden"
+            ref={loaderRef}
+          >
+            <Loader
+              className="border-transparent border-t-slate-200"
+              size={20}
+              stroke={2}
+            />
+          </div>
+        }
+      </div>
     </div>
   )
 }

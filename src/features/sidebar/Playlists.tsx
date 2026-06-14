@@ -55,7 +55,7 @@ export const Playlists: React.FC = () => {
           <div className={`${isCollapsed ? 'flex-col gap-4' : 'flex-row'} flex items-center justify-between`}>
             <button
               onClick={() => setIsCollapsed(!isCollapsed)}
-              className="p-1.5 rounded-lg hover:bg-white/10 text-[#adaaaa] hover:text-white cursor-pointer bg-white/5"
+              className="p-2 rounded-lg text-[#adaaaa] hover:text-white cursor-pointer transition-colors duration-100"
               title={isCollapsed ? "Abre Tu biblioteca" : "Contraer Tu biblioteca"}
             >
               {isCollapsed ?
@@ -80,7 +80,7 @@ export const Playlists: React.FC = () => {
 
             <button
               onClick={onSavePlaylist}
-              className={`${isCollapsed ? 'p-2' : 'p-2'} cursor-pointer bg-[#1f1f1f] text-sm font-medium rounded-full gap-2 flex items-center`}
+              className={`${isCollapsed ? 'p-2' : 'p-2'} hover:bg-white/10 cursor-pointer bg-[#1f1f1f] text-sm font-medium rounded-full gap-2 flex items-center transition-colors duration-100`}
               title="Crea una lista"
               type="button"
             >

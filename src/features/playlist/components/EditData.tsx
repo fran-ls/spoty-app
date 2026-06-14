@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { EllipsisIcon, GlobeIcon, LockIcon, MusicIcon, PenIcon, XIcon } from "lucide-react";
+import { EllipsisIcon, GlobeIcon, InfoIcon, LockIcon, MusicIcon, PenIcon, XIcon } from "lucide-react";
 import type { PlaylistDTO } from "../playlist.types";
 
 interface EditDataProps {
@@ -19,34 +19,57 @@ const EditData = (props: EditDataProps) => {
     onChangeVisibility, onClose, onSave
   } = props;
 
+  const [isInfoMsg, setIsInfoMsg] = useState(false);
+  const [isChange, setIsChange] = useState(false);
   const [isHover, setIsHover] = useState(false);
 
   const onFormChange = (field: keyof PlaylistDTO, value: any) => {
     setForm({ ...form, [field]: value });
+    setIsChange(true);
   }
 
   return (
     <>
-      <div className="bg-black/50 min-h-screen w-full fixed top-0 left-0 z-10" />
+      <div className="bg-black/60 min-h-screen w-full fixed top-0 left-0 z-999" />
 
-      <div className="bg-[#212121] p-6 rounded-lg w-full max-w-xl z-15 fixed top-1/2 left-1/2 -translate-1/2">
-        <div className="mb-5 flex items-center justify-between gap-3">
-          <h1 className="text-2xl font-bold text-white">
+      <div className="space-y-4 bg-[#212121] p-6 rounded-lg w-full max-w-[524px] z-999 fixed top-1/2 left-1/2 -translate-1/2">
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="text-xl font-bold text-white">
             Editar información
           </h1>
           <button
-            onClick={onClose}
+            onClick={() => {
+              if (isInfoMsg) {
+                onClose();
+                setIsInfoMsg(false);
+                return;
+              }
+              if (!isChange) {
+                return onClose();
+              }
+              setIsInfoMsg(true);
+            }}
             className="hover:bg-[#3a3a3a] transition duration-100 p-1.5 rounded-full"
             type="button"
           >
             <XIcon className="text-[#adaaaa] w-5 h-5" />
           </button>
         </div>
+
+        {isInfoMsg && isChange &&
+          <div className="text-xs flex items-center gap-2 bg-blue-600 px-2 py-1.5 rounded">
+            <InfoIcon className="rotate-180" size={18} />
+            <span>
+              Pulsa Guardar para conservar los cambios realizados
+            </span>
+          </div>
+        }
+
         <div className="flex items-center justify-center gap-4">
           <div
             onPointerEnter={() => setIsHover(true)}
             onMouseLeave={() => setIsHover(false)}
-            className="text-[#adaaaa] font-medium text-center min-w-45 w-45 h-45 rounded bg-[#282828] overflow-hidden relative"
+            className="font-medium text-center min-w-45 w-45 h-45 rounded bg-[#282828] overflow-hidden relative"
           >
             {form.cover ? (
               <img
@@ -122,7 +145,8 @@ const EditData = (props: EditDataProps) => {
             </div>
           </div>
         </div>
-        <div className="text-sm w-full mt-4 flex items-center gap-4">
+
+        <div className="text-sm w-full flex items-center gap-4">
           <button
             onClick={onChangeVisibility}
             className="hover:bg-[#3e3e3e] border-[#3e3e3e] border rounded-full transition-all duration-100 flex items-center gap-2 cursor-pointer px-4 py-2"
@@ -144,7 +168,7 @@ const EditData = (props: EditDataProps) => {
             Guardar
           </button>
         </div>
-      </div >
+      </div>
     </>
   )
 }

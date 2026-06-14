@@ -62,7 +62,7 @@ export const QueueList: React.FC = () => {
 
             <button
               onClick={() => setIsQueue(!isCollapsed)}
-              className={`p-1.5 hover:bg-[#1f1f1f] text-[#adaaaa] hover:text-white cursor-pointer ${isCollapsed ? 'bg-white/5 rounded-lg' : 'rounded-full'}`}
+              className={`p-1.5 text-[#adaaaa] hover:text-white cursor-pointer ${isCollapsed ? 'rounded-lg' : 'rounded-full hover:bg-[#1f1f1f]'} transition-colors duration-100`}
               title={isCollapsed ? "Abrir Cola" : "Cerrar"}
             >
               {isCollapsed ? (

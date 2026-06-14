@@ -1,3 +1,5 @@
+import type { Song } from "../song/song.types";
+
 export interface Playlist {
   id: string;
   name: string;
@@ -18,4 +20,12 @@ export interface PlaylistDTO {
   isPublic: boolean;
   userId: string;
   file: File | null;
+}
+
+export interface PlaylistSong {
+  id: string;
+  songId: number;
+  playlistId: string;
+  position: number;
+  song: Song | null;
 }

@@ -1,4 +1,5 @@
 import { CircleMinusIcon, GlobeIcon, LockIcon, PaletteIcon, PenIcon } from "lucide-react";
+import { STYLES } from "../../../shared/utils/styles";
 
 interface CustomMenuProps {
   isPublic: boolean;
@@ -15,11 +16,11 @@ const ActionMenu = (props: CustomMenuProps) => {
   return (
     <>
       <div
-        className="bg-transparent z-15 fixed min-h-screen w-full left-0 top-0"
+        className={`${STYLES.minHeightMain} bg-transparent z-100 fixed w-full left-0 top-0`}
         onClick={onClose}
       />
 
-      <div className="w-42 z-15 bg-[#282828] text-sm p-1 rounded absolute top-0 left-0">
+      <div className="w-42 z-100 bg-[#282828] text-sm p-1 rounded absolute top-0 left-0">
         <ul className="text-[#adaaaa] flex flex-col items-center justify-between">
           <li className="w-full font-medium hover:text-white hover:bg-white/10 rounded-xs">
             <button

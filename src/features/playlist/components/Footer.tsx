@@ -4,17 +4,23 @@ import { usePlayer } from '../../../shared/context/PlayerContext';
 import ActionMenu from './ActionMenu';
 import LayoutMenu from './LayoutMenu';
 
-interface HeaderProps {
+interface FooterProps {
+  isPlay: boolean;
   isPublic: boolean;
   isBackground: boolean;
   setIsEdit: React.Dispatch<React.SetStateAction<boolean>>;
-  setIsPublic: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsRemove: React.Dispatch<React.SetStateAction<boolean>>;
   setIsBackground: React.Dispatch<React.SetStateAction<boolean>>;
+  onChangeVisibility: () => void;
 }
 
-const Header: React.FC<HeaderProps> = (props: HeaderProps) => {
-  const { isBackground, isPublic, setIsEdit, setIsPublic, setIsBackground } = props;
-  const { queue, isPlaying, togglePlay } = usePlayer();
+const Footer: React.FC<FooterProps> = (props) => {
+  const {
+    isBackground, isPublic, isPlay, setIsEdit, setIsBackground,
+    onChangeVisibility, setIsRemove
+  } = props;
+
+  const { isPlaying, togglePlay } = usePlayer();
 
   const [isOpenAction, setIsOpenAction] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -26,10 +32,10 @@ const Header: React.FC<HeaderProps> = (props: HeaderProps) => {
       <div className="flex items-center gap-6 flex-wrap" id="playlist-action-bar">
         <button
           onClick={togglePlay}
-          disabled={queue.length === 0}
-          className={`w-14 h-14 rounded-full flex items-center justify-center scale-100 hover:scale-105 active:scale-95 transition-all shadow-lg text-black cursor-pointer ${queue.length === 0 ? 'bg-[#adaaaa]/40 opacity-50 cursor-not-allowed' : 'bg-primary hover:bg-[#63ef82]'
+          disabled={!isPlay}
+          className={`w-14 h-14 rounded-full flex items-center justify-center scale-100 hover:scale-105 active:scale-95 transition-all shadow-lg text-black cursor-pointer ${!isPlay ? 'bg-[#adaaaa]/40 opacity-50 cursor-not-allowed' : 'bg-primary hover:bg-[#63ef82]'
             }`}
-          title="Reproducir Playlist"
+          title="Reproducir lista"
         >
           {isPlaying ? (
             <Pause size={24} fill="currentColor" stroke="none" className="translate-x-0" />
@@ -64,11 +70,17 @@ const Header: React.FC<HeaderProps> = (props: HeaderProps) => {
               setIsEdit(true);
               setIsOpenAction(false);
               setIsBackground(false);
+              setIsRemove(false);
             }}
-            onChangeVisibility={() => setIsPublic(!isPublic)}
-            onClose={() => setIsOpenAction(!isOpenAction)}
             onIsBackground={() => setIsBackground(!isBackground)}
-            onRemove={() => { }}
+            onClose={() => setIsOpenAction(!isOpenAction)}
+            onChangeVisibility={onChangeVisibility}
+            onRemove={() => {
+              setIsEdit(false);
+              setIsOpenAction(false);
+              setIsBackground(false);
+              setIsRemove(true);
+            }}
           />
         }
       </div>
@@ -91,4 +103,4 @@ const Header: React.FC<HeaderProps> = (props: HeaderProps) => {
   )
 }
 
-export default Header;
+export default Footer;

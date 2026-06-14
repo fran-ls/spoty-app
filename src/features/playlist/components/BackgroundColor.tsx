@@ -47,7 +47,7 @@ const BackgroundColor = (props: BackgroundColorProps) => {
 
     setSize({
       width: isCollapsed ? 280 : window.innerWidth >= mobileWidth ? 535 : 300, // wrapSize.width,
-      height: isCollapsed ? 74 : window.innerWidth >= mobileWidth ? 345 : 425, // wrapSize.height
+      height: isCollapsed ? 74 : window.innerWidth >= mobileWidth ? 345 : 364 // wrapSize.height
     })
   }
 
@@ -210,7 +210,7 @@ const BackgroundColor = (props: BackgroundColorProps) => {
           className="md:overflow-hidden overflow-y-auto overflow-x-hidden"
           id="playlist-background-presets"
         >
-          <div className="md:grid-cols-4 grid grid-cols-2 max-h-49.5 animate-fade-in">
+          <div className="md:grid-cols-4 grid grid-cols-2 max-h-35 animate-fade-in">
             {STYLE_PRESETS.map((preset) => {
               const isSelected = bgColor === preset.bgColor && gradientColor === preset.gradientColor;
 

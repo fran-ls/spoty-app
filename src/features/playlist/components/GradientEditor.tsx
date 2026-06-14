@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from "react";
-import { XIcon } from "lucide-react";
+import { CheckIcon, CloudUpload, Maximize2Icon, Minimize2Icon, XIcon } from "lucide-react";
 import type { GradientEditorDirection, GradientEditorStop, GradientEditorStopKey } from "../gradientEditor.types";
 import DraggableWidget from "../../../shared/components/DraggableWidget";
+import { STYLE_PRESETS } from "../../../shared/data/stylePresets";
 
 interface ColorStopProps {
   stop: GradientEditorStop;
@@ -19,62 +20,52 @@ const DIRECTIONS: GradientEditorDirection[] = [
   { label: "↑ Invertido", value: "to top" },
 ];
 
-function ColorStop({ stop, index, canRemove, onChange, onRemove }: ColorStopProps) {
+function ColorStop({ stop, index, canRemove, onRemove, onChange }: ColorStopProps) {
   return (
-    <div style={{
-      display: "flex",
-      alignItems: "center",
-      gap: 10,
-      padding: "8px 12px",
-      background: "rgba(255,255,255,0.04)",
-      borderRadius: 10,
-      border: "1px solid rgba(255,255,255,0.08)",
-      marginBottom: 8
-    }}>
-      <input
-        type="color"
-        value={stop.color}
-        onChange={(e) => onChange(index, "color", e.target.value)}
-        style={{
-          width: 36,
-          height: 36,
-          borderRadius: 8,
-          border: "2px solid rgba(255,255,255,0.15)",
-          cursor: "pointer",
-          background: "none",
-          padding: 2
-        }}
-      />
-      <div style={{ flex: 1 }}>
-        <div style={{
-          display: "flex",
-          justifyContent: "space-between",
-          marginBottom: 4
-        }}>
-          <span style={{
-            fontSize: 12,
-            color: "rgba(255,255,255,0.5)",
-            fontFamily: "monospace"
-          }}
-          >
-            {stop.color.toUpperCase()}
-          </span>
-          <span style={{
-            fontSize: 12,
-            color: "rgba(255,255,255,0.5)"
-          }}>
-            {stop.pos}%
-          </span>
+    <div>
+      <div className="space-y-2">
+        <div>
+          <div className="mb-1 flex items-center gap-2">
+            <input
+              type="color"
+              value={stop.color}
+              onChange={(e) => onChange(index, "color", e.target.value)}
+              className="w-6 h-6.5 outline-none border-none rounded cursor-pointer bg-transparent"
+            />
+            <label className="text-xs font-semibold text-[#adaaaa]">
+              Sólido
+            </label>
+            <span style={{
+              fontSize: 12,
+              color: "rgba(255,255,255,0.5)",
+              marginLeft: "auto",
+            }}>
+              {stop.pos}%
+            </span>
+          </div>
+          <input
+            type="range"
+            min={0} max={100} step={1}
+            value={stop.pos}
+            onChange={(e) => {
+              const value = e.target.value;
+
+              if (value.length < 8) {
+                onChange(index, "pos", Number(e.target.value))
+              }
+            }}
+            style={{
+              width: "100%",
+              accentColor: stop.color
+            }}
+          />
         </div>
+
         <input
-          type="range"
-          min={0} max={100} step={1}
-          value={stop.pos}
-          onChange={(e) => onChange(index, "pos", Number(e.target.value))}
-          style={{
-            width: "100%",
-            accentColor: stop.color
-          }}
+          type="text"
+          value={stop.color}
+          onChange={(e) => onChange(index, "color", e.target.value)}
+          className="bg-[#262626] w-full h-10 text-xs font-mono text-white text-center focus:outline-none border border-white/10 rounded"
         />
       </div>
 
@@ -90,11 +81,12 @@ function ColorStop({ stop, index, canRemove, onChange, onRemove }: ColorStopProp
             height: 28,
             cursor: "pointer",
             fontSize: 14,
-            display: "flex",
+            display: "none",
             alignItems: "center",
             justifyContent: "center"
           }}
           aria-label="Eliminar color"
+          disabled
         >
           <XIcon size={16} />
         </button>
@@ -105,23 +97,33 @@ function ColorStop({ stop, index, canRemove, onChange, onRemove }: ColorStopProp
 
 interface GradientEditorProps {
   isBackground: boolean;
-  onClose: () => void;
+  bgColor: string;
+  gradientColor: string;
   setGradientCSS: React.Dispatch<React.SetStateAction<string>>;
+  setBgColor: React.Dispatch<React.SetStateAction<string>>;
+  setGradientColor: React.Dispatch<React.SetStateAction<string>>;
+  onClose: () => void;
+  onSave: () => void;
 }
 
-export default function GradientEditor({ isBackground, setGradientCSS, onClose }: GradientEditorProps) {
+export default function GradientEditor(props: GradientEditorProps) {
+  const {
+    isBackground, bgColor, gradientColor, setGradientCSS, onClose,
+    setBgColor, setGradientColor, onSave
+  } = props;
+
   const divRef = useRef<HTMLDivElement>(null);
 
-  const [stops, setStops] = useState<GradientEditorStop[]>([
-    { color: "#3a3a3a", pos: 0 },
-    { color: "#121212", pos: 50 },
-    { color: "#131313", pos: 100 },
-  ]);
   const [direction, setDirection] = useState<string>("to bottom");
+  const [stops, setStops] = useState<GradientEditorStop[]>([
+    { color: bgColor, pos: 0 },
+    { color: gradientColor, pos: 50 },
+    { color: "#131313", pos: 100 }
+  ]);
 
-  const sorted = [...stops].sort((a, b) => a.pos - b.pos);
-  const gradientStops = sorted.map((s) => `${s.color} ${s.pos}%`).join(", ");
-  const gradientCSS = `linear-gradient(${direction}, ${gradientStops})`;
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [screenWidth, setScreenWidth] = useState(window.innerWidth);
+  const [size, setSize] = useState({ width: 0, height: 0 });
 
   const handleChange = (i: number, key: GradientEditorStopKey, val: string | number): void => {
     setStops((prev) => prev.map((s, idx) => (idx === i ? { ...s, [key]: val } : s)));
@@ -131,56 +133,68 @@ export default function GradientEditor({ isBackground, setGradientCSS, onClose }
     setStops((prev) => prev.filter((_, idx) => idx !== i));
   }
 
-  const handleAdd = (): void => {
-    setStops((prev) => [...prev, { color: "#ffffff", pos: 50 }]);
+  // const handleAdd = (): void => {
+  //   setStops((prev) => [...prev, { color: "#ffffff", pos: 50 }]);
+  // }
+
+  const handleWidgetSize = () => {
+    const mobileWidth = 768;
+
+    setSize({
+      width: isCollapsed ? 280 : window.innerWidth >= mobileWidth ? 535 : 300,
+      height: isCollapsed ? 74 : window.innerWidth >= mobileWidth ? 390 : 390
+    });
   }
 
-  useEffect(() => { setGradientCSS(gradientCSS) }, [stops, direction]);
+  useEffect(() => {
+    const sorted = [...stops].sort((a, b) => a.pos - b.pos);
+    const gradientStops = sorted.map((s) => `${s.color} ${s.pos}%`).join(", ");
+    const gradientCSS = `linear-gradient(${direction}, ${gradientStops})`;
+
+    setGradientCSS(gradientCSS);
+    setBgColor(sorted[0].color);
+    setGradientColor(sorted[1].color);
+  }, [stops, direction]);
+
+  useEffect(() => { handleWidgetSize() }, [isCollapsed]);
+
+  useEffect(() => {
+    const handleScreenSize = () => setScreenWidth(window.innerWidth);
+    window.addEventListener('resize', handleScreenSize);
+    return () => window.removeEventListener('resize', handleScreenSize);
+  }, []);
+
+  useEffect(() => handleWidgetSize(), [screenWidth]);
 
   return (
-    <DraggableWidget isBackground={isBackground}>
+    <DraggableWidget
+      isBackground={isBackground}
+      size={size}
+    >
       <div
-        style={{
-          background: "rgba(10,10,10,0.72)",
-          backdropFilter: "blur(24px)",
-          WebkitBackdropFilter: "blur(24px)",
-          borderRadius: 20,
-          border: isBackground ? "1px solid rgba(255,255,255,0.1)" : "none",
-          padding: isBackground ? 20 : 0,
-          boxSizing: "border-box",
-          width: isBackground ? 340 : 0,
-          height: isBackground ? 250 : 0,
-        }}
+        className="bg-[#282828] min-w-full min-h-full h-full z-100 flex flex-col gap-4 border-white/5 p-6 rounded"
         ref={divRef}
       >
-        <div style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          marginBottom: 16,
-          gap: 12
-        }}>
-          <span style={{
-            fontSize: 13,
-            fontWeight: 600,
-            letterSpacing: "0.08em",
-            color: "rgba(255,255,255,0.4)",
-            textTransform: "uppercase"
-          }}>
-            ⠿ Fondo
+        {/* HEADER */}
+        <div className="flex justify-between items-center rounded-lg">
+          <span className="text-sm font-black block">
+            Color de fondo
           </span>
+
           <select
             value={direction}
             onChange={(e) => setDirection(e.target.value)}
             style={{
+              display: isCollapsed ? 'none' : 'inline-block',
               background: "rgba(255,255,255,0.06)",
               border: "1px solid rgba(255,255,255,0.12)",
               color: "rgba(255,255,255,0.8)",
-              borderRadius: 8,
+              borderRadius: 4,
               padding: "4px 8px",
               fontSize: 12,
               cursor: "pointer"
             }}
+            className="md:inline-block hidden"
           >
             {DIRECTIONS.map((d) => (
               <option
@@ -192,16 +206,44 @@ export default function GradientEditor({ isBackground, setGradientCSS, onClose }
               </option>
             ))}
           </select>
-          <button
-            onClick={onClose}
-            className="text-[#adaaaa]"
-            type="button"
-          >
-            <XIcon size={20} />
-          </button>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={onSave}
+              className="text-xs font-bold p-1 rounded-full transition-all cursor-pointer text-[#adaaaa] hover:bg-white/10"
+              title="Guardar"
+              type="button"
+            >
+              <CloudUpload size={20} />
+            </button>
+
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsCollapsed(!isCollapsed)
+              }}
+              className="text-xs font-bold p-1.5 rounded-full transition-all cursor-pointer text-[#adaaaa] hover:bg-white/10"
+              title={isCollapsed ? 'Maximizar' : 'Minimizar'}
+              type="button"
+            >
+              {!isCollapsed
+                ? <Minimize2Icon size={16} />
+                : <Maximize2Icon size={16} />}
+            </button>
+
+            <button
+              onClick={onClose}
+              className="text-xs font-bold p-1 rounded-full transition-all cursor-pointer text-[#adaaaa] hover:bg-white/10"
+              title="Cerrar"
+              type="button"
+            >
+              <XIcon size={20} />
+            </button>
+          </div>
         </div>
 
-        <div style={{ marginBottom: 14 }}>
+        {/* INPUTS */}
+        <div className={`${isCollapsed ? 'mt-1' : 'mt-0'} grid grid-cols-2 gap-4 animate-scale-up`}>
           {stops.slice(0, 2).map((stop, i) => (
             <ColorStop
               key={i}
@@ -214,33 +256,47 @@ export default function GradientEditor({ isBackground, setGradientCSS, onClose }
           ))}
         </div>
 
-        <button
-          onClick={handleAdd}
-          style={{
-            width: "100%",
-            padding: "8px 0",
-            background: "rgba(255,255,255,0.05)",
-            border: "1px dashed rgba(255,255,255,0.2)",
-            color: "rgba(255,255,255,0.5)",
-            borderRadius: 10,
-            cursor: "pointer",
-            fontSize: 13,
-            marginBottom: 14,
-            transition: "background 0.15s, color 0.15s"
-          }}
-          onMouseOver={(e) => {
-            e.currentTarget.style.background = "rgba(255,255,255,0.09)";
-            e.currentTarget.style.color = "rgba(255,255,255,0.8)";
-          }}
-          onMouseOut={(e) => {
-            e.currentTarget.style.background = "rgba(255,255,255,0.05)";
-            e.currentTarget.style.color = "rgba(255,255,255,0.5)";
-          }}
-          className="hidden opacity-0"
-          disabled
+        {/* PRESETS */}
+        <div
+          className="md:overflow-hidden overflow-y-auto overflow-x-hidden"
+          id="playlist-background-presets"
         >
-          + Añadir color
-        </button>
+          <div className="md:grid-cols-4 grid grid-cols-2 max-h-35 animate-fade-in">
+            {STYLE_PRESETS.map((preset) => {
+              const isSelected = bgColor === preset.bgColor && gradientColor === preset.gradientColor;
+
+              return (
+                <button
+                  onClick={() => {
+                    setStops([
+                      { color: preset.bgColor, pos: 0 },
+                      { color: preset.gradientColor, pos: 50 },
+                      { color: "#131313", pos: 100 }
+                    ]);
+
+                    setBgColor(preset.bgColor);
+                    setGradientColor(preset.gradientColor);
+                  }}
+                  style={{
+                    background: `linear-gradient(135deg, ${preset.bgColor} 0%, ${preset.gradientColor} 100%)`
+                  }}
+                  className="m-1 min-w-28 w-28 h-14 rounded-lg flex flex-col justify-end p-2 border border-white/10 hover:scale-105 active:scale-95 transition-all text-left relative group cursor-pointer shadow-md select-none"
+                  key={preset.name}
+                  type="button"
+                >
+                  <span className="text-[9.5px] font-black text-white bg-black/60 px-1.5 py-0.5 rounded tracking-wide leading-none select-none">
+                    {preset.name}
+                  </span>
+                  {isSelected && (
+                    <div className="absolute top-1.5 right-1.5 bg-primary text-black rounded-full p-0.5">
+                      <CheckIcon size={10} strokeWidth={4} />
+                    </div>
+                  )}
+                </button>
+              )
+            })}
+          </div>
+        </div>
 
         <p style={{
           textAlign: "center",
