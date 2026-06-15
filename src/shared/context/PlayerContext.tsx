@@ -1,4 +1,5 @@
 import { createContext, useContext, useMemo, useRef, useState } from 'react'
+import type { PlaylistMeta } from '../../features/playlist/playlist.types';
 import type { Song } from '../../features/song/song.types';
 import apiService from '../services/api.service'
 
@@ -14,20 +15,20 @@ interface PlayerContextType {
   volume: number;
   isMuted: boolean;
   isQueue: boolean;
-  queueTotal: number;
+  queueMeta: PlaylistMeta;
   seek: (time: number) => void;
-  play: (songs: Song[], index: number) => void;
+  play: (songs: Song[], index: number, meta: PlaylistMeta) => void;
   togglePlay: () => void;
   next: () => void;
   prev: () => void;
   toggleMute: () => void;
   playQueueSong: (song: Song, index: number) => void;
   setQueue: React.Dispatch<React.SetStateAction<Song[]>>;
-  setQueueTotal: React.Dispatch<React.SetStateAction<number>>;
   setVolume: React.Dispatch<React.SetStateAction<number>>;
   setIsPlaying: React.Dispatch<React.SetStateAction<boolean>>;
   setIsMuted: React.Dispatch<React.SetStateAction<boolean>>;
   setIsQueue: React.Dispatch<React.SetStateAction<boolean>>;
+  setQueueMeta: React.Dispatch<React.SetStateAction<PlaylistMeta>>;
 
   currentView: ViewType;
   setView: (view: ViewType) => void;
@@ -36,8 +37,18 @@ interface PlayerContextType {
 export const PlayerContext = createContext<PlayerContextType | null>(null)
 
 export const PlayerProvider = ({ children }: any) => {
+  const [isQueue, setIsQueue] = useState(true);
   const [queue, setQueue] = useState<Song[]>([]);
-  const [queueTotal, setQueueTotal] = useState(0);
+  const [queueMeta, setQueueMeta] = useState<PlaylistMeta>({
+    page: 0,
+    limit: 10,
+    total: 0,
+    totalPages: 0,
+    hasNextPage: false,
+    hasPrevPage: false,
+    totalDuration: 0,
+    playlistId: ''
+  });
   const [currentIndex, setCurrentIndex] = useState(0);
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -46,7 +57,6 @@ export const PlayerProvider = ({ children }: any) => {
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
   const [prevVolume, setPrevVolume] = useState<number>(1);
-  const [isQueue, setIsQueue] = useState(true);
 
   const [currentView, setView] = useState<ViewType>('home');
 
@@ -70,10 +80,11 @@ export const PlayerProvider = ({ children }: any) => {
     setProgress(time);
   }
 
-  const play = (tracks: Song[], index: number) => {
+  const play = (tracks: Song[], index: number, meta: PlaylistMeta) => {
     if (!audioRef.current) return;
     const track = tracks[index];
     setQueue(tracks);
+    setQueueMeta(meta);
     playQueueSong(track, index);
   }
 
@@ -160,7 +171,7 @@ export const PlayerProvider = ({ children }: any) => {
         volume, setVolume,
         isMuted, setIsMuted,
         isQueue, setIsQueue,
-        queueTotal, setQueueTotal,
+        queueMeta, setQueueMeta,
         play, togglePlay,
         next, prev,
         seek, toggleMute,

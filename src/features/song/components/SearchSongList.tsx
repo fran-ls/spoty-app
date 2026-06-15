@@ -16,19 +16,18 @@ interface SearchSongListProps {
 
 const SearchSongList: React.FC<SearchSongListProps> = (props) => {
   const { songs, searchMeta, loadMore, addSongToPlaylist } = props;
-  const { currentSong, play } = usePlayer();
+  const { currentSong } = usePlayer();
   const { loaderRef } = useInfiniteScroll(() => loadMore());
 
   return (
     <div className="flex flex-col gap-1 animate-fade-in bg-[#131313] overflow-hidden">
-      {songs.map((track, i) => {
+      {songs.map((track) => {
         const isCurrentPlayingNow = currentSong?.id === track.id;
         const cover = apiService.songCoverUrl(track.id, track.cover);
 
         return (
           <div
-            onClick={() => play(songs, i)}
-            className="grid grid-cols-[minmax(200px,2fr)_minmax(120px,1fr)_120px] gap-4 p-2.5 items-center rounded hover:bg-white/5 group cursor-pointer transition-colors duration-200 song-item"
+            className="grid grid-cols-[minmax(200px,2fr)_minmax(120px,1fr)_120px] gap-4 p-2.5 items-center rounded hover:bg-white/5 group transition-colors duration-200 song-item"
             key={track.id}
           >
             <div className="flex items-center gap-4 overflow-hidden">

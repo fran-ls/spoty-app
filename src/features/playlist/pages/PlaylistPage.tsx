@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { EllipsisIcon, ListIcon, MusicIcon, PauseIcon, PenIcon, PlayIcon, PlusIcon, SearchIcon, XIcon } from 'lucide-react';
 import { Toaster as SonnerToaster, toast } from 'sonner';
@@ -11,19 +11,22 @@ import SearchSongList from '../../song/components/SearchSongList';
 import PlaylistSongs from '../components/PlaylistSongs';
 import { usePlayer } from '../../../shared/context/PlayerContext';
 import usePlaylist from '../hooks/usePlaylist';
+import PlaylistMenu from '../components/PlaylistMenu';
 
 const PlaylistPage: React.FC = () => {
   const { playlistId } = useParams();
   const coverInputRef = useRef<HTMLInputElement>(null);
+  const [toasterTime, setToasterTime] = useState(2500);
 
   const { isPlaying, togglePlay } = usePlayer();
   const {
     isPlay, isPublic, currentCover, playlistSongs, searchMeta, gradientColor, bgColor,
     form, isBackground, isRemove, isHover, isOpen, isEdit, isOpenAction, query, isSearch,
-    searchSongs, setGradientColor, setBgColor, setForm, setIsBackground, setIsRemove, setIsOpen,
-    setIsHover, setIsEdit, setIsOpenAction, setQuery, setIsSearch, setSearchSongs, onFileChange,
-    getPlaylist, onSavePlaylist, onRemovePlaylist, getPlaylistSongs, findSongs, addSongToPlaylist,
-    onChangeVisibility
+    searchSongs, duration, playlistMeta, playlistItems, activeItem, setGradientColor, setBgColor,
+    setForm, setIsHover, setIsEdit, setIsOpenAction, setQuery, setIsSearch, setSearchSongs,
+    onFileChange, getPlaylist, onSavePlaylist, onRemovePlaylist, getPlaylistSongs, findSongs,
+    addSongToPlaylist, onChangeVisibility, setIsOpen, setIsRemove, setIsBackground,
+    removeSongFromPlaylist, setActiveItem
   } = usePlaylist(playlistId);
 
   useEffect(() => {
@@ -34,9 +37,9 @@ const PlaylistPage: React.FC = () => {
   useEffect(() => { if (query) setTimeout(() => findSongs(), 300) }, [query]);
 
   return (
-    <div className="min-h-full text-white select-none">
+    <div className="min-h-full text-white select-none relative">
       <div className="animate-fade-in">
-        <div
+        <section
           style={{
             background: `linear-gradient(to bottom, ${bgColor} 0%, ${gradientColor} 100%)`,
           }}
@@ -120,14 +123,21 @@ const PlaylistPage: React.FC = () => {
               >
                 <PlusIcon className="w-4 h-4" />
               </button>
+
               <a href="#">
                 <span className="text-sm ml-2 font-bold">
                   Fran Lemus
                 </span>
               </a>
+              <span className="text-sm ml-2 font-bold">
+                •
+              </span>
+              <span className="text-sm ml-2">
+                {playlistMeta.total} canciones, {duration.min} min {duration.stringSecs}s
+              </span>
             </div>
           </div>
-        </div>
+        </section>
 
         <div className="p-6 text-sm bg-[#131313] text-[#adaaaa] flex items-center justify-between relative">
           <div className="flex items-center gap-5">
@@ -200,10 +210,12 @@ const PlaylistPage: React.FC = () => {
           </div>
         </div>
 
-        <div className={`${(playlistSongs.length > 0 && !isSearch) ? 'block' : 'hidden'}  px-6`}>
+        <section className={`${(playlistSongs.length > 0 && !isSearch) ? 'block' : 'hidden'}  px-8`}>
           <PlaylistSongs
             songs={playlistSongs}
-            searchMeta={searchMeta}
+            items={playlistItems}
+            playlistMeta={playlistMeta}
+            setActiveItem={setActiveItem}
             loadMore={() => { }}
           />
 
@@ -216,9 +228,9 @@ const PlaylistPage: React.FC = () => {
               Buscar más
             </button>
           </div>
-        </div>
+        </section>
 
-        <div
+        <section
           className={`${isSearch ? 'block' : 'hidden'} bg-[#131313] min-h-[75vh] p-6 pt-0 space-y-6 relative`}
           style={{
             // background: `linear-gradient(to bottom, ${gradientColor} 0%, #131313 100%)`,
@@ -268,6 +280,7 @@ const PlaylistPage: React.FC = () => {
             loadMore={() => { }}
             addSongToPlaylist={async (id) => {
               const data = await addSongToPlaylist(id);
+              setToasterTime(2500);
               if (data?.id) toast(
                 <div className="flex items-center gap-2 p-2 pr-3 min-w-10 rounded bg-black">
                   <div className="bg-[#262626] min-w-8 w-8 h-8 rounded overflow-hidden relative">
@@ -280,7 +293,10 @@ const PlaylistPage: React.FC = () => {
                         src={form.cover}
                         alt=""
                       /> :
-                      <MusicIcon className="w-1/4 h-1/4 absolute top-1/2 left-1/2 -translate-1/2" />
+                      <MusicIcon
+                        className="absolute top-1/2 left-1/2 -translate-1/2"
+                        size={16}
+                      />
                     }
                   </div>
                   <span>
@@ -290,7 +306,7 @@ const PlaylistPage: React.FC = () => {
               );
             }}
           />
-        </div>
+        </section>
 
         {isBackground &&
           <BackgroundColor
@@ -308,15 +324,48 @@ const PlaylistPage: React.FC = () => {
         }
       </div>
 
+      {activeItem &&
+        <PlaylistMenu
+          onRemove={async () => {
+            const ok = await removeSongFromPlaylist(activeItem.id);
+            if (!ok) return;
+
+            setActiveItem(null);
+            setToasterTime(3500);
+
+            toast(
+              <div className="flex items-center gap-2 p-2 pr-3 min-w-10 rounded-lg bg-black">
+                <div className="bg-[#262626] min-w-10 w-10 h-10 rounded overflow-hidden relative">
+                  <MusicIcon
+                    className="absolute top-1/2 left-1/2 -translate-1/2"
+                    size={20}
+                  />
+                </div>
+                <div>
+                  <span
+                    className="line-clamp-1"
+                    title={activeItem.song?.title}
+                  >
+                    {activeItem.song?.title}
+                  </span>
+                  <span className="text-sm block text-red-500 font-medium">
+                    Eliminada
+                  </span>
+                </div>
+              </div>
+            );
+          }}
+          onClose={() => setActiveItem(null)}
+        />
+      }
+
       {isEdit &&
         <EditData
           form={form}
           isPublic={isPublic}
           currentCover={currentCover}
           setForm={setForm}
-          onChangeVisibility={() => {
-            onSavePlaylist({ ...form, isPublic: !isPublic })
-          }}
+          onChangeVisibility={onChangeVisibility}
           coverInputRef={coverInputRef}
           onSave={() => onSavePlaylist()}
           onClose={() => setIsEdit(false)}
@@ -333,7 +382,7 @@ const PlaylistPage: React.FC = () => {
       }
 
       <SonnerToaster
-        duration={2500}
+        duration={toasterTime}
         visibleToasts={1}
         position="bottom-center"
         toastOptions={{

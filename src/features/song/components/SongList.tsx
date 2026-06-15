@@ -1,6 +1,6 @@
 import { Play, Heart, Clock, MusicIcon } from 'lucide-react';
 import type { Song } from '../song.types';
-import type { SearchMeta } from '../../../shared/types/common.types';
+import type { PaginationMeta } from '../../../shared/types/common.types';
 import { usePlayer } from '../../../shared/context/PlayerContext';
 import { formatTime } from '../../../shared/utils/formatTime';
 import { getFmtDate } from '../../../shared/utils/getFormatDate';
@@ -11,7 +11,7 @@ import { useInfiniteScroll } from '../../../shared/hooks/useInfiniteScroll';
 
 interface SongListProps {
   songs: Song[];
-  searchMeta: SearchMeta;
+  searchMeta: PaginationMeta;
   loadMore: () => void;
 }
 
@@ -39,7 +39,7 @@ const SongList: React.FC<SongListProps> = ({ songs, searchMeta, loadMore }) => {
 
           return (
             <div
-              onClick={() => play(songs, i)}
+              onClick={() => play(songs, i, { ...searchMeta, playlistId: '', totalDuration: 0 })}
               className="grid grid-cols-[40px_minmax(200px,2fr)_minmax(120px,1fr)_minmax(120px,1fr)_80px] gap-4 px-4 py-2.5 items-center rounded hover:bg-white/5 group cursor-pointer transition-colors duration-200 song-item"
               key={track.id}
             >

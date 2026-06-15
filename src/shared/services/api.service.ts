@@ -1,4 +1,4 @@
-import type { Playlist, PlaylistDTO, PlaylistSong } from "../../features/playlist/playlist.types";
+import type { Playlist, PlaylistDTO, PlaylistResponse, PlaylistSong } from "../../features/playlist/playlist.types";
 import type { Song } from "../../features/song/song.types";
 import type { ApiRes, SearchResponse } from "../types/common.types";
 import { api } from "../utils/api";
@@ -9,15 +9,26 @@ class ApiService {
     return `${envs.API_URL}/playlists/cover/${id}`;
   }
 
-  async getPlaylistSongs(playlistId: string, filters?: Record<string, any>): ApiRes<SearchResponse<PlaylistSong[]>> {
-    // const params: Record<string, any> = {}
+  async getPlaylistSongs(playlistId: string, filters?: Record<string, any>): ApiRes<PlaylistResponse> {
+    const params: Record<string, any> = {}
 
-    // for (const f in filters) {
-    //   if (filters[f]) params[f] = filters[f];
-    // }
+    if (filters) {
+      for (const f in filters) {
+        if (filters[f]) params[f] = filters[f];
+      }
+    }
 
     try {
-      const r = await api.get<Song[]>(`/playlists/${playlistId}/songs`);
+      const r = await api.get(`/playlists/${playlistId}/songs`);
+      return this.ApiResponse('success', r);
+    } catch (err) {
+      return this.ApiResponse('error', err);
+    }
+  }
+
+  async removeSongFromPlaylist(id: string): ApiRes<{ success: boolean }> {
+    try {
+      const r = await api.post(`/playlists/remove-song`, { id });
       return this.ApiResponse('success', r);
     } catch (err) {
       return this.ApiResponse('error', err);

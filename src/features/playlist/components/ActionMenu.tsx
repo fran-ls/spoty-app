@@ -1,7 +1,7 @@
 import { CircleMinusIcon, GlobeIcon, LockIcon, PaletteIcon, PenIcon } from "lucide-react";
 import { STYLES } from "../../../shared/utils/styles";
 
-interface CustomMenuProps {
+interface ActionMenuProps {
   isPublic: boolean;
   onChangeVisibility: () => void;
   onIsBackground: () => void;
@@ -10,7 +10,7 @@ interface CustomMenuProps {
   onRemove: () => void;
 }
 
-const ActionMenu = (props: CustomMenuProps) => {
+const ActionMenu = (props: ActionMenuProps) => {
   const { isPublic, onIsEdit, onChangeVisibility, onClose, onRemove, onIsBackground } = props;
 
   return (

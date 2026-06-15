@@ -1,6 +1,6 @@
-import { Play, Heart, Clock, MusicIcon } from 'lucide-react';
-import type { SearchMeta } from '../../../shared/types/common.types';
-import type { PlaylistSong } from '../playlist.types';
+import { Play, Heart, Clock, MusicIcon, EllipsisIcon, ChevronDown } from 'lucide-react';
+import type { PlaylistMeta, PlaylistSong } from '../playlist.types';
+import type { Song } from '../../song/song.types';
 import { usePlayer } from '../../../shared/context/PlayerContext';
 import { formatTime } from '../../../shared/utils/formatTime';
 import { getFmtDate } from '../../../shared/utils/getFormatDate';
@@ -8,40 +8,53 @@ import apiService from '../../../shared/services/api.service';
 import { showMusicIcon } from '../../../shared/utils/showMusicIcon';
 import Loader from '../../../shared/components/Loader';
 import { useInfiniteScroll } from '../../../shared/hooks/useInfiniteScroll';
+import { useState } from 'react';
 
 interface PlaylistSongsProps {
-  songs: PlaylistSong[];
-  searchMeta: SearchMeta;
+  songs: Song[];
+  items: PlaylistSong[];
+  playlistMeta: PlaylistMeta;
+  setActiveItem: React.Dispatch<any>
   loadMore: () => void;
 }
 
-const PlaylistSongs: React.FC<PlaylistSongsProps> = ({ songs, searchMeta, loadMore }) => {
+const PlaylistSongs: React.FC<PlaylistSongsProps> = (props) => {
+  const { songs, items, playlistMeta, loadMore, setActiveItem } = props;
+
   const { currentSong, play } = usePlayer();
   const { loaderRef } = useInfiniteScroll(() => loadMore());
+
+  const [hoverIndex, setHoverIndex] = useState<number | null>(0);
+
   const isTrackLiked = true;
 
   return (
-    <div className="min-w-full overflow-auto bg-[#131313] animate-fade-in z-0 relative">
-      <div className="grid grid-cols-[40px_minmax(200px,2fr)_minmax(120px,1fr)_minmax(120px,1fr)_80px] gap-4 px-4 py-3 border-b border-white/10 text-[#adaaaa] text-sm font-medium tracking-wider select-none">
+    <div className="min-w-full overflow-x-auto overflow-y-hidden bg-[#131313] animate-fade-in z-0 relative">
+      <div className="grid grid-cols-[40px_minmax(200px,2fr)_minmax(120px,1fr)_minmax(120px,1fr)_80px_28px] gap-4 px-4 py-3 border-b border-white/10 text-[#adaaaa] text-sm font-medium tracking-wider select-none">
         <span>#</span>
         <span>Título</span>
         <span>Álbum</span>
-        <span>Fecha de publicación</span>
+        <span>Fecha de añadido</span>
         <div className="flex justify-end pr-1">
           <Clock size={16} />
+        </div>
+        <div className="flex justify-end pr-1">
+          <ChevronDown size={16} />
         </div>
       </div>
 
       <div className="flex flex-col gap-1 bg-[#131313]">
-        {songs.map((track, i) => {
+        {items.map((track, i) => {
           const song = track.song!;
           const isCurrentPlayingNow = currentSong?.id === track.id;
           const cover = apiService.songCoverUrl(track.id, song.cover);
 
           return (
             <div
-              // onClick={() => play(songs, i)}
-              className="grid grid-cols-[40px_minmax(200px,2fr)_minmax(120px,1fr)_minmax(120px,1fr)_80px] gap-4 px-4 py-2.5 items-center rounded hover:bg-white/5 group cursor-pointer transition-colors duration-200 song-item"
+              onClick={() => play(songs, i, playlistMeta)}
+              onMouseEnter={() => setHoverIndex(i)}
+              onMouseLeave={() => setHoverIndex(null)}
+              className="relative grid grid-cols-[40px_minmax(200px,2fr)_minmax(120px,1fr)_minmax(120px,1fr)_80px_28px] gap-4 px-4 py-2.5 items-center rounded hover:bg-white/5 group cursor-pointer transition-colors duration-200 song-item"
               key={track.id}
             >
               <div className={`${isCurrentPlayingNow ? 'text-primary' : 'text-[#adaaaa] hover:text-[#72fe8f]'} text-sm font-medium flex items-center`}>
@@ -115,11 +128,22 @@ const PlaylistSongs: React.FC<PlaylistSongsProps> = ({ songs, searchMeta, loadMo
                   {formatTime(song.duration)}
                 </span>
               </div>
+
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveItem(track);
+                }}
+                className={`${hoverIndex === i ? 'block' : 'hidden'} p-1 hover:text-white cursor-pointer`}
+                type="button"
+              >
+                <EllipsisIcon size={20} />
+              </button>
             </div>
           )
         })}
 
-        {searchMeta.page < searchMeta.totalPages &&
+        {playlistMeta.page < playlistMeta.totalPages &&
           <div
             className="flex items-center justify-center px-6 py-1 overflow-hidden"
             ref={loaderRef}

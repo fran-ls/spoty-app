@@ -1,3 +1,4 @@
+import type { PaginationMeta } from "../../shared/types/common.types";
 import type { Song } from "../song/song.types";
 
 export interface Playlist {
@@ -28,4 +29,16 @@ export interface PlaylistSong {
   playlistId: string;
   position: number;
   song: Song | null;
+}
+
+export type PlaylistMeta = PaginationMeta & {
+  playlistId: string;
+  totalDuration: number;
+}
+
+export interface PlaylistResponse {
+  items: PlaylistSong[];
+  meta: PlaylistMeta;
+  songs: Song[];
+  totalDuration: number;
 }

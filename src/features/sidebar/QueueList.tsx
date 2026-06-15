@@ -8,8 +8,8 @@ import { useInfiniteScroll } from '../../shared/hooks/useInfiniteScroll';
 
 export const QueueList: React.FC = () => {
   const {
-    queue, queueTotal, isPlaying, isQueue, currentSong, currentIndex,
-    setQueue, setIsQueue, playQueueSong, togglePlay, setQueueTotal
+    queue, queueMeta, isPlaying, isQueue, currentSong, currentIndex,
+    setQueue, setIsQueue, playQueueSong, togglePlay, setQueueMeta
   } = usePlayer();
 
   const [page, setPage] = useState(0);
@@ -29,19 +29,20 @@ export const QueueList: React.FC = () => {
   const [isHoverQueue, setIsHoverQueue] = useState(false);
 
   async function getQueueSongs(page: number) {
-    const { data } = await apiService.searchSongs({ limit: 10, page });
-    setTotalPages(data.meta.totalPages);
-    setQueueTotal(data.meta.total);
+    if (page <= 1) return;
 
-    (page > 1)
-      ? setQueue((prev) => [...prev, ...data.items])
-      : setQueue(data.items);
+    const { data } = await apiService.getPlaylistSongs(queueMeta.playlistId, { page, limit: 10 });
+    if (!data) return;
+
+    setTotalPages(data.meta.totalPages);
+    setQueueMeta(data.meta);
+    setQueue((prev) => [...prev, ...data.songs]);
   }
 
   useEffect(() => {
     const lastIndex = queue.length - 1;
 
-    if (currentIndex === lastIndex && queue.length < queueTotal) {
+    if (currentIndex === lastIndex && queue.length < queueMeta.total) {
       getQueueSongs(page);
     }
   }, [currentIndex]);
@@ -159,7 +160,7 @@ export const QueueList: React.FC = () => {
                       </h4>
                       <div className="text-[13px] font-semibold">
                         <span className="line-clamp-1 w-full">
-                          {track.artist.name}
+                          {track.artist?.name}
                         </span>
                       </div>
                     </div>

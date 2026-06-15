@@ -7,14 +7,14 @@ export interface PaginationMeta {
   hasPrevPage: boolean;
 }
 
-export interface SearchMeta extends PaginationMeta {
-  totalDuration: number;
+export type SearchMeta = PaginationMeta & {
+  totalDuration?: number;
 }
 
 export type SearchResponse<T> = {
   items: T;
   meta: SearchMeta;
-};
+}
 
 export interface ApiResponse<T> {
   status: any;

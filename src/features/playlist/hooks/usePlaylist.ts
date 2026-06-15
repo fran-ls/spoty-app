@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import type { Playlist, PlaylistDTO, PlaylistSong } from "../playlist.types";
+import type { Playlist, PlaylistDTO, PlaylistMeta, PlaylistSong } from "../playlist.types";
 import type { SearchMeta } from "../../../shared/types/common.types";
 import type { Song } from "../../song/song.types";
 import apiService from "../../../shared/services/api.service";
 import { fileToDataURL } from "../../../shared/utils/fileToDataURL";
 import { routes } from "../../../shared/utils/routes";
+import { getTimeParts } from "../../../shared/utils/formatTime";
 
 const usePlaylist = (playlistId: string | undefined) => {
   const [currentCover, setCurrentCover] = useState<string | null>(null);
@@ -23,7 +24,18 @@ const usePlaylist = (playlistId: string | undefined) => {
     file: null
   });
 
-  const [playlistSongs, setPlaylistSongs] = useState<PlaylistSong[]>([]);
+  const [playlistItems, setPlaylistItems] = useState<PlaylistSong[]>([]);
+  const [playlistSongs, setPlaylistSongs] = useState<Song[]>([]);
+  const [playlistMeta, setPlaylistMeta] = useState<PlaylistMeta>({
+    page: 0,
+    limit: 10,
+    total: 0,
+    totalPages: 0,
+    totalDuration: 0,
+    hasNextPage: false,
+    hasPrevPage: false,
+    playlistId: playlistId || ''
+  });
 
   const [isBackground, setIsBackground] = useState(false);
   const [isOpenAction, setIsOpenAction] = useState(false);
@@ -45,6 +57,9 @@ const usePlaylist = (playlistId: string | undefined) => {
     hasPrevPage: false
   });
 
+  const [activeItem, setActiveItem] = useState<PlaylistSong | null>(null);
+
+  const duration = getTimeParts(playlistMeta.totalDuration ?? 0);
   const navigate = useNavigate();
 
   const onFileChange = (e: React.ChangeEvent<HTMLInputElement, HTMLInputElement>) => {
@@ -139,7 +154,12 @@ const usePlaylist = (playlistId: string | undefined) => {
 
     if (data) {
       setIsSearch(data.items.length === 0);
-      setPlaylistSongs(data.items);
+      setPlaylistItems(data.items);
+      setPlaylistSongs(data.songs);
+      setPlaylistMeta({
+        ...data.meta,
+        totalDuration: data.totalDuration || 0
+      });
     }
   }
 
@@ -160,15 +180,30 @@ const usePlaylist = (playlistId: string | undefined) => {
     const { data } = await apiService.addSongToPlaylist(playlistId, songId);
 
     if (data && data.id) {
-      setPlaylistSongs((prev) => [...prev, data]);
+      setPlaylistItems((prev) => [...prev, data]);
+      setPlaylistSongs((prev) => [...prev, data.song!]);
     }
 
     return data;
   }
 
+  const removeSongFromPlaylist = async (id: string) => {
+    if (!id) return false;
+
+    const { data } = await apiService.removeSongFromPlaylist(id);
+
+    if (data && data.success) {
+      setPlaylistItems((prev) => prev.filter((p) => p.id !== id));
+      setPlaylistSongs((prev) => prev.filter((p) => p.id !== id));
+    }
+
+    return data?.success ?? false;
+  }
+
   return {
     isPlay: playlistSongs.length > 0,
-    playlistSongs,
+    playlistMeta, duration,
+    playlistSongs, playlistItems,
     currentCover, setCurrentCover,
     gradientColor, setGradientColor,
     bgColor, setBgColor,
@@ -184,6 +219,7 @@ const usePlaylist = (playlistId: string | undefined) => {
     isSearch, setIsSearch,
     searchSongs, setSearchSongs,
     searchMeta, setSearchMeta,
+    activeItem, setActiveItem,
     onFileChange,
     getPlaylist,
     onSavePlaylist,
@@ -192,6 +228,7 @@ const usePlaylist = (playlistId: string | undefined) => {
     getPlaylistSongs,
     findSongs,
     addSongToPlaylist,
+    removeSongFromPlaylist
   }
 }
 

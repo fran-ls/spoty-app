@@ -13,7 +13,7 @@ import SongListEmpty from '../components/SongListEmpty';
 import { usePlayer } from '../../../shared/context/PlayerContext';
 
 const SongPage: React.FC = () => {
-  const { setQueueTotal } = usePlayer();
+  const { setQueueMeta } = usePlayer();
 
   const [gradientCSS, setGradientCSS] = useState<string>('');
   const [bgColor, setBgColor] = useState('#8b1321');
@@ -62,7 +62,11 @@ const SongPage: React.FC = () => {
       return;
     }
 
-    setQueueTotal(data.meta.total);
+    setQueueMeta({
+      ...data.meta,
+      playlistId: '',
+      totalDuration: 0
+    });
     setSongs(data.items);
   }
 
