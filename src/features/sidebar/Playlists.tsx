@@ -7,6 +7,7 @@ import { routes } from '../../shared/utils/routes';
 import CustomMenu from './CustomMenu';
 import apiService from '../../shared/services/api.service';
 import { showMusicIcon } from '../../shared/utils/showMusicIcon';
+import useAuth from '../auth/hooks/useAuth';
 
 export const Playlists: React.FC = () => {
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
@@ -16,10 +17,11 @@ export const Playlists: React.FC = () => {
   const [query, setQuery] = useState('');
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
 
+  const { user } = useAuth();
   const { currentView, setView, isPlaying } = usePlayer();
-  const navigate = useNavigate();
+  const userId = user?.id!;
 
-  const userId = '34ff1011-a38f-4238-b462-02516f959ac9';
+  const navigate = useNavigate();
 
   const onSavePlaylist = async () => {
     const { data } = await apiService.newPlaylist({
@@ -29,7 +31,7 @@ export const Playlists: React.FC = () => {
       isPublic: false,
       gradientColor: '',
       bgColor: '',
-      userId,
+      userId: user?.id!,
       file: null
     }, true);
 
@@ -39,7 +41,7 @@ export const Playlists: React.FC = () => {
   }
 
   useEffect(() => {
-    apiService.getUserPlaylists(userId).then(({ data }) => {
+    userId && apiService.getUserPlaylists(userId).then(({ data }) => {
       setPlaylists(data || []);
     })
   }, []);

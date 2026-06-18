@@ -16,11 +16,7 @@ export type SearchResponse<T> = {
   meta: SearchMeta;
 }
 
-export interface ApiResponse<T> {
-  status: any;
-  statusText: string;
-  error: any;
-  data: T | null;
+export interface IToast {
+  title: string;
+  message: string;
 }
-
-export type ApiRes<T> = Promise<ApiResponse<T>>

@@ -1,7 +1,7 @@
 import type { Playlist, PlaylistDTO, PlaylistResponse, PlaylistSong } from "../../features/playlist/playlist.types";
 import type { Song } from "../../features/song/song.types";
-import type { ApiRes, SearchResponse } from "../types/common.types";
-import { api } from "../utils/api";
+import type { SearchResponse } from "../types/common.types";
+import { api, ApiResponse, type ApiRes } from "../utils/api";
 import { envs } from "../utils/envs";
 
 class ApiService {
@@ -20,18 +20,18 @@ class ApiService {
 
     try {
       const r = await api.get(`/playlists/${playlistId}/songs`);
-      return this.ApiResponse('success', r);
+      return ApiResponse('success', r);
     } catch (err) {
-      return this.ApiResponse('error', err);
+      return ApiResponse('error', err);
     }
   }
 
   async removeSongFromPlaylist(id: string): ApiRes<{ success: boolean }> {
     try {
       const r = await api.post(`/playlists/remove-song`, { id });
-      return this.ApiResponse('success', r);
+      return ApiResponse('success', r);
     } catch (err) {
-      return this.ApiResponse('error', err);
+      return ApiResponse('error', err);
     }
   }
 
@@ -40,18 +40,18 @@ class ApiService {
       const r = await api.post(`/playlists/add-song`, {
         playlistId, songId
       });
-      return this.ApiResponse('success', r);
+      return ApiResponse('success', r);
     } catch (err) {
-      return this.ApiResponse('error', err);
+      return ApiResponse('error', err);
     }
   }
 
   async removePlaylist(id: string): ApiRes<Playlist> {
     try {
       const r = await api.delete(`/playlists/${id}`);
-      return this.ApiResponse('success', r);
+      return ApiResponse('success', r);
     } catch (err) {
-      return this.ApiResponse('error', err);
+      return ApiResponse('error', err);
     }
   }
 
@@ -82,18 +82,18 @@ class ApiService {
         cover: data.cover ? this.playlistCover(id) : data.cover
       }
 
-      return this.ApiResponse('success', r);
+      return ApiResponse('success', r);
     } catch (err) {
-      return this.ApiResponse('error', err);
+      return ApiResponse('error', err);
     }
   }
 
   async getUserPlaylists(userId: string): ApiRes<Playlist[]> {
     try {
       const r = await api.get<Playlist[]>(`/playlists/u/${userId}`);
-      return this.ApiResponse('success', r);
+      return ApiResponse('success', r);
     } catch (err) {
-      return this.ApiResponse('error', err);
+      return ApiResponse('error', err);
     }
   }
 
@@ -107,9 +107,9 @@ class ApiService {
         cover: data.cover ? this.playlistCover(id) : data.cover
       }
 
-      return this.ApiResponse('success', r);
+      return ApiResponse('success', r);
     } catch (err: any) {
-      return this.ApiResponse('error', err);
+      return ApiResponse('error', err);
     }
   }
 
@@ -133,9 +133,9 @@ class ApiService {
         },
         params: { force }
       });
-      return this.ApiResponse('success', r);
+      return ApiResponse('success', r);
     } catch (err) {
-      return this.ApiResponse('error', err);
+      return ApiResponse('error', err);
     }
   }
 
@@ -181,27 +181,6 @@ class ApiService {
 
   async uploadSong(data: any) {
     return await api.post('/songs/upload', data);
-  }
-
-  private ApiResponse<T = any>(type: 'success' | 'error', r: any): {
-    status: number;
-    statusText: string;
-    error: string | null;
-    data: T | null;
-  } {
-    if (type === 'error') return {
-      status: r.status || 0,
-      statusText: 'ERROR',
-      error: r.message,
-      data: null
-    }
-
-    return {
-      status: r.status,
-      statusText: r.statusText,
-      data: r.data as T,
-      error: null
-    }
   }
 }
 

@@ -22,7 +22,7 @@ const Loader = (props: LoaderProps) => {
         borderWidth: stroke,
         ...style
       }}
-      className={cn('w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin', className)}
+      className={cn('w-12 h-12 border-4 border-[#72fe8e53] border-t-[#72FE8F] rounded-full animate-spin', className)}
     />
   )
 }

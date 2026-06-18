@@ -7,6 +7,7 @@ import apiService from "../../../shared/services/api.service";
 import { fileToDataURL } from "../../../shared/utils/fileToDataURL";
 import { routes } from "../../../shared/utils/routes";
 import { getTimeParts } from "../../../shared/utils/formatTime";
+import useAuth from "../../auth/hooks/useAuth";
 
 const usePlaylist = (playlistId: string | undefined) => {
   const [currentCover, setCurrentCover] = useState<string | null>(null);
@@ -59,6 +60,7 @@ const usePlaylist = (playlistId: string | undefined) => {
 
   const [activeItem, setActiveItem] = useState<PlaylistSong | null>(null);
 
+  const { user } = useAuth();
   const duration = getTimeParts(playlistMeta.totalDuration ?? 0);
   const navigate = useNavigate();
 
@@ -124,7 +126,8 @@ const usePlaylist = (playlistId: string | undefined) => {
     const r = await apiService.newPlaylist({
       ...values,
       name: values.name.trim(),
-      description: values.description.trim()
+      description: values.description.trim(),
+      userId: user?.id!
     });
 
     return r.data;

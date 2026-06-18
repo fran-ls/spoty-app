@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { Playlists } from "../../../features/sidebar/Playlists";
-import { QueueList } from "../../../features/sidebar/QueueList";
-import { Header } from "../Header";
-import { PlayerBar } from "../../../features/player/PlayerBar";
-import { PremiumModal } from "../PremiumModal";
-import { STYLES } from "../../utils/styles";
+import { Playlists } from "../../features/sidebar/Playlists";
+import { QueueList } from "../../features/sidebar/QueueList";
+import { Header } from "../components/Header";
+import { PlayerBar } from "../../features/player/PlayerBar";
+import { PremiumModal } from "../components/PremiumModal";
+import { STYLES } from "../utils/styles";
 
 const AppLayout = ({ children }: { children: React.ReactNode }) => {
   const [isPremiumOpen, setIsPremiumOpen] = useState(false);
