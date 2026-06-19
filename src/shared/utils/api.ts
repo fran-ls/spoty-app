@@ -7,47 +7,49 @@ export const api = axios.create({
   withCredentials: true,
   headers: {
     "Content-Type": "application/json"
-  },
+  }
 });
 
-interface ResPayload<T> {
+interface ApiResponse<T> {
   success: boolean;
   status: number;
   statusText: string;
   message: string;
   error: string | null;
   data: T | null;
+  errors?: any;
 }
 
-export type ApiRes<T> = Promise<ResPayload<T>>
+export type ApiRes<T> = Promise<ApiResponse<T>>;
 
-export function ApiResponse<T = any>(
-  type: 'success' | 'error',
-  response: any
-): ResPayload<T> {
-  const data = response.data?.data;
+export async function apiFetch<T = any>(callback: () => Promise<any>): ApiRes<T> {
+  try {
+    const response = await callback();
+    const data = response.data?.data;
 
-  const r = {
-    ...response,
-    ...(data && { ...data }),
-    data: data || response.data
-  }
+    const r = {
+      ...response,
+      ...(data && { ...data }),
+      data: data || response.data
+    }
 
-  if (type === 'error') return {
-    success: false,
-    status: r.status || r.code || 0,
-    statusText: 'ERROR',
-    message: r.message,
-    error: r.error || r.message,
-    data: null
-  }
-
-  return {
-    success: r.success ?? true,
-    status: r.status || 200,
-    statusText: r.statusText,
-    message: r.message,
-    data: r.data as T,
-    error: null
+    return {
+      success: r.success ?? true,
+      status: r.status || 200,
+      statusText: r.statusText,
+      message: r.message,
+      data: r.data as T,
+      error: null,
+      ...(r.errors && { ...r.errors }),
+    }
+  } catch (err: any) {
+    return {
+      success: false,
+      status: err.status || err.code || 0,
+      statusText: 'ERROR',
+      message: err.message,
+      error: err.error || err.message,
+      data: null
+    }
   }
 }

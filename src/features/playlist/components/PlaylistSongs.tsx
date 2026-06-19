@@ -4,11 +4,11 @@ import type { Song } from '../../song/song.types';
 import { usePlayer } from '../../../shared/context/PlayerContext';
 import { formatTime } from '../../../shared/utils/formatTime';
 import { getFmtDate } from '../../../shared/utils/getFormatDate';
-import apiService from '../../../shared/services/api.service';
 import { showMusicIcon } from '../../../shared/utils/showMusicIcon';
 import Loader from '../../../shared/components/Loader';
 import { useInfiniteScroll } from '../../../shared/hooks/useInfiniteScroll';
 import { useState } from 'react';
+import songService from '../../song/services/song.service';
 
 interface PlaylistSongsProps {
   songs: Song[];
@@ -44,10 +44,10 @@ const PlaylistSongs: React.FC<PlaylistSongsProps> = (props) => {
       </div>
 
       <div className="flex flex-col gap-1 bg-[#131313]">
-        {items.map((track, i) => {
-          const song = track.song!;
-          const isCurrentPlayingNow = currentSong?.id === track.id;
-          const cover = apiService.songCoverUrl(track.id, song.cover);
+        {items.map((item, i) => {
+          const song = item.song!;
+          const isCurrentPlayingNow = currentSong?.id === item.id;
+          const cover = songService.songCoverUrl(song.id, song.cover);
 
           return (
             <div
@@ -55,7 +55,7 @@ const PlaylistSongs: React.FC<PlaylistSongsProps> = (props) => {
               onMouseEnter={() => setHoverIndex(i)}
               onMouseLeave={() => setHoverIndex(null)}
               className="relative grid grid-cols-[40px_minmax(200px,2fr)_minmax(120px,1fr)_minmax(120px,1fr)_80px_28px] gap-4 px-4 py-2.5 items-center rounded hover:bg-white/5 group cursor-pointer transition-colors duration-200 song-item"
-              key={track.id}
+              key={item.id}
             >
               <div className={`${isCurrentPlayingNow ? 'text-primary' : 'text-[#adaaaa] hover:text-[#72fe8f]'} text-sm font-medium flex items-center`}>
                 <span className="group-hover:hidden select-none">
@@ -82,6 +82,7 @@ const PlaylistSongs: React.FC<PlaylistSongsProps> = (props) => {
                       className="w-full h-full object-cover"
                       src={cover}
                       referrerPolicy="no-referrer"
+                      crossOrigin="anonymous"
                       alt=""
                     />
                   }
@@ -132,7 +133,7 @@ const PlaylistSongs: React.FC<PlaylistSongsProps> = (props) => {
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  setActiveItem(track);
+                  setActiveItem(item);
                 }}
                 className={`${hoverIndex === i ? 'block' : 'hidden'} p-1 hover:text-white cursor-pointer`}
                 type="button"

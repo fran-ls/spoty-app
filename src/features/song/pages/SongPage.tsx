@@ -8,11 +8,13 @@ import GradientEditor from '../../playlist/components/GradientEditor';
 import Footer from '../../playlist/components/Footer';
 import { getTimeParts } from '../../../shared/utils/formatTime';
 import SongList from '../components/SongList';
-import apiService from '../../../shared/services/api.service';
+import songService from '../services/song.service';
 import SongListEmpty from '../components/SongListEmpty';
 import { usePlayer } from '../../../shared/context/PlayerContext';
+import useAuth from '../../auth/hooks/useAuth';
 
 const SongPage: React.FC = () => {
+  const { user } = useAuth();
   const { setQueueMeta } = usePlayer();
 
   const [gradientCSS, setGradientCSS] = useState<string>('');
@@ -54,7 +56,9 @@ const SongPage: React.FC = () => {
   const coverInputRef = useRef<HTMLInputElement>(null);
 
   async function getSongs(page: number) {
-    const { data } = await apiService.searchSongs({ limit: 10, page });
+    const { data } = await songService.searchSongs({ limit: 10, page });
+    if (!data) return;
+
     setSearchMeta(data.meta);
 
     if (page > 1) {
@@ -75,7 +79,8 @@ const SongPage: React.FC = () => {
 
     for (const song of songs) {
       if (song.cover) {
-        images.push({ id: song.id, url: song.cover });
+        const coverUrl = songService.songCoverUrl(song.id, song.cover);
+        images.push({ id: song.id, url: coverUrl });
       }
 
       if (images.length === 4) {
@@ -104,14 +109,14 @@ const SongPage: React.FC = () => {
             {form.cover ? (
               <img
                 className="object-cover w-full h-full"
-                src={form.cover || 'lady-gaga.jpg'}
+                src={form.cover}
                 alt=""
               />
             ) : (
               <MusicIcon className="w-1/4 h-1/4 absolute top-1/2 left-1/2 -translate-1/2" />
             )}
 
-            {coverImages?.map((d, i) => {
+            {coverImages.length > 3 && coverImages.map((d, i) => {
               const className = i === 0
                 ? 'top-0 left-0' : i === 1
                   ? 'top-0 right-0' : i === 3
@@ -120,6 +125,7 @@ const SongPage: React.FC = () => {
               return (
                 <img
                   className={`${className} absolute w-1/2 h-1/2 object-cover`}
+                  crossOrigin="anonymous"
                   src={d.url}
                   alt=""
                   key={d.id}
@@ -129,7 +135,7 @@ const SongPage: React.FC = () => {
 
             {isHover &&
               <button
-                className={`${coverImages.length > 0 ? 'bg-black/50' : 'bg-[#262626]'} hover:text-white w-full h-full flex flex-col items-center gap-1 justify-center absolute top-1/2 left-1/2 -translate-1/2`}
+                className={`${(form.cover || coverImages.length > 3) ? 'bg-black/50' : 'bg-[#262626]'} hover:text-white w-full h-full flex flex-col items-center gap-1 justify-center absolute top-1/2 left-1/2 -translate-1/2`}
                 type="button"
               >
                 <PenIcon className="w-10 h-10" />
@@ -158,7 +164,7 @@ const SongPage: React.FC = () => {
               </button>
               <a href="#">
                 <span className="text-sm ml-2 font-bold">
-                  Fran Lemus
+                  {user?.username}
                 </span>
                 <span className="text-sm ml-2 font-bold">
                   •
@@ -179,6 +185,8 @@ const SongPage: React.FC = () => {
         >
           <div className="p-6 space-y-6">
             <Footer
+              songs={songs}
+              songMeta={searchMeta}
               isPlay={songs.length > 0}
               isPublic={isPublic}
               isBackground={isBackground}
@@ -239,25 +247,28 @@ const SongPage: React.FC = () => {
           </div>
         </div>
 
-        <GradientEditor
-          bgColor={bgColor}
-          gradientColor={gradientColor}
-          isBackground={isBackground}
-          setBgColor={setBgColor}
-          setGradientColor={setGradientColor}
-          setGradientCSS={setGradientCSS}
-          onClose={() => setIsBackground(false)}
-          onSave={async () => {
-            // const data = await onSavePlaylist({ ...form, bgColor, gradientColor });
-            // if (data?.id) setIsBackground(false);
-          }}
-        />
+        {isBackground &&
+          <GradientEditor
+            bgColor={bgColor}
+            gradientColor={gradientColor}
+            isBackground={isBackground}
+            setBgColor={setBgColor}
+            setGradientColor={setGradientColor}
+            setGradientCSS={setGradientCSS}
+            onClose={() => setIsBackground(false)}
+            onSave={async () => {
+              // const data = await onSavePlaylist({ ...form, bgColor, gradientColor });
+              // if (data?.id) setIsBackground(false);
+            }}
+          />
+        }
       </div>
 
       {isEdit &&
         <EditData
           form={form}
           isPublic={isPublic}
+          coverImages={coverImages}
           currentCover={''}
           setForm={setForm}
           onChangeVisibility={() => setIsPublic(!isPublic)}

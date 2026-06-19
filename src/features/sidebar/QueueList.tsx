@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react';
 import { MusicIcon, XIcon, PauseIcon, PlayIcon, PanelTopCloseIcon } from 'lucide-react';
 import { showMusicIcon } from '../../shared/utils/showMusicIcon';
 import { usePlayer } from '../../shared/context/PlayerContext';
-import apiService from '../../shared/services/api.service';
 import Loader from '../../shared/components/Loader';
 import { useInfiniteScroll } from '../../shared/hooks/useInfiniteScroll';
+import playlistService from '../playlist/services/playlist.service';
+import songService from '../song/services/song.service';
 
 export const QueueList: React.FC = () => {
   const {
@@ -31,7 +32,7 @@ export const QueueList: React.FC = () => {
   async function getQueueSongs(page: number) {
     if (page <= 1) return;
 
-    const { data } = await apiService.getPlaylistSongs(queueMeta.playlistId, { page, limit: 10 });
+    const { data } = await playlistService.getPlaylistSongs(queueMeta.playlistId, { page, limit: 10 });
     if (!data) return;
 
     setTotalPages(data.meta.totalPages);
@@ -85,7 +86,7 @@ export const QueueList: React.FC = () => {
         >
           <ul className={`${isCollapsed ? 'pl-0 pb-0' : 'pl-2 pb-2'} w-full absolute top-0 left-0`}>
             {queue.map((track, i) => {
-              const cover = apiService.songCoverUrl(track.id, track.cover);
+              const cover = songService.songCoverUrl(track.id, track.cover);
 
               return (
                 <li
@@ -103,6 +104,7 @@ export const QueueList: React.FC = () => {
                         onError={(e) => showMusicIcon(e.currentTarget, '.queue-item')}
                         src={cover}
                         className="object-cover w-full h-full"
+                        crossOrigin="anonymous"
                         alt=""
                       />
                     )}

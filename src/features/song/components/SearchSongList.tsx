@@ -2,10 +2,10 @@ import { MusicIcon } from 'lucide-react';
 import type { Song } from '../song.types';
 import type { SearchMeta } from '../../../shared/types/common.types';
 import { usePlayer } from '../../../shared/context/PlayerContext';
-import apiService from '../../../shared/services/api.service';
 import { showMusicIcon } from '../../../shared/utils/showMusicIcon';
 import Loader from '../../../shared/components/Loader';
 import { useInfiniteScroll } from '../../../shared/hooks/useInfiniteScroll';
+import songService from '../services/song.service';
 
 interface SearchSongListProps {
   songs: Song[];
@@ -23,7 +23,7 @@ const SearchSongList: React.FC<SearchSongListProps> = (props) => {
     <div className="flex flex-col gap-1 animate-fade-in bg-[#131313] overflow-hidden">
       {songs.map((track) => {
         const isCurrentPlayingNow = currentSong?.id === track.id;
-        const cover = apiService.songCoverUrl(track.id, track.cover);
+        const cover = songService.songCoverUrl(track.id, track.cover);
 
         return (
           <div
@@ -43,6 +43,7 @@ const SearchSongList: React.FC<SearchSongListProps> = (props) => {
                     className="w-full h-full object-cover"
                     src={cover}
                     referrerPolicy="no-referrer"
+                    crossOrigin="anonymous"
                     alt=""
                   />
                 )}

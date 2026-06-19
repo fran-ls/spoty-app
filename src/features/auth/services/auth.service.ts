@@ -1,11 +1,12 @@
-import type { HttpResponse } from "../../../shared/utils/client";
 import type { AuthData, User, UserDTO } from "../auth.types";
-import { apiFetch } from "../../../shared/utils/apiClient";
 import { tokenService } from "./token.service";
+import { api, apiFetch } from "../../../shared/utils/api";
 
 class AuthService {
   async register(user: UserDTO) {
-    const response = await apiFetch.post<AuthData>('/auth/register', user);
+    const response = await apiFetch<AuthData>(() => {
+      return api.post('/auth/register', user);
+    });
 
     if (response.status === 401) {
       response.error = 'Not authenticated';
@@ -37,8 +38,8 @@ class AuthService {
   }
 
   async login(email: string, password: string) {
-    const response = await apiFetch.post<AuthData>('/auth/login', {
-      email, password
+    const response = await apiFetch<AuthData>(() => {
+      return api.post('/auth/login', { email, password });
     });
 
     if (response.status === 401) {
@@ -62,7 +63,9 @@ class AuthService {
   }
 
   async logout() {
-    const response = await apiFetch.post<null>('/auth/logout');
+    const response = await apiFetch<null>(() => {
+      return api.post('/auth/logout');
+    });
 
     if (response.success) {
       tokenService.clearToken();
@@ -72,7 +75,9 @@ class AuthService {
   }
 
   async logoutAll() {
-    const response = await apiFetch.post<null>('/auth/logout-all');
+    const response = await apiFetch<null>(() => {
+      return api.post('/auth/logout-all');
+    });
 
     if (response.success) {
       tokenService.clearToken();
@@ -82,7 +87,9 @@ class AuthService {
   }
 
   async logoutAllByEmail(email: string) {
-    const response = await apiFetch.post<null>('/auth/logout-all/email', { email });
+    const response = await apiFetch<null>(() => {
+      return api.post('/auth/logout-all/email', { email });
+    });
 
     if (response.success) {
       tokenService.clearToken();
@@ -91,33 +98,39 @@ class AuthService {
     return response;
   }
 
-  async getProfile(): Promise<HttpResponse<User>> {
+  async getProfile(): Promise<User | null> {
     const auth = await tokenService.refreshAccessToken();
 
-    const resp = {
-      success: auth.success,
-      status: auth.status,
-      data: null,
-      message: auth.message,
-      error: auth.error
+    if (auth.status === 0) {
+      auth.success = false;
+      return null;
     }
-
-    if (auth.status === 0) return resp;
 
     if (auth.status === 401 || auth.status === 400) {
       await this.logout();
     }
 
-    if (!auth.success) return resp;
+    if (!auth.success) return null;
 
-    const response = await apiFetch.get<User>('/auth/me');
-    if (response.status === 0) return response;
+    const response = await apiFetch<User>(() => {
+      return api.get('/auth/me', {
+        headers: {
+          "Authorization": `Bearer ${tokenService.getToken()}`
+        }
+      });
+    });
+
+    if (response.status === 0) {
+      response.success = false;
+      return null;
+    }
 
     if (response.error || response.errors || !response.success) {
       response.message = 'Not authenticated';
+      response.success = false;
     }
 
-    return response;
+    return response.data;
   }
 }
 

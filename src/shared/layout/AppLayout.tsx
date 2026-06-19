@@ -1,13 +1,19 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Playlists } from "../../features/sidebar/Playlists";
 import { QueueList } from "../../features/sidebar/QueueList";
 import { Header } from "../components/Header";
 import { PlayerBar } from "../../features/player/PlayerBar";
 import { PremiumModal } from "../components/PremiumModal";
 import { STYLES } from "../utils/styles";
+import { tokenService } from "../../features/auth/services/token.service";
 
 const AppLayout = ({ children }: { children: React.ReactNode }) => {
   const [isPremiumOpen, setIsPremiumOpen] = useState(false);
+
+  useEffect(() => {
+    const timeout = 14 * 60 * 1000 + 500; // 14:30 minutes
+    setInterval(() => tokenService.refreshAccessToken(), timeout);
+  }, []);
 
   return (
     <div className="h-screen bg-black font-sans text-on-surface antialiased selection:bg-primary selection:text-black">

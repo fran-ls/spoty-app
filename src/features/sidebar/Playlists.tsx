@@ -1,16 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { MusicIcon, PlusIcon, SearchIcon, ListIcon, XIcon, PauseIcon, PlayIcon, PanelTopCloseIcon, PanelTopOpenIcon, ListMusicIcon } from 'lucide-react';
-import type { Playlist } from '../playlist/playlist.types';
 import { usePlayer } from '../../shared/context/PlayerContext';
 import { routes } from '../../shared/utils/routes';
 import CustomMenu from './CustomMenu';
-import apiService from '../../shared/services/api.service';
+import playlistService from '../playlist/services/playlist.service';
 import { showMusicIcon } from '../../shared/utils/showMusicIcon';
 import useAuth from '../auth/hooks/useAuth';
+import usePlaylist from '../playlist/hooks/usePlaylist';
 
 export const Playlists: React.FC = () => {
-  const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [isCollapsed, setIsCollapsed] = useState<boolean>(true);
   const [isSearch, setIsSearch] = useState<boolean>(false);
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -18,13 +17,13 @@ export const Playlists: React.FC = () => {
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
 
   const { user } = useAuth();
-  const { currentView, setView, isPlaying } = usePlayer();
-  const userId = user?.id!;
+  const { playlists, getUserPlaylists } = usePlaylist();
+  const { currentView, isPlaying, queueMeta, setView, togglePlay } = usePlayer();
 
   const navigate = useNavigate();
 
   const onSavePlaylist = async () => {
-    const { data } = await apiService.newPlaylist({
+    const { data } = await playlistService.newPlaylist({
       name: '',
       description: '',
       cover: '',
@@ -40,11 +39,7 @@ export const Playlists: React.FC = () => {
     }
   }
 
-  useEffect(() => {
-    userId && apiService.getUserPlaylists(userId).then(({ data }) => {
-      setPlaylists(data || []);
-    })
-  }, []);
+  useEffect(() => { getUserPlaylists() }, []);
 
   return (
     <aside
@@ -145,9 +140,7 @@ export const Playlists: React.FC = () => {
           }
         </header>
 
-        <nav
-          className={`${isCollapsed ? 'h-[calc(100vh-64px-88px-100px)]' : 'h-[calc(100vh-64px-88px-116px)]'} overflow-y-auto overflow-x-hidden relative`}
-        >
+        <nav className={`${isCollapsed ? 'h-[calc(100vh-64px-88px-100px)]' : 'h-[calc(100vh-64px-88px-116px)]'} overflow-y-auto overflow-x-hidden relative`}>
           <ul className={`${isCollapsed ? 'pl-0 pb-4' : 'pl-2 pb-2'} w-full absolute top-0 left-0`}>
             <li className={`cursor-pointer p-2 text-[#adaaaa] hover:bg-[#1f1f1f] rounded-md gap-3 flex items-center`}>
               <button
@@ -184,34 +177,41 @@ export const Playlists: React.FC = () => {
                   {playlist.cover && (
                     <img
                       onError={(e) => showMusicIcon(e.currentTarget, '.playlist-item')}
-                      src={apiService.playlistCover(playlist.id)}
+                      src={playlistService.playlistCover(playlist.id)}
                       className="object-cover w-full h-full"
+                      crossOrigin="use-credentials"
                       alt=""
                     />
                   )}
 
                   {hoverIndex !== null && hoverIndex === i &&
-                    <div className="text-white badge w-full h-full absolute top-0 left-0 bg-black/50 flex items-center justify-center">
-                      {!isPlaying ?
-                        <PlayIcon
-                          className="min-w-5.5 w-5.5 h-5.5"
-                          fill="currentColor"
-                          stroke="0"
-                        /> :
+                    <button
+                      onClick={() => {
+                        if (queueMeta.playlistId === playlist.id) togglePlay();
+                      }}
+                      className="text-white badge w-full h-full absolute top-0 left-0 bg-black/50 flex items-center justify-center"
+                      type="button"
+                    >
+                      {(isPlaying && queueMeta.playlistId === playlist.id) ?
                         <PauseIcon
                           className="min-w-5 w-5 h-5"
                           fill="currentColor"
                           stroke="0"
+                        /> :
+                        <PlayIcon
+                          className="min-w-5.5 w-5.5 h-5.5"
+                          fill="currentColor"
+                          stroke="0"
                         />
                       }
-                    </div>
+                    </button>
                   }
                 </div>
 
                 {!isCollapsed &&
                   <div>
                     <h4
-                      className="line-clamp-1 w-full mt-1 text-white text-[15px] font-semibold"
+                      className={`${queueMeta.playlistId === playlist.id ? 'text-primary' : 'text-white'} line-clamp-1 w-full mt-1 text-[15px] font-semibold`}
                       title={playlist.name}
                     >
                       {playlist.name}
@@ -219,11 +219,8 @@ export const Playlists: React.FC = () => {
                     <div className="text-[13px] font-semibold flex items-center gap-1">
                       <span>Lista</span>
                       <span>•</span>
-                      <span
-                        className="line-clamp-1 max-w-full"
-                      // title={playlist.name}
-                      >
-                        Fran Lemus
+                      <span className="line-clamp-1 max-w-full">
+                        {user?.username}
                       </span>
                     </div>
                   </div>

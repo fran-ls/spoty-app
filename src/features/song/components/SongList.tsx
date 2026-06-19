@@ -4,10 +4,10 @@ import type { PaginationMeta } from '../../../shared/types/common.types';
 import { usePlayer } from '../../../shared/context/PlayerContext';
 import { formatTime } from '../../../shared/utils/formatTime';
 import { getFmtDate } from '../../../shared/utils/getFormatDate';
-import apiService from '../../../shared/services/api.service';
 import { showMusicIcon } from '../../../shared/utils/showMusicIcon';
 import Loader from '../../../shared/components/Loader';
 import { useInfiniteScroll } from '../../../shared/hooks/useInfiniteScroll';
+import songService from '../services/song.service';
 
 interface SongListProps {
   songs: Song[];
@@ -35,7 +35,7 @@ const SongList: React.FC<SongListProps> = ({ songs, searchMeta, loadMore }) => {
       <div className="px-8 pb-8 flex flex-col gap-1 animate-fade-in bg-[#131313]">
         {songs.map((track, i) => {
           const isCurrentPlayingNow = currentSong?.id === track.id;
-          const cover = apiService.songCoverUrl(track.id, track.cover);
+          const cover = songService.songCoverUrl(track.id, track.cover);
 
           return (
             <div
@@ -68,6 +68,7 @@ const SongList: React.FC<SongListProps> = ({ songs, searchMeta, loadMore }) => {
                       className="w-full h-full object-cover"
                       src={cover}
                       referrerPolicy="no-referrer"
+                      crossOrigin="anonymous"
                       alt=""
                     />
                   )}

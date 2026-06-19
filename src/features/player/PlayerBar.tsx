@@ -6,8 +6,8 @@ import {
 } from 'lucide-react';
 import { usePlayer } from '../../shared/context/PlayerContext';
 import { formatTime } from '../../shared/utils/formatTime';
-import apiService from '../../shared/services/api.service';
 import { showMusicIcon } from '../../shared/utils/showMusicIcon';
+import songService from '../song/services/song.service';
 
 export const PlayerBar: React.FC = () => {
   const {
@@ -107,7 +107,7 @@ export const PlayerBar: React.FC = () => {
 
   const progressPercent = Math.min(100, (progress / duration) * 100);
   const volumePercent = volume * 100;
-  const songCover = currentSong ? apiService.songCoverUrl(currentSong.id, currentSong.cover) : '';
+  const songCover = currentSong ? songService.songCoverUrl(currentSong.id, currentSong.cover) : '';
 
   // useEffect(() => {
   //   if (currentIndex >= queue.length - 1 && progress === duration) {
@@ -131,6 +131,7 @@ export const PlayerBar: React.FC = () => {
               src={songCover}
               className="w-full h-full object-cover transition-transform duration-300"
               referrerPolicy="no-referrer"
+              crossOrigin="anonymous"
               alt=""
             />
           )}

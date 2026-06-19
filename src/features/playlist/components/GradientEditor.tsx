@@ -4,7 +4,10 @@ import type { GradientEditorDirection, GradientEditorStop, GradientEditorStopKey
 import DraggableWidget from "../../../shared/components/DraggableWidget";
 import { STYLE_PRESETS } from "../../../shared/data/stylePresets";
 
+type Stop = GradientEditorStop & { label: string }
+
 interface ColorStopProps {
+  label: string;
   stop: GradientEditorStop;
   index: number;
   canRemove: boolean;
@@ -20,7 +23,7 @@ const DIRECTIONS: GradientEditorDirection[] = [
   { label: "↑ Invertido", value: "to top" },
 ];
 
-function ColorStop({ stop, index, canRemove, onRemove, onChange }: ColorStopProps) {
+function ColorStop({ label, stop, index, canRemove, onRemove, onChange }: ColorStopProps) {
   return (
     <div>
       <div className="space-y-2">
@@ -33,7 +36,7 @@ function ColorStop({ stop, index, canRemove, onRemove, onChange }: ColorStopProp
               className="w-6 h-6.5 outline-none border-none rounded cursor-pointer bg-transparent"
             />
             <label className="text-xs font-semibold text-[#adaaaa]">
-              Sólido
+              {label}
             </label>
             <span style={{
               fontSize: 12,
@@ -115,10 +118,10 @@ export default function GradientEditor(props: GradientEditorProps) {
   const divRef = useRef<HTMLDivElement>(null);
 
   const [direction, setDirection] = useState<string>("to bottom");
-  const [stops, setStops] = useState<GradientEditorStop[]>([
-    { color: bgColor, pos: 0 },
-    { color: gradientColor, pos: 50 },
-    { color: "#131313", pos: 100 }
+  const [stops, setStops] = useState<Stop[]>([
+    { label: 'Sólido', color: bgColor, pos: 0 },
+    { label: 'Gradiente', color: gradientColor, pos: 50 },
+    { label: '', color: "#131313", pos: 100 }
   ]);
 
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -252,6 +255,7 @@ export default function GradientEditor(props: GradientEditorProps) {
               onChange={handleChange}
               onRemove={handleRemove}
               canRemove={stops.length > 2}
+              label={stop.label}
             />
           ))}
         </div>
@@ -269,9 +273,9 @@ export default function GradientEditor(props: GradientEditorProps) {
                 <button
                   onClick={() => {
                     setStops([
-                      { color: preset.bgColor, pos: 0 },
-                      { color: preset.gradientColor, pos: 50 },
-                      { color: "#131313", pos: 100 }
+                      { label: 'Sólido', color: preset.bgColor, pos: 0 },
+                      { label: 'Gradiente', color: preset.gradientColor, pos: 50 },
+                      { label: '', color: "#131313", pos: 100 }
                     ]);
 
                     setBgColor(preset.bgColor);

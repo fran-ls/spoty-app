@@ -12,21 +12,23 @@ import PlaylistSongs from '../components/PlaylistSongs';
 import { usePlayer } from '../../../shared/context/PlayerContext';
 import usePlaylist from '../hooks/usePlaylist';
 import PlaylistMenu from '../components/PlaylistMenu';
+import useAuth from '../../auth/hooks/useAuth';
 
 const PlaylistPage: React.FC = () => {
-  const { playlistId } = useParams();
   const coverInputRef = useRef<HTMLInputElement>(null);
   const [toasterTime, setToasterTime] = useState(2500);
 
-  const { isPlaying, togglePlay } = usePlayer();
+  const { playlistId } = useParams();
+  const { user } = useAuth();
+  const { isPlaying, queueMeta, play, togglePlay } = usePlayer();
   const {
     isPlay, isPublic, currentCover, playlistSongs, searchMeta, gradientColor, bgColor,
     form, isBackground, isRemove, isHover, isOpen, isEdit, isOpenAction, query, isSearch,
-    searchSongs, duration, playlistMeta, playlistItems, activeItem, setGradientColor, setBgColor,
-    setForm, setIsHover, setIsEdit, setIsOpenAction, setQuery, setIsSearch, setSearchSongs,
+    searchSongs, duration, playlistMeta, playlistItems, activeItem, coverImages, setGradientColor,
+    setBgColor, setForm, setIsHover, setIsEdit, setIsOpenAction, setQuery, setIsSearch, setSearchSongs,
     onFileChange, getPlaylist, onSavePlaylist, onRemovePlaylist, getPlaylistSongs, findSongs,
     addSongToPlaylist, onChangeVisibility, setIsOpen, setIsRemove, setIsBackground,
-    removeSongFromPlaylist, setActiveItem
+    removeSongFromPlaylist, setActiveItem, getPlaylistCover
   } = usePlaylist(playlistId);
 
   useEffect(() => {
@@ -34,6 +36,7 @@ const PlaylistPage: React.FC = () => {
     getPlaylistSongs();
   }, [playlistId]);
 
+  useEffect(() => { getPlaylistCover() }, [playlistSongs]);
   useEffect(() => { if (query) setTimeout(() => findSongs(), 300) }, [query]);
 
   return (
@@ -50,15 +53,34 @@ const PlaylistPage: React.FC = () => {
             onMouseLeave={() => setIsHover(false)}
             className="min-[925px]:max-w-58 min-[925px]:max-h-58 min-[925px]:min-w-58 min-[925px]:min-h-58 w-[25vw] h-[25vw] min-w-[25vw] min-h-[25vw] rounded bg-[#262626] overflow-hidden relative"
           >
-            {form.cover ?
+            {form.cover ? (
               <img
                 className="object-cover w-full h-full"
+                crossOrigin="use-credentials"
                 src={form.cover}
                 alt=""
               />
-              :
-              <MusicIcon className="w-1/4 h-1/4 absolute top-1/2 left-1/2 -translate-1/2" />
-            }
+            ) : (
+              coverImages.length > 3 ? (
+                coverImages.map((d, i) => {
+                  const className = i === 0
+                    ? 'top-0 left-0' : i === 1
+                      ? 'top-0 right-0' : i === 3
+                        ? 'bottom-0 left-0' : 'bottom-0 right-0';
+
+                  return (
+                    <img
+                      className={`${className} absolute w-1/2 h-1/2 object-cover`}
+                      crossOrigin="anonymous"
+                      src={d.url}
+                      alt=""
+                      key={d.id}
+                    />
+                  )
+                })
+              ) : (
+                <MusicIcon className="w-1/4 h-1/4 absolute top-1/2 left-1/2 -translate-1/2" />
+              ))}
 
             {isHover &&
               <>
@@ -126,7 +148,7 @@ const PlaylistPage: React.FC = () => {
 
               <a href="#">
                 <span className="text-sm ml-2 font-bold">
-                  Fran Lemus
+                  {user?.username}
                 </span>
               </a>
               <span className="text-sm ml-2 font-bold">
@@ -142,13 +164,19 @@ const PlaylistPage: React.FC = () => {
         <div className="p-6 text-sm bg-[#131313] text-[#adaaaa] flex items-center justify-between relative">
           <div className="flex items-center gap-5">
             <button
-              onClick={togglePlay}
+              onClick={() => {
+                if (queueMeta.playlistId === playlistId) {
+                  return togglePlay();
+                }
+
+                play(playlistSongs, 0, { ...playlistMeta, playlistId: playlistId! });
+              }}
               disabled={!isPlay}
-              className={`w-14 h-14 rounded-full flex items-center justify-center scale-100 hover:scale-105 active:scale-95 transition-all shadow-lg text-black cursor-pointer ${!isPlay ? 'bg-[#adaaaa]/40 opacity-50 cursor-not-allowed' : 'bg-primary hover:bg-[#63ef82]'
+              className={`w-14 h-14 rounded-full flex items-center justify-center scale-100 hover:scale-105 active:scale-95 transition-all shadow-lg text-black ${!isPlay ? 'bg-[#adaaaa]/40 opacity-50 cursor-not-allowed' : 'bg-primary hover:bg-[#63ef82] cursor-pointer'
                 }`}
               title="Reproducir lista"
             >
-              {(isPlaying && isPlay) ?
+              {(isPlaying && isPlay && playlistId === queueMeta.playlistId) ?
                 <PauseIcon
                   size={24}
                   fill="currentColor"
@@ -210,11 +238,23 @@ const PlaylistPage: React.FC = () => {
           </div>
         </div>
 
+        {!isSearch && playlistSongs.length === 0 &&
+          <div className="text-white ml-auto flex-1 flex">
+            <button
+              onClick={() => setIsSearch(true)}
+              className="font-bold py-1 px-2 my-5 ml-auto mr-6 text-white text-xs rounded-full"
+              type="button"
+            >
+              Buscar más
+            </button>
+          </div>
+        }
+
         <section className={`${(playlistSongs.length > 0 && !isSearch) ? 'block' : 'hidden'}  px-8`}>
           <PlaylistSongs
             songs={playlistSongs}
             items={playlistItems}
-            playlistMeta={playlistMeta}
+            playlistMeta={{ ...playlistMeta, playlistId: playlistId! }}
             setActiveItem={setActiveItem}
             loadMore={() => { }}
           />
@@ -290,6 +330,7 @@ const PlaylistPage: React.FC = () => {
                           e.currentTarget.style.display = 'none'
                         }}
                         className="object-cover w-full h-full"
+                        crossOrigin="anonymous"
                         src={form.cover}
                         alt=""
                       /> :
@@ -364,6 +405,7 @@ const PlaylistPage: React.FC = () => {
           form={form}
           isPublic={isPublic}
           currentCover={currentCover}
+          coverImages={coverImages}
           setForm={setForm}
           onChangeVisibility={onChangeVisibility}
           coverInputRef={coverInputRef}

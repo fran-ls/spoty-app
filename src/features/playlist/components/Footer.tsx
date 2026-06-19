@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Play, Pause, Heart, EllipsisIcon, ListIcon } from 'lucide-react';
+import type { SearchMeta } from '../../../shared/types/common.types';
+import type { Song } from '../../song/song.types';
 import { usePlayer } from '../../../shared/context/PlayerContext';
 import ActionMenu from './ActionMenu';
 import LayoutMenu from './LayoutMenu';
@@ -8,6 +10,8 @@ interface FooterProps {
   isPlay: boolean;
   isPublic: boolean;
   isBackground: boolean;
+  songs: Song[];
+  songMeta: SearchMeta;
   setIsEdit: React.Dispatch<React.SetStateAction<boolean>>;
   setIsRemove: React.Dispatch<React.SetStateAction<boolean>>;
   setIsBackground: React.Dispatch<React.SetStateAction<boolean>>;
@@ -16,28 +20,35 @@ interface FooterProps {
 
 const Footer: React.FC<FooterProps> = (props) => {
   const {
-    isBackground, isPublic, isPlay, setIsEdit, setIsBackground,
-    onChangeVisibility, setIsRemove
+    isBackground, isPublic, isPlay, songs, songMeta,
+    setIsEdit, setIsBackground, onChangeVisibility, setIsRemove
   } = props;
 
-  const { isPlaying, togglePlay } = usePlayer();
+  const { isPlaying, queueMeta, togglePlay, play } = usePlayer();
 
-  const [isOpenAction, setIsOpenAction] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-
+  const [isOpenAction, setIsOpenAction] = useState(false);
   const [playlistLiked, setPlaylistLiked] = useState<boolean>(false);
+
+  const playlistId = 'song-list';
 
   return (
     <div className="text-sm text-[#adaaaa] flex items-center justify-between relative">
       <div className="flex items-center gap-6 flex-wrap" id="playlist-action-bar">
         <button
-          onClick={togglePlay}
+          onClick={() => {
+            if (queueMeta.playlistId === playlistId) {
+              return togglePlay();
+            }
+
+            play(songs, 0, { ...songMeta, playlistId: 'song-list', totalDuration: 0 })
+          }}
           disabled={!isPlay}
           className={`w-14 h-14 rounded-full flex items-center justify-center scale-100 hover:scale-105 active:scale-95 transition-all shadow-lg text-black cursor-pointer ${!isPlay ? 'bg-[#adaaaa]/40 opacity-50 cursor-not-allowed' : 'bg-primary hover:bg-[#63ef82]'
             }`}
           title="Reproducir lista"
         >
-          {isPlaying ? (
+          {(isPlaying && isPlay && playlistId === queueMeta.playlistId) ? (
             <Pause size={24} fill="currentColor" stroke="none" className="translate-x-0" />
           ) : (
             <Play size={24} fill="currentColor" stroke="none" className="translate-x-px" />

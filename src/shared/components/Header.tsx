@@ -72,7 +72,7 @@ export const Header: React.FC<HeaderProps> = ({ onExplorePremiumClick }) => {
       <div className="flex items-center gap-6 font-headline font-semibold">
         <button
           onClick={onExplorePremiumClick}
-          className="bg-white text-black font-bold px-4 py-1.5 rounded-full text-xs sm:text-sm hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 shadow-md cursor-pointer select-none"
+          className="bg-white text-black font-bold px-4 py-1.5 rounded-full text-xs sm:text-sm hover:scale-105 active:scale-95 transition-all hidden items-center gap-1.5 shadow-md cursor-pointer select-none"
         >
           <Sparkles size={14} className="text-[#1cb853]" />
           Explore Premium

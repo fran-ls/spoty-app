@@ -1,5 +1,5 @@
 import type { AuthTokens } from "../auth.types";
-import { api, ApiResponse, type ApiRes } from "../../../shared/utils/api";
+import { api, apiFetch } from "../../../shared/utils/api";
 
 class TokenService {
   private accessToken: string | null = null;
@@ -16,28 +16,28 @@ class TokenService {
     this.accessToken = null;
   }
 
-  async refreshAccessToken(): ApiRes<AuthTokens> {
-    try {
-      const res = await api.post('/auth/refresh');
-      const r = ApiResponse<AuthTokens>('success', res);
+  async refreshAccessToken() {
+    const r = await apiFetch<AuthTokens>(() => {
+      return api.post('/auth/refresh');
+    });
 
-      if (r.status === 409) {
-        r.success = true;
-        return r;
-      }
-
-      if (!r.success) return r;
-
-      const { data } = r;
-
-      if (data && data.accessToken) {
-        this.setToken(data.accessToken);
-      }
-
+    if (r.status === 409) {
+      r.success = true;
       return r;
-    } catch (err) {
-      return ApiResponse('error', err);
     }
+
+    if (!r.success) {
+      r.success = false;
+      return r;
+    }
+
+    const { data } = r;
+
+    if (data && data.accessToken) {
+      this.setToken(data.accessToken);
+    }
+
+    return r;
   }
 }
 

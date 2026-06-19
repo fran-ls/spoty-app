@@ -1,7 +1,7 @@
 import { createContext, useContext, useMemo, useRef, useState } from 'react'
 import type { PlaylistMeta } from '../../features/playlist/playlist.types';
 import type { Song } from '../../features/song/song.types';
-import apiService from '../services/api.service'
+import songService from '../../features/song/services/song.service';
 
 export type ViewType = 'home' | 'search' | 'library' | 'playlist' | 'create-playlist' | 'songs';
 
@@ -62,13 +62,13 @@ export const PlayerProvider = ({ children }: any) => {
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const playQueueSong = (track: Song, index: number) => {
+  const playQueueSong = async (track: Song, index: number) => {
     if (!audioRef.current) return;
 
     setCurrentIndex(index);
     setCurrentSong(track);
 
-    audioRef.current.src = apiService.streamUrl(track.id);
+    audioRef.current.src = songService.streamUrl(track.id);
     audioRef.current.play();
 
     setIsPlaying(true);
@@ -114,7 +114,7 @@ export const PlayerProvider = ({ children }: any) => {
     }
 
     if (audioRef.current) {
-      audioRef.current.src = apiService.streamUrl(song.id);
+      audioRef.current.src = songService.streamUrl(song.id);
       audioRef.current.play();
     }
   }
@@ -133,7 +133,7 @@ export const PlayerProvider = ({ children }: any) => {
     }
 
     if (audioRef.current) {
-      audioRef.current.src = apiService.streamUrl(song.id);
+      audioRef.current.src = songService.streamUrl(song.id);
       audioRef.current.play();
     }
   }
@@ -192,7 +192,8 @@ export const PlayerProvider = ({ children }: any) => {
           if (!audioRef.current) return;
           setDuration(audioRef.current.duration);
         }}
-        onEnded={next} // 🔥 autoplay siguiente
+        onEnded={next} // 🔥 autoplay siguiente,
+        crossOrigin="use-credentials"
       />
     </PlayerContext.Provider>
   )

@@ -77,7 +77,7 @@ const AuthPage: React.FC = () => {
         <div className="w-full bg-[#121212]/75 border border-white/5 backdrop-blur-2xl rounded-3xl p-8 shadow-[0_30px_70px_rgba(0,0,0,0.8)]" id="auth-form-card">
           <div className="text-center mb-6">
             <h2 className="text-xl font-bold text-white tracking-tight">
-              {isLogin ? 'Iniciar Sesión' : 'Crear Cuenta'}
+              {isLogin ? 'Iniciar sesión' : 'Crear cuenta'}
             </h2>
             <p className="text-xs text-[#adaaaa] mt-1.5">
               {isLogin ? 'Disfruta de tus canciones, álbumes y playlists' : 'Regístrate gratis para comenzar a escuchar'}
@@ -142,13 +142,10 @@ const AuthPage: React.FC = () => {
               {isLogin ? '¿No tienes una cuenta?' : '¿Ya tienes una cuenta?'}
             </span>{' '}
             <button
-              onClick={() => {
-                setIsLogin(!isLogin);
-                // setErrorMsg(null);
-              }}
+              onClick={() => setIsLogin(!isLogin)}
               className="text-primary hover:underline font-bold"
             >
-              {isLogin ? 'Registrarse ahora' : 'Inicia Sesión'}
+              {isLogin ? 'Registrarse' : 'Inicia sesión'}
             </button>
           </div>
         </div>

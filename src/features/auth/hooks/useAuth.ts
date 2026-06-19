@@ -4,6 +4,7 @@ import type { UserDTO } from "../auth.types";
 import { AuthContext } from "../context/AuthContext";
 import { authService } from "../services/auth.service";
 import useToaster from "../../../shared/hooks/useToaster";
+import { routes } from "../../../shared/utils/routes";
 
 const useAuth = () => {
   const [form, setForm] = useState<UserDTO>({
@@ -77,7 +78,7 @@ const useAuth = () => {
       payload: user
     });
 
-    navigate('/');
+    navigate(routes.home);
   }
 
   const login = async (data: any) => {
@@ -111,7 +112,7 @@ const useAuth = () => {
       payload: user
     });
 
-    navigate('/');
+    navigate(routes.home);
   }
 
   const logout = async () => {
@@ -122,7 +123,7 @@ const useAuth = () => {
   const getProfile = async () => {
     dispatch({ type: 'checking' });
 
-    const { data } = await authService.getProfile();
+    const data = await authService.getProfile();
 
     if (!data) {
       dispatch({ type: 'logout' });
@@ -138,6 +139,8 @@ const useAuth = () => {
         photoURL: data.photoURL
       }
     });
+
+    navigate(routes.home);
   }
 
   const onCloseToast = () => setIsActiveToast(false);

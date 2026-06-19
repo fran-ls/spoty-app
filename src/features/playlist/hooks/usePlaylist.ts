@@ -2,14 +2,15 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { Playlist, PlaylistDTO, PlaylistMeta, PlaylistSong } from "../playlist.types";
 import type { SearchMeta } from "../../../shared/types/common.types";
-import type { Song } from "../../song/song.types";
-import apiService from "../../../shared/services/api.service";
+import type { Song, SongCover } from "../../song/song.types";
+import playlistService from "../services/playlist.service";
+import songService from "../../song/services/song.service";
 import { fileToDataURL } from "../../../shared/utils/fileToDataURL";
 import { routes } from "../../../shared/utils/routes";
 import { getTimeParts } from "../../../shared/utils/formatTime";
 import useAuth from "../../auth/hooks/useAuth";
 
-const usePlaylist = (playlistId: string | undefined) => {
+const usePlaylist = (playlistId?: string) => {
   const [currentCover, setCurrentCover] = useState<string | null>(null);
   const [gradientColor, setGradientColor] = useState('#121212');
   const [bgColor, setBgColor] = useState('#3a3a3a');
@@ -25,8 +26,10 @@ const usePlaylist = (playlistId: string | undefined) => {
     file: null
   });
 
-  const [playlistItems, setPlaylistItems] = useState<PlaylistSong[]>([]);
+  const [coverImages, setCoverImages] = useState<SongCover[]>([]);
+  const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [playlistSongs, setPlaylistSongs] = useState<Song[]>([]);
+  const [playlistItems, setPlaylistItems] = useState<PlaylistSong[]>([]);
   const [playlistMeta, setPlaylistMeta] = useState<PlaylistMeta>({
     page: 0,
     limit: 10,
@@ -86,10 +89,21 @@ const usePlaylist = (playlistId: string | undefined) => {
     setCurrentCover(data.cover);
   }
 
+  const getUserPlaylists = async () => {
+    const userId = user?.id;
+    if (!userId) return [];
+
+    const { data } = await playlistService.getUserPlaylists(userId);
+
+    if (data) {
+      setPlaylists(data);
+    }
+  }
+
   const getPlaylist = async () => {
     if (!playlistId) return;
 
-    const r = await apiService.getPlaylist(playlistId);
+    const r = await playlistService.getPlaylist(playlistId);
 
     if (r.status === 404) {
       navigate(routes.home);
@@ -102,7 +116,7 @@ const usePlaylist = (playlistId: string | undefined) => {
   }
 
   const updatePlaylist = async (playlistId: string, values: PlaylistDTO) => {
-    const r = await apiService.updatePlaylist(playlistId, {
+    const r = await playlistService.updatePlaylist(playlistId, {
       ...values,
       name: values.name.trim(),
       description: values.description.trim()
@@ -123,7 +137,7 @@ const usePlaylist = (playlistId: string | undefined) => {
       return await updatePlaylist(playlistId, values);
     }
 
-    const r = await apiService.newPlaylist({
+    const r = await playlistService.newPlaylist({
       ...values,
       name: values.name.trim(),
       description: values.description.trim(),
@@ -143,7 +157,7 @@ const usePlaylist = (playlistId: string | undefined) => {
 
   const onRemovePlaylist = async () => {
     if (!playlistId) return;
-    const { data } = await apiService.removePlaylist(playlistId);
+    const { data } = await playlistService.removePlaylist(playlistId);
 
     if (data?.id) {
       navigate(routes.home);
@@ -153,7 +167,7 @@ const usePlaylist = (playlistId: string | undefined) => {
   const getPlaylistSongs = async () => {
     if (!playlistId) return;
 
-    const { data } = await apiService.getPlaylistSongs(playlistId);
+    const { data } = await playlistService.getPlaylistSongs(playlistId);
 
     if (data) {
       setIsSearch(data.items.length === 0);
@@ -166,8 +180,25 @@ const usePlaylist = (playlistId: string | undefined) => {
     }
   }
 
+  const getPlaylistCover = () => {
+    const images: SongCover[] = [];
+
+    for (const song of playlistSongs) {
+      if (song.cover) {
+        const coverUrl = songService.songCoverUrl(song.id, song.cover);
+        images.push({ id: song.id, url: coverUrl });
+      }
+
+      if (images.length === 4) {
+        break;
+      }
+    }
+
+    setCoverImages(images);
+  }
+
   const findSongs = async () => {
-    const { data } = await apiService.searchSongs({
+    const { data } = await songService.searchSongs({
       title: query
     });
 
@@ -180,7 +211,7 @@ const usePlaylist = (playlistId: string | undefined) => {
   const addSongToPlaylist = async (songId: string) => {
     if (!playlistId) return;
 
-    const { data } = await apiService.addSongToPlaylist(playlistId, songId);
+    const { data } = await playlistService.addSongToPlaylist(playlistId, songId);
 
     if (data && data.id) {
       setPlaylistItems((prev) => [...prev, data]);
@@ -193,7 +224,7 @@ const usePlaylist = (playlistId: string | undefined) => {
   const removeSongFromPlaylist = async (id: string) => {
     if (!id) return false;
 
-    const { data } = await apiService.removeSongFromPlaylist(id);
+    const { data } = await playlistService.removeSongFromPlaylist(id);
 
     if (data && data.success) {
       setPlaylistItems((prev) => prev.filter((p) => p.id !== id));
@@ -207,6 +238,7 @@ const usePlaylist = (playlistId: string | undefined) => {
     isPlay: playlistSongs.length > 0,
     playlistMeta, duration,
     playlistSongs, playlistItems,
+    playlists, setPlaylists,
     currentCover, setCurrentCover,
     gradientColor, setGradientColor,
     bgColor, setBgColor,
@@ -223,7 +255,10 @@ const usePlaylist = (playlistId: string | undefined) => {
     searchSongs, setSearchSongs,
     searchMeta, setSearchMeta,
     activeItem, setActiveItem,
+    coverImages, setCoverImages,
     onFileChange,
+    getPlaylistCover,
+    getUserPlaylists,
     getPlaylist,
     onSavePlaylist,
     onChangeVisibility,
