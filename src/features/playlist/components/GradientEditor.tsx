@@ -188,7 +188,7 @@ export default function GradientEditor(props: GradientEditorProps) {
             value={direction}
             onChange={(e) => setDirection(e.target.value)}
             style={{
-              display: isCollapsed ? 'none' : 'inline-block',
+              display: window.innerWidth >= 768 ? 'inline-block' : 'none',
               background: "rgba(255,255,255,0.06)",
               border: "1px solid rgba(255,255,255,0.12)",
               color: "rgba(255,255,255,0.8)",

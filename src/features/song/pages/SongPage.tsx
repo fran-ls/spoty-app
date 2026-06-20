@@ -12,19 +12,20 @@ import songService from '../services/song.service';
 import SongListEmpty from '../components/SongListEmpty';
 import { usePlayer } from '../../../shared/context/PlayerContext';
 import useAuth from '../../auth/hooks/useAuth';
+import { GRADIENT_CSS } from '../../../shared/data/gradientColors.data';
 
 const SongPage: React.FC = () => {
   const { user } = useAuth();
   const { setQueueMeta } = usePlayer();
 
   const [gradientCSS, setGradientCSS] = useState<string>('');
-  const [bgColor, setBgColor] = useState('#8b1321');
-  const [gradientColor, setGradientColor] = useState('#1d0205');
+  const [bgColor, setBgColor] = useState('#3b3b3b');
+  const [gradientColor, setGradientColor] = useState('#111111');
   const [isPublic, setIsPublic] = useState(false);
 
   const [form, setForm] = useState<PlaylistDTO>({
     name: 'Canciones',
-    description: '',
+    description: 'Todas las canciones',
     cover: '',
     isPublic,
     gradientColor,
@@ -51,8 +52,8 @@ const SongPage: React.FC = () => {
     hasPrevPage: false
   });
   const [coverImages, setCoverImages] = useState<SongCover[]>([]);
-  const duration = getTimeParts(searchMeta?.totalDuration ?? 0);
 
+  const duration = getTimeParts(searchMeta?.totalDuration ?? 0);
   const coverInputRef = useRef<HTMLInputElement>(null);
 
   async function getSongs(page: number) {
@@ -98,13 +99,15 @@ const SongPage: React.FC = () => {
     <div className="min-w-full text-white select-none scroll-smooth">
       <div className="animate-fade-in">
         <div
-          style={{ background: gradientCSS }}
-          className="p-6 pb-44 flex items-center gap-6"
+          style={{
+            background: gradientCSS || GRADIENT_CSS
+          }}
+          className="p-6 pb-44 flex items-center gap-6 overflow-x-auto hide-scrollbar"
         >
           <div
             onPointerEnter={() => setIsHover(true)}
             onMouseLeave={() => setIsHover(false)}
-            className="min-[925px]:max-w-58 min-[925px]:max-h-58 min-[925px]:min-w-58 min-[925px]:min-h-58 w-[25vw] h-[25vw] min-w-[25vw] min-h-[25vw] rounded bg-[#262626] relative overflow-hidden"
+            className="min-[925px]:max-w-58 min-[925px]:max-h-58 min-[925px]:min-w-58 min-[925px]:min-h-58 w-[25vw] h-[25vw] min-w-[25vw] min-h-[25vw] rounded bg-[#262626] relative"
           >
             {form.cover ? (
               <img
@@ -152,8 +155,14 @@ const SongPage: React.FC = () => {
               onClick={() => setIsEdit(true)}
               className="playlist-title font-black cursor-pointer google-sans-flex-font"
             >
-              {form.name}
+              {form.name || 'Mi lista'}
             </h1>
+
+            {form.description &&
+              <div className="text-sm text-slate-400">
+                {form.description}
+              </div>
+            }
 
             <div className="mt-2 flex items-center">
               <button
@@ -169,7 +178,7 @@ const SongPage: React.FC = () => {
                 <span className="text-sm ml-2 font-bold">
                   •
                 </span>
-                <span className="text-sm ml-2">
+                <span className="text-sm ml-2 text-nowrap">
                   {searchMeta.total || 0} canciones, {duration.min} min {duration.stringSecs}s
                 </span>
               </a>
@@ -178,7 +187,7 @@ const SongPage: React.FC = () => {
         </div>
 
         <div
-          className="min-w-full absolute top-[calc(100%-150px)] bg-[#0a080820]"
+          className="min-w-full w-full absolute top-[calc(100%-150px)] bg-[#0a080820] overflow-hidden"
           style={{
             // background: `linear-gradient(to bottom, ${gradientColor} 0%, #0e0e0e 100%)`,
           }}

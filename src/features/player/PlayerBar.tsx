@@ -121,7 +121,7 @@ export const PlayerBar: React.FC = () => {
       id="spotify-playback-bar"
     >
       {/* LEFT: Track Info */}
-      <div className="flex items-center gap-4 w-[30%] min-w-50">
+      <div className="lg:flex hidden items-center gap-4 w-[30%] min-w-50">
         <div className="w-14 h-14 bg-[#262626] rounded overflow-hidden shadow-2xl shrink-0 group relative cursor-pointer">
           <MusicIcon className={`${!songCover ? '' : 'hidden opacity-0'} text-white absolute top-1/2 left-1/2 -translate-1/2 music-icon`} />
 
@@ -159,7 +159,7 @@ export const PlayerBar: React.FC = () => {
       </div>
 
       {/* CENTER: Playback Controls */}
-      <div className="flex flex-col items-center gap-2 w-[40%] max-w-150">
+      <div className="flex flex-col items-center gap-2 lg:w-[40%] w-full lg:max-w-150">
         {/* Buttons Grid */}
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
@@ -272,7 +272,7 @@ export const PlayerBar: React.FC = () => {
       </div>
 
       {/* RIGHT: Volume & Secondary Controls */}
-      <div className="flex items-center justify-end gap-4 w-[30%] min-w-50">
+      <div className="lg:flex hidden items-center justify-end gap-4 w-[30%] min-w-50">
         <button
           onClick={() => setIsQueue(!isQueue)}
           className="text-[#adaaaa] hover:text-primary transition-all cursor-pointer"

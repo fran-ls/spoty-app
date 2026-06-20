@@ -46,7 +46,7 @@ const PlaylistPage: React.FC = () => {
           style={{
             background: `linear-gradient(to bottom, ${bgColor} 0%, ${gradientColor} 100%)`,
           }}
-          className="p-6 flex items-center gap-6"
+          className="p-6 flex items-center gap-6 overflow-auto hide-scrollbar"
         >
           <div
             onPointerEnter={() => setIsHover(true)}
@@ -129,7 +129,7 @@ const PlaylistPage: React.FC = () => {
               className="playlist-title google-sans-flex-font font-black cursor-pointer"
               title={form.name}
             >
-              {form.name}
+              {form.name || 'Mi lista'}
             </h1>
 
             {form.description &&
@@ -154,7 +154,7 @@ const PlaylistPage: React.FC = () => {
               <span className="text-sm ml-2 font-bold">
                 •
               </span>
-              <span className="text-sm ml-2">
+              <span className="text-sm ml-2 text-nowrap">
                 {playlistMeta.total} canciones, {duration.min} min {duration.stringSecs}s
               </span>
             </div>

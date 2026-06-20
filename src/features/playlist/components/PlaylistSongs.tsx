@@ -9,6 +9,7 @@ import Loader from '../../../shared/components/Loader';
 import { useInfiniteScroll } from '../../../shared/hooks/useInfiniteScroll';
 import { useState } from 'react';
 import songService from '../../song/services/song.service';
+import { DropdownIcon } from '../../../shared/components/Icons';
 
 interface PlaylistSongsProps {
   songs: Song[];
@@ -34,12 +35,15 @@ const PlaylistSongs: React.FC<PlaylistSongsProps> = (props) => {
         <span>#</span>
         <span>Título</span>
         <span>Álbum</span>
-        <span>Fecha de añadido</span>
-        <div className="flex justify-end pr-1">
+        <span className="text-nowrap">
+          Fecha de añadido
+        </span>
+        <div className="flex justify-end">
           <Clock size={16} />
         </div>
-        <div className="flex justify-end pr-1">
-          <ChevronDown size={16} />
+        <div className="relative flex justify-end pr-1">
+          <ChevronDown className="hidden" size={16} />
+          <DropdownIcon className="absolute top-[calc(100%-12px)] left-1/2 -translate-1/2" size={28} />
         </div>
       </div>
 
@@ -103,7 +107,7 @@ const PlaylistSongs: React.FC<PlaylistSongsProps> = (props) => {
               </div>
 
               <div className="text-[#adaaaa] text-sm truncate hover:text-white transition-colors select-none">
-                {song.albumId ?? 'Sin albúm'}
+                {song.albumId || 'Sin albúm'}
               </div>
 
               <div className="text-[#adaaaa] text-sm truncate select-none">

@@ -21,18 +21,20 @@ const SongList: React.FC<SongListProps> = ({ songs, searchMeta, loadMore }) => {
   const isTrackLiked = true;
 
   return (
-    <div className="min-w-full overflow-auto">
+    <div className="min-w-0 w-full">
       <div className="grid grid-cols-[40px_minmax(200px,2fr)_minmax(120px,1fr)_minmax(120px,1fr)_80px] gap-4 px-4 py-3 mx-8 border-b border-white/10 text-[#adaaaa] text-sm font-medium tracking-wider select-none">
         <span>#</span>
         <span>Título</span>
         <span>Álbum</span>
-        <span>Fecha de publicación</span>
+        <span className="text-nowrap">
+          Fecha de publicación
+        </span>
         <div className="flex justify-end pr-1">
           <Clock size={16} />
         </div>
       </div>
 
-      <div className="px-8 pb-8 flex flex-col gap-1 animate-fade-in bg-[#131313]">
+      <div className="overflow-x-auto w-full px-8 pb-8 flex flex-col gap-1 animate-fade-in bg-[#131313]">
         {songs.map((track, i) => {
           const isCurrentPlayingNow = currentSong?.id === track.id;
           const cover = songService.songCoverUrl(track.id, track.cover);

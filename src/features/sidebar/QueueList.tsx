@@ -14,14 +14,12 @@ export const QueueList: React.FC = () => {
   } = usePlayer();
 
   const [page, setPage] = useState(0);
-  const [totalPages, setTotalPages] = useState(1);
 
   const { loaderRef } = useInfiniteScroll(() => {
-    if (page < totalPages) {
-      const nextPage = page + 1;
-      getQueueSongs(nextPage);
-      setPage(nextPage);
-    }
+    if (page > queueMeta.totalPages) return;
+    const nextPage = page + 1;
+    getQueueSongs(nextPage);
+    setPage(nextPage);
   });
 
   const isCollapsed = isQueue;
@@ -32,10 +30,16 @@ export const QueueList: React.FC = () => {
   async function getQueueSongs(page: number) {
     if (page <= 1) return;
 
+    if (!queueMeta.playlistId) {
+      const { data } = await songService.searchSongs({ page, limit: 10 });
+      if (!data) return;
+      setQueueMeta({ ...queueMeta, ...data.meta });
+      setQueue((prev) => [...prev, ...data.items]);
+      return;
+    }
+
     const { data } = await playlistService.getPlaylistSongs(queueMeta.playlistId, { page, limit: 10 });
     if (!data) return;
-
-    setTotalPages(data.meta.totalPages);
     setQueueMeta(data.meta);
     setQueue((prev) => [...prev, ...data.songs]);
   }
@@ -171,7 +175,7 @@ export const QueueList: React.FC = () => {
               )
             })}
 
-            {(queue.length > 0 && page < totalPages) && (
+            {(queue.length > 0 && page < queueMeta.totalPages) && (
               <li
                 className="flex items-center justify-center px-6 py-1 overflow-hidden"
                 ref={loaderRef}

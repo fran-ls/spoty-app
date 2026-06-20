@@ -18,7 +18,7 @@ const DeleteConfirm = ({ playlistName, onConfirm, onClose }: DeleteConfirmProps)
           <p className="mt-2 mb-8 text-sm">
             Se eliminará <strong>{playlistName}</strong> de <strong>Tu biblioteca.</strong>
           </p>
-          <div className="flex items-center justify-between">
+          <div className="text-sm flex items-center justify-between">
             <button
               onClick={onClose}
               className="cursor-pointer py-2 px-6 hover:bg-[#3e3e3e] border-[#3e3e3e] border rounded-full transition-all duration-100"

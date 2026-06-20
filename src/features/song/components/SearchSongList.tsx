@@ -47,7 +47,6 @@ const SearchSongList: React.FC<SearchSongListProps> = (props) => {
                     alt=""
                   />
                 )}
-                {track.title}
               </div>
 
               <div className="flex flex-col min-w-0 select-none">
