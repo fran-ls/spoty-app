@@ -6,6 +6,7 @@ import { PlayerBar } from "../../features/player/PlayerBar";
 import { PremiumModal } from "../components/PremiumModal";
 import { STYLES } from "../utils/styles";
 import { tokenService } from "../../features/auth/services/token.service";
+import UserProfile from "../../features/auth/components/UserProfile";
 
 const AppLayout = ({ children }: { children: React.ReactNode }) => {
   const [isPremiumOpen, setIsPremiumOpen] = useState(false);
@@ -32,6 +33,8 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
       </div>
 
       <PlayerBar />
+
+      <UserProfile />
 
       <PremiumModal
         isOpen={isPremiumOpen}

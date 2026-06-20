@@ -42,6 +42,15 @@ body {
   overflow: hidden;
 }
 
+.pass-input::-ms-reveal,
+.pass-input::-ms-clear {
+  display: none;
+}
+
+.pass-input::-webkit-credentials-auto-fill-button,
+.pass-input::-webkit-password-toggle {
+  display: none;
+}
 
 /* GOOGLE FONTS */
 .google-sans-flex-font {
@@ -132,13 +141,14 @@ body {
 }
 
 .playlist-title {
-  display: inline-flex;
+  display: inline;
+  width: 100%;
   font-size: clamp(1rem, 8vw, 6rem);
   /* font-family: 'DM Sans', 'Segoe UI', sans-serif; */
   /* font-weight: 900; */
+  line-height: 1.25;
   overflow: hidden;
   display: -webkit-box;
-  line-height: 1.25;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 1;
 }

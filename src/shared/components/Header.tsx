@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Bell, Users, User, Search, Sparkles, XIcon, GlobeIcon } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { ChevronLeft, ChevronRight, Bell, Users, User, Search, Sparkles, XIcon, GlobeIcon, CircleUserRoundIcon, SettingsIcon, LaptopMinimalIcon, LogOutIcon } from 'lucide-react';
 import { routes } from '../utils/routes';
+import useAuth from '../../features/auth/hooks/useAuth';
 
 interface HeaderProps {
   onExplorePremiumClick?: () => void;
@@ -11,6 +12,7 @@ export const Header: React.FC<HeaderProps> = ({ onExplorePremiumClick }) => {
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
+  const { user, showProfile, logout } = useAuth();
   const navigate = useNavigate();
 
   return (
@@ -78,6 +80,14 @@ export const Header: React.FC<HeaderProps> = ({ onExplorePremiumClick }) => {
           Explore Premium
         </button>
 
+        <Link
+          to="/upload"
+          className="bg-white text-black font-bold px-4 py-1.5 rounded-full text-xs sm:text-sm hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 shadow-md cursor-pointer select-none"
+        >
+          <Sparkles size={14} className="text-[#1cb853]" />
+          Subir
+        </Link>
+
         <div className="flex items-center gap-3">
           <button className="text-[#adaaaa] hover:text-white hover:bg-[#262626] rounded-full p-2 transition-all cursor-pointer">
             <Bell size={20} />
@@ -102,29 +112,52 @@ export const Header: React.FC<HeaderProps> = ({ onExplorePremiumClick }) => {
                 />
 
                 <div className="z-50 absolute right-0 mt-2 w-48 rounded-md shadow-2xl bg-[#282828] border border-[#3e3e3e] py-1 text-sm text-on-surface-variant font-medium animate-scale-up">
-                  <div className="px-4 py-2 border-b border-[#3e3e3e] text-xs text-[#adaaaa]">
-                    Signed in as <br />
-                    <span className="text-white font-bold block truncate mt-0.5">
-                      franklemus196@gmail.com
-                    </span>
+                  <div className="flex items-center gap-2 px-4 py-2 border-b border-[#3e3e3e] text-xs text-[#adaaaa]">
+                    <div className="w-7 h-7 min-w-7 bg-primary rounded-full relative">
+                      <span className="text-black font-semibold absolute top-1/2 left-1/2 -translate-1/2 block">
+                        {user?.username[0].toUpperCase()}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-white text-[13px]">
+                        {user?.username}
+                      </span>
+                      <span className="text-xs text-[#bababa] block truncate">
+                        {user?.email}
+                      </span>
+                    </div>
                   </div>
+
                   <button
-                    onClick={() => { setShowUserDropdown(false); }}
-                    className="w-full text-left px-4 py-2.5 text-[#adaaaa] hover:text-white hover:bg-white/10 transition-colors"
+                    onClick={() => {
+                      setShowUserDropdown(false);
+                      showProfile();
+                    }}
+                    className="flex items-center gap-2 w-full text-left px-4 py-2 text-[#adaaaa] hover:text-white hover:bg-white/10 transition-colors"
                   >
-                    Your Profile
+                    <CircleUserRoundIcon size={20} />
+                    <span>Perfil</span>
                   </button>
                   <button
-                    onClick={() => { setShowUserDropdown(false); }}
-                    className="w-full text-left px-4 py-2.5 text-[#adaaaa] hover:text-white hover:bg-white/10 transition-colors"
+                    onClick={() => setShowUserDropdown(false)}
+                    className="flex items-center gap-2 w-full text-left px-4 py-2 text-[#adaaaa] hover:text-white hover:bg-white/10 transition-colors"
                   >
-                    Account Settings
+                    <SettingsIcon size={20} />
+                    <span>Configuración</span>
                   </button>
                   <button
-                    onClick={() => alert('Spotify Clone Web Player - Created successfully in React + TS')}
-                    className="w-full text-left px-4 py-2.5 text-primary hover:text-white hover:bg-white/10 transition-colors font-bold"
+                    onClick={() => alert('Spotify Clone Web Player - Created in React + TS')}
+                    className="flex items-center gap-2 w-full text-left px-4 py-2 text-[#adaaaa] hover:text-white hover:bg-white/10 transition-colors"
                   >
-                    About System
+                    <LaptopMinimalIcon size={20} />
+                    <span>Sobre el sistema</span>
+                  </button>
+                  <button
+                    onClick={logout}
+                    className="border-t border-[#3e3e3e] flex items-center gap-2 w-full text-left px-4 py-2 text-[#adaaaa] hover:text-white hover:bg-white/10 transition-colors"
+                  >
+                    <LogOutIcon size={20} />
+                    <span>Cerrar sesión</span>
                   </button>
                 </div>
               </>

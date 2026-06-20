@@ -136,7 +136,8 @@ const useAuth = () => {
         id: data.id,
         email: data.email,
         username: data.username,
-        photoURL: data.photoURL
+        photoURL: data.photoURL,
+        role: data.role
       }
     });
 
@@ -144,6 +145,10 @@ const useAuth = () => {
   }
 
   const onCloseToast = () => setIsActiveToast(false);
+
+  const showProfile = () => {
+    dispatch({ type: "profile" });
+  }
 
   return {
     ...state,
@@ -158,7 +163,8 @@ const useAuth = () => {
     register,
     login,
     logout,
-    getProfile
+    getProfile,
+    showProfile
   }
 }
 

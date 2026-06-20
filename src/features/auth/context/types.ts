@@ -6,6 +6,7 @@ export interface AuthState {
   user: User | null;
   status: AuthStatus;
   errorMessage?: string;
+  isProfile: boolean;
 }
 
 export type AuthAction =
@@ -17,4 +18,7 @@ export type AuthAction =
   | {
     type: 'logout';
     payload?: { errorMessage?: string }
+  }
+  | {
+    type: 'profile';
   }

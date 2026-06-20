@@ -1,6 +1,7 @@
 import type { AuthData, User, UserDTO } from "../auth.types";
 import { tokenService } from "./token.service";
 import { api, apiFetch } from "../../../shared/utils/api";
+import { envs } from "../../../shared/utils/envs";
 
 class AuthService {
   async register(user: UserDTO) {
@@ -115,7 +116,7 @@ class AuthService {
     const response = await apiFetch<User>(() => {
       return api.get('/auth/me', {
         headers: {
-          "Authorization": `Bearer ${tokenService.getToken()}`
+          'Authorization': `Bearer ${tokenService.getToken()}`
         }
       });
     });
@@ -131,6 +132,37 @@ class AuthService {
     }
 
     return response.data;
+  }
+
+  async update(id: string, user: Partial<UserDTO>) {
+    const formData = new FormData();
+
+    if (user.file) {
+      formData.append('avatar', user.file);
+    }
+
+    for (const k in user) {
+      const f = (user as any)[k];
+
+      if (k !== 'file' && f) {
+        formData.append(k, f);
+      }
+    }
+
+    const response = await apiFetch<User>(() => {
+      return api.put(`/users/${id}`, formData, {
+        headers: {
+          'Authorization': `Bearer ${tokenService.getToken()}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+    });
+
+    return response;
+  }
+
+  userImage(userId: string) {
+    return userId ? `${envs.API_URL}/users/image/${userId}` : '';
   }
 }
 
