@@ -7,21 +7,21 @@ export type ViewType = 'home' | 'search' | 'library' | 'playlist' | 'create-play
 
 interface PlayerContextType {
   currentSong: Song | null;
-  isPlaying: boolean;
-  queue: Song[];
   currentIndex: number;
+  isPlaying: boolean;
   progress: number;
   duration: number;
   volume: number;
   isMuted: boolean;
   isQueue: boolean;
+  queue: Song[];
   queueMeta: PlaylistMeta;
-  seek: (time: number) => void;
-  play: (songs: Song[], index: number, meta: PlaylistMeta) => void;
-  togglePlay: () => void;
   next: () => void;
   prev: () => void;
+  seek: (time: number) => void;
   toggleMute: () => void;
+  togglePlay: () => void;
+  play: (songs: Song[], index: number, meta: PlaylistMeta) => void;
   playQueueSong: (song: Song, index: number) => void;
   setQueue: React.Dispatch<React.SetStateAction<Song[]>>;
   setVolume: React.Dispatch<React.SetStateAction<number>>;
@@ -31,7 +31,40 @@ interface PlayerContextType {
   setQueueMeta: React.Dispatch<React.SetStateAction<PlaylistMeta>>;
 }
 
-export const PlayerContext = createContext<PlayerContextType | null>(null)
+export const PlayerContext = createContext<PlayerContextType>({
+  currentSong: null,
+  currentIndex: 0,
+  progress: 0,
+  duration: 0,
+  volume: 1,
+  isMuted: false,
+  isQueue: false,
+  isPlaying: false,
+  queue: [],
+  queueMeta: {
+    page: 0,
+    limit: 10,
+    total: 0,
+    totalPages: 0,
+    hasNextPage: false,
+    hasPrevPage: false,
+    totalDuration: 0,
+    playlistId: ''
+  },
+  play: () => { },
+  next: () => { },
+  prev: () => { },
+  seek: () => { },
+  togglePlay: () => { },
+  playQueueSong: () => { },
+  setIsPlaying: () => { },
+  setIsMuted: () => { },
+  toggleMute: () => { },
+  setVolume: () => { },
+  setQueueMeta: () => { },
+  setIsQueue: () => { },
+  setQueue: () => { },
+});
 
 export const PlayerProvider = ({ children }: any) => {
   const [isQueue, setIsQueue] = useState(true);
