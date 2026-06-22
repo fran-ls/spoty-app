@@ -1,10 +1,10 @@
+import { type ImgHTMLAttributes } from "react";
 import { MusicIcon } from "lucide-react";
 import { showMusicIcon } from "../utils/showMusicIcon";
 import { cn } from "../utils/tailwindCn";
 
-interface SmartImageProps {
+interface SmartImageProps extends ImgHTMLAttributes<HTMLImageElement> {
   cover: string | null;
-  imgClassName?: string;
   wrapClassName?: string;
   iconClassName?: string;
   wrapStyles?: React.CSSProperties;
@@ -12,7 +12,8 @@ interface SmartImageProps {
 
 const SmartImage = (props: SmartImageProps) => {
   const {
-    cover, imgClassName = '', wrapClassName = '', iconClassName = '', wrapStyles = {}
+    className, cover, wrapClassName = '', iconClassName = '',
+    wrapStyles = {}, crossOrigin = 'anonymous', ...imgProps
   } = props;
 
   return (
@@ -22,15 +23,15 @@ const SmartImage = (props: SmartImageProps) => {
     >
       {cover && (
         <img
+          className={cn("object-cover w-full h-full", className)}
           onError={(e) => showMusicIcon(e.currentTarget, '.img-wrap')}
           src={cover}
-          className={cn("object-cover w-full h-full", imgClassName)}
-          crossOrigin="use-credentials"
-          alt=""
+          crossOrigin={crossOrigin}
+          {...imgProps}
         />
       )}
 
-      <MusicIcon className={cn(`${!cover ? '' : 'hidden opacity-0'} w-[50%] h-[50%] absolute top-1/2 left-1/2 -translate-1/2 music-icon`, iconClassName)} />
+      <MusicIcon className={`${cn(`${!cover ? '' : 'hidden opacity-0'} w-[50%] h-[50%] absolute top-1/2 left-1/2 -translate-1/2`, iconClassName)} music-icon`} />
     </div>
   )
 }
