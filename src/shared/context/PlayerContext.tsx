@@ -29,9 +29,6 @@ interface PlayerContextType {
   setIsMuted: React.Dispatch<React.SetStateAction<boolean>>;
   setIsQueue: React.Dispatch<React.SetStateAction<boolean>>;
   setQueueMeta: React.Dispatch<React.SetStateAction<PlaylistMeta>>;
-
-  currentView: ViewType;
-  setView: (view: ViewType) => void;
 }
 
 export const PlayerContext = createContext<PlayerContextType | null>(null)
@@ -57,8 +54,6 @@ export const PlayerProvider = ({ children }: any) => {
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
   const [prevVolume, setPrevVolume] = useState<number>(1);
-
-  const [currentView, setView] = useState<ViewType>('home');
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -175,9 +170,7 @@ export const PlayerProvider = ({ children }: any) => {
         play, togglePlay,
         next, prev,
         seek, toggleMute,
-        playQueueSong,
-
-        currentView, setView
+        playQueueSong
       }}
     >
       {children}

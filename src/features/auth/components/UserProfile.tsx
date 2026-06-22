@@ -10,7 +10,7 @@ const UserProfile = () => {
   const inputFileRef = useRef<HTMLInputElement>(null);
 
   const [isHover, setIsHover] = useState(false);
-  const [isHidePass, setIsHidePass] = useState(false);
+  const [isHidePass, setIsHidePass] = useState(true);
 
   const [file, setFile] = useState<File | null>(null);
   const [form, setForm] = useState<Partial<UserDTO>>({
@@ -115,9 +115,10 @@ const UserProfile = () => {
               </button>
 
               <input
-                className="hidden" type="file"
+                className="hidden"
                 onChange={onFileChange}
                 ref={inputFileRef}
+                type="file"
               />
             </div>
 
@@ -156,7 +157,7 @@ const UserProfile = () => {
                   className="w-[calc(100%-28px)] pass-input"
                   onChange={(e) => setForm({ ...form, password: e.target.value })}
                   placeholder="Contraseña"
-                  value={form.password}
+                  value={form.password || ''}
                   type={isHidePass ? 'password' : 'text'}
                 />
 

@@ -18,7 +18,7 @@ export const Playlists: React.FC = () => {
 
   const { user } = useAuth();
   const { playlists, getUserPlaylists } = usePlaylist();
-  const { currentView, isPlaying, queueMeta, setView, togglePlay } = usePlayer();
+  const { isPlaying, queueMeta, togglePlay } = usePlayer();
 
   const navigate = useNavigate();
 
@@ -144,19 +144,13 @@ export const Playlists: React.FC = () => {
           <ul className={`${isCollapsed ? 'pl-0 pb-4' : 'pl-2 pb-2'} w-full absolute top-0 left-0`}>
             <li className={`cursor-pointer p-2 text-[#adaaaa] hover:bg-[#1f1f1f] rounded-md gap-3 flex items-center`}>
               <button
-                onClick={() => {
-                  setView('songs');
-                  navigate(routes.songs);
-                }}
+                onClick={() => navigate(routes.songs)}
                 className={`w-full flex items-center ${isCollapsed ? 'justify-center p-3' : 'justify-start py-3 px-4 gap-4'
-                  } rounded-lg font-headline text-sm font-bold tracking-tight transition-all duration-200 cursor-pointer ${currentView === 'songs'
-                    ? 'text-white active:scale-95'
-                    : 'text-[#adaaaa] hover:text-white active:scale-95'
-                  }`}
+                  } rounded-lg font-headline text-sm font-bold tracking-tight transition-all duration-200 cursor-pointer 'text-[#adaaaa] hover:text-white active:scale-95`}
                 title={isCollapsed ? "Canciones" : undefined}
               >
                 <ListMusicIcon
-                  className={currentView === 'songs' ? 'text-primary' : ''}
+                  className="text-primary"
                   size={22}
                 />
                 {!isCollapsed && <span>Canciones</span>}
