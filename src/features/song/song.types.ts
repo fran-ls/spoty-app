@@ -17,3 +17,20 @@ export type SongCover = {
   id: string;
   url: string;
 }
+
+export interface SongFileUrls {
+  audio: string;
+  cover?: string;
+}
+
+export interface SongDTO {
+  title: string;
+  artistName: string;
+  artistId?: string;
+  cover?: string | null;
+  albumId?: string;
+  quality: string;
+  audio: File | null;
+  coverFile?: File | null;
+  includeArtist?: boolean;
+}

@@ -1,4 +1,5 @@
-import { Play, Heart, Clock, MusicIcon } from 'lucide-react';
+import { useState } from 'react';
+import { Play, Heart, Clock, MusicIcon, EllipsisIcon } from 'lucide-react';
 import type { Song } from '../song.types';
 import type { PaginationMeta } from '../../../shared/types/common.types';
 import { usePlayer } from '../../../shared/context/PlayerContext';
@@ -8,21 +9,26 @@ import { showMusicIcon } from '../../../shared/utils/showMusicIcon';
 import Loader from '../../../shared/components/Loader';
 import { useInfiniteScroll } from '../../../shared/hooks/useInfiniteScroll';
 import songService from '../services/song.service';
+import { DropdownIcon } from '../../../shared/components/Icons';
 
 interface SongListProps {
   songs: Song[];
   searchMeta: PaginationMeta;
   loadMore: () => void;
+  onOpenPlaylistMenu: (track: Song, index: number) => void;
 }
 
-const SongList: React.FC<SongListProps> = ({ songs, searchMeta, loadMore }) => {
+const SongList: React.FC<SongListProps> = (props) => {
+  const { songs, searchMeta, loadMore, onOpenPlaylistMenu } = props
   const { currentSong, play } = usePlayer();
   const { loaderRef } = useInfiniteScroll(() => loadMore());
+
+  const [hoverIndex, setHoverIndex] = useState<number | null>(null);
   const isTrackLiked = true;
 
   return (
     <div className="min-w-0 w-full">
-      <div className="grid grid-cols-[40px_minmax(200px,2fr)_minmax(120px,1fr)_minmax(120px,1fr)_80px] gap-4 px-4 py-3 mx-8 border-b border-white/10 text-[#adaaaa] text-sm font-medium tracking-wider select-none">
+      <div className="grid grid-cols-[40px_minmax(200px,2fr)_minmax(120px,1fr)_minmax(120px,1fr)_80px_28px] gap-4 px-4 py-3 mx-8 border-b border-white/10 text-[#adaaaa] text-sm font-medium tracking-wider select-none">
         <span>#</span>
         <span>Título</span>
         <span>Álbum</span>
@@ -31,6 +37,9 @@ const SongList: React.FC<SongListProps> = ({ songs, searchMeta, loadMore }) => {
         </span>
         <div className="flex justify-end pr-1">
           <Clock size={16} />
+        </div>
+        <div className="relative flex justify-end pr-1">
+          <DropdownIcon className="absolute top-[calc(100%-12px)] left-1/2 -translate-1/2" size={28} />
         </div>
       </div>
 
@@ -42,7 +51,9 @@ const SongList: React.FC<SongListProps> = ({ songs, searchMeta, loadMore }) => {
           return (
             <div
               onClick={() => play(songs, i, { ...searchMeta, playlistId: '', totalDuration: 0 })}
-              className="grid grid-cols-[40px_minmax(200px,2fr)_minmax(120px,1fr)_minmax(120px,1fr)_80px] gap-4 px-4 py-2.5 items-center rounded hover:bg-white/5 group cursor-pointer transition-colors duration-200 song-item"
+              onMouseEnter={() => setHoverIndex(i)}
+              onMouseLeave={() => setHoverIndex(null)}
+              className="grid grid-cols-[40px_minmax(200px,2fr)_minmax(120px,1fr)_minmax(120px,1fr)_80px_28px] gap-4 px-4 py-2.5 items-center rounded hover:bg-white/5 group cursor-pointer transition-colors duration-200 song-item"
               key={track.id}
             >
               {/* # column - shows number or nice Play/Pause icon on hover */}
@@ -117,6 +128,17 @@ const SongList: React.FC<SongListProps> = ({ songs, searchMeta, loadMore }) => {
                   {formatTime(track.duration)}
                 </span>
               </div>
+
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onOpenPlaylistMenu(track, i);
+                }}
+                className={`${hoverIndex === i ? 'block' : 'hidden'} p-1 hover:text-white cursor-pointer`}
+                type="button"
+              >
+                <EllipsisIcon size={20} />
+              </button>
             </div>
           )
         })}
