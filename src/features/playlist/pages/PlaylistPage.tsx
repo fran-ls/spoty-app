@@ -36,6 +36,38 @@ const PlaylistPage: React.FC = () => {
     getPlaylistSongs();
   }, [playlistId]);
 
+  const onRemoveSong = async (id: string) => {
+    if (!id) return;
+
+    const ok = await removeSongFromPlaylist(id);
+    if (!ok) return;
+
+    setActiveItem(null);
+    setToasterTime(3500);
+
+    toast(
+      <div className="flex items-center gap-2 p-2 pr-3 min-w-10 rounded-lg bg-black">
+        <div className="bg-[#262626] min-w-10 w-10 h-10 rounded overflow-hidden relative">
+          <MusicIcon
+            className="absolute top-1/2 left-1/2 -translate-1/2"
+            size={20}
+          />
+        </div>
+        <div>
+          <span
+            className="line-clamp-1"
+            title={activeItem?.song?.title}
+          >
+            {activeItem?.song?.title}
+          </span>
+          <span className="text-sm block text-red-500 font-medium">
+            Se quitó de la lista
+          </span>
+        </div>
+      </div>
+    );
+  }
+
   useEffect(() => { getPlaylistCover() }, [playlistSongs]);
   useEffect(() => { if (query) setTimeout(() => findSongs(), 300) }, [query]);
 
@@ -367,34 +399,17 @@ const PlaylistPage: React.FC = () => {
 
       {activeItem &&
         <PlaylistMenu
-          onRemove={async () => {
-            const ok = await removeSongFromPlaylist(activeItem.id);
-            if (!ok) return;
+          onOpen={(action) => {
+            switch (action) {
+              case 'add-to-queue':
 
-            setActiveItem(null);
-            setToasterTime(3500);
-
-            toast(
-              <div className="flex items-center gap-2 p-2 pr-3 min-w-10 rounded-lg bg-black">
-                <div className="bg-[#262626] min-w-10 w-10 h-10 rounded overflow-hidden relative">
-                  <MusicIcon
-                    className="absolute top-1/2 left-1/2 -translate-1/2"
-                    size={20}
-                  />
-                </div>
-                <div>
-                  <span
-                    className="line-clamp-1"
-                    title={activeItem.song?.title}
-                  >
-                    {activeItem.song?.title}
-                  </span>
-                  <span className="text-sm block text-red-500 font-medium">
-                    Eliminada
-                  </span>
-                </div>
-              </div>
-            );
+                return;
+              case 'remove':
+                onRemoveSong(activeItem?.id!);
+                return;
+              default:
+                return;
+            }
           }}
           onClose={() => setActiveItem(null)}
         />

@@ -141,7 +141,7 @@ export default function GradientEditor(props: GradientEditorProps) {
   // }
 
   const handleWidgetSize = () => {
-    const mobileWidth = 768;
+    const mobileWidth = 1024;
 
     setSize({
       width: isCollapsed ? 280 : window.innerWidth >= mobileWidth ? 535 : 300,
@@ -188,7 +188,7 @@ export default function GradientEditor(props: GradientEditorProps) {
             value={direction}
             onChange={(e) => setDirection(e.target.value)}
             style={{
-              display: window.innerWidth >= 768 ? 'inline-block' : 'none',
+              display: window.innerWidth >= 1024 && !isCollapsed ? 'inline-block' : 'none',
               background: "rgba(255,255,255,0.06)",
               border: "1px solid rgba(255,255,255,0.12)",
               color: "rgba(255,255,255,0.8)",
@@ -197,7 +197,6 @@ export default function GradientEditor(props: GradientEditorProps) {
               fontSize: 12,
               cursor: "pointer"
             }}
-            className="md:inline-block hidden"
           >
             {DIRECTIONS.map((d) => (
               <option
@@ -262,10 +261,10 @@ export default function GradientEditor(props: GradientEditorProps) {
 
         {/* PRESETS */}
         <div
-          className="md:overflow-hidden overflow-y-auto overflow-x-hidden"
+          className="lg:overflow-hidden overflow-y-auto overflow-x-hidden"
           id="playlist-background-presets"
         >
-          <div className="md:grid-cols-4 grid grid-cols-2 max-h-35 animate-fade-in">
+          <div className="lg:grid-cols-4 grid grid-cols-2 max-h-35 animate-fade-in">
             {STYLE_PRESETS.map((preset) => {
               const isSelected = bgColor === preset.bgColor && gradientColor === preset.gradientColor;
 

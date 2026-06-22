@@ -1,0 +1,85 @@
+.accordion-wrap .accordion-ul {
+  list-style: none;
+}
+
+.accordion-wrap>label>input[type="checkbox"] {
+  display: none;
+}
+
+.accordion-wrap {
+  --bg: #131313;
+  --bg-hover-opt: #424242a0;
+  --r: 5px;
+  --font-size: 15px;
+  --padding: 5px;
+  --transition: 300ms;
+
+  color: white;
+  position: relative;
+  min-width: 100%;
+}
+
+.accordion-wrap>label {
+  background-color: var(--bg);
+  margin-bottom: 3px;
+  position: relative;
+  font-size: var(--font-size);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 5;
+  gap: 5px;
+}
+
+.accordion-wrap>label .arrow {
+  --w: 12px;
+
+  fill: white;
+  position: relative;
+  width: var(--w);
+  height: var(--w);
+  min-width: var(--w);
+  min-height: var(--w);
+  transform: rotate(-90deg);
+  transition: var(--transition);
+}
+
+.accordion-wrap>label input[type="checkbox"]:checked~.arrow {
+  transform: rotate(0deg);
+}
+
+.accordion-wrap .accordion-ul-wrap {
+  position: absolute;
+  width: fit-content;
+  height: 0;
+  overflow: hidden;
+  transition: var(--transition) height;
+  width: 100%;
+}
+
+.accordion-wrap .accordion-ul {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--r);
+  padding: var(--padding);
+  background-color: var(--bg);
+  position: relative;
+  transition: var(--transition);
+  width: 100%;
+  min-width: 160px;
+}
+
+.accordion-wrap .accordion-ul>* {
+  font-size: var(--font-size);
+  transition: var(--transition);
+  background-color: var(--bg);
+  padding: var(--padding);
+}
+
+.accordion-wrap .accordion-ul .accordion-option:hover {
+  background-color: var(--bg-hover-opt);
+}
+
+.accordion-wrap .accordion-ul .accordion-option:hover {
+  cursor: default;
+}

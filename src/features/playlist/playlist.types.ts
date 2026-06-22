@@ -1,5 +1,5 @@
 import type { PaginationMeta } from "../../shared/types/common.types";
-import type { Song } from "../song/song.types";
+import type { Song, SongCover } from "../song/song.types";
 
 export interface Playlist {
   id: string;
@@ -25,7 +25,7 @@ export interface PlaylistDTO {
 
 export interface PlaylistSong {
   id: string;
-  songId: number;
+  songId: string;
   playlistId: string;
   position: number;
   song: Song | null;
@@ -42,3 +42,10 @@ export interface PlaylistResponse {
   songs: Song[];
   totalDuration: number;
 }
+
+
+export type PlaylistFormState = PlaylistDTO & {
+  coverImages: SongCover[];
+}
+
+export type PlaylistFormAction = 'set-state' | 'select-file' | 'save';

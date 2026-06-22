@@ -2,6 +2,7 @@ import { api, apiFetch } from "../../../shared/utils/api";
 import type { Playlist, PlaylistDTO, PlaylistResponse, PlaylistSong } from "../playlist.types";
 import { envs } from "../../../shared/utils/envs";
 import { tokenService } from "../../auth/services/token.service";
+import type { SearchResponse } from "../../../shared/types/common.types";
 
 class PlaylistService {
   playlistCover(id: string) {
@@ -72,7 +73,8 @@ class PlaylistService {
     return await apiFetch<Playlist>(async () => {
       const r = await api.put(`/playlists/${id}`, formData, {
         headers: {
-          'Authorization': `Bearer ${tokenService.getToken()}`
+          'Authorization': `Bearer ${tokenService.getToken()}`,
+          'Content-Type': 'multipart/form-data'
         }
       });
 
@@ -117,6 +119,25 @@ class PlaylistService {
     });
   }
 
+  async searchPlaylists(filters?: Record<string, any>) {
+    const params: Record<string, any> = {}
+
+    if (filters) {
+      for (const f in filters) {
+        if (filters[f]) params[f] = filters[f];
+      }
+    }
+
+    return await apiFetch<SearchResponse<Playlist[]>>(() => (
+      api.get(`/playlists/search`, {
+        params,
+        headers: {
+          'Authorization': `Bearer ${tokenService.getToken()}`
+        }
+      })
+    ));
+  }
+
   async newPlaylist(playlist: PlaylistDTO, force = false) {
     const formData = new FormData();
 
@@ -132,10 +153,11 @@ class PlaylistService {
 
     return await apiFetch<Playlist>(() => (
       api.post('/playlists', formData, {
+        params: { force },
         headers: {
-          'Authorization': `Bearer ${tokenService.getToken()}`
-        },
-        params: { force }
+          'Authorization': `Bearer ${tokenService.getToken()}`,
+          'Content-Type': 'multipart/form-data'
+        }
       })
     ));
   }

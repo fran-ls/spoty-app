@@ -15,7 +15,7 @@ interface PlaylistSongsProps {
   songs: Song[];
   items: PlaylistSong[];
   playlistMeta: PlaylistMeta;
-  setActiveItem: React.Dispatch<any>
+  setActiveItem: React.Dispatch<React.SetStateAction<PlaylistSong | null>>;
   loadMore: () => void;
 }
 
@@ -25,7 +25,7 @@ const PlaylistSongs: React.FC<PlaylistSongsProps> = (props) => {
   const { currentSong, play } = usePlayer();
   const { loaderRef } = useInfiniteScroll(() => loadMore());
 
-  const [hoverIndex, setHoverIndex] = useState<number | null>(0);
+  const [hoverIndex, setHoverIndex] = useState<number | null>(null);
 
   const isTrackLiked = true;
 

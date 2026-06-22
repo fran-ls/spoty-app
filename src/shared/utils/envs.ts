@@ -3,6 +3,8 @@ interface Envs {
   PROD_API_URL: string;
   API_URL: string;
   REACT_ENV: string;
+  SUPABASE_URL: string;
+  SUPABASE_ANON_KEY: string;
 }
 
 const vars = [
@@ -10,6 +12,8 @@ const vars = [
   'VITE_DEV_API_URL',
   'VITE_PROD_API_URL',
   'VITE_API_URL',
+  'VITE_SUPABASE_URL',
+  'VITE_SUPABASE_ANON_KEY'
 ];
 
 const environment = { ...import.meta.env }
