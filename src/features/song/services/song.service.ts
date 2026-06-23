@@ -82,7 +82,7 @@ class SongService {
     ];
 
     if (data.audio && envs.IS_PROD) {
-      const extname = data.audio.name.split('.')[1];
+      const extname = data.audio.name.split('.').at(-1);
 
       const upload = await uploadToSupabase({
         bucketName: 'Audios',

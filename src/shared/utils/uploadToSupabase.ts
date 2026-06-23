@@ -13,17 +13,15 @@ interface UploadDTO {
 }
 
 export async function uploadToSupabase({ bucketName, filepath, file }: UploadDTO) {
-  const path = `${filepath}/${file.name}`;
-
   const { error } = await supabase.storage
     .from(bucketName)
-    .upload(path, file);
+    .upload(filepath, file);
 
   if (error) return { data: null, error }
 
   const { data } = supabase.storage
     .from(bucketName)
-    .getPublicUrl(path);
+    .getPublicUrl(filepath);
 
   return { data: data.publicUrl, error: null }
 }
