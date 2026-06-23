@@ -40,7 +40,7 @@ export async function apiFetch<T = any>(callback: () => Promise<any>): ApiRes<T>
       message: r.message,
       data: r.data as T,
       error: null,
-      ...(r.errors && { ...r.errors }),
+      ...(r.errors && { ...r.errors })
     }
   } catch (err: any) {
     return {
@@ -51,5 +51,25 @@ export async function apiFetch<T = any>(callback: () => Promise<any>): ApiRes<T>
       error: err.error || err.message,
       data: null
     }
+  }
+}
+
+export async function ApiResponse<T = any>(response: any): ApiRes<T> {
+  const data = response.data?.data;
+
+  const r = {
+    ...response,
+    ...(data && { ...data }),
+    data: data || response.data
+  }
+
+  return {
+    success: r.success ?? true,
+    status: r.status || 200,
+    statusText: r.statusText || r.success ? 'OK' : 'ERROR',
+    message: r.message,
+    data: r.data as T || null,
+    error: r.error || null,
+    ...(r.errors && { ...r.errors })
   }
 }

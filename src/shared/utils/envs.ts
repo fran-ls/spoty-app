@@ -4,7 +4,8 @@ interface Envs {
   API_URL: string;
   REACT_ENV: string;
   SUPABASE_URL: string;
-  SUPABASE_ANON_KEY: string;
+  SUPABASE_PUBLISHABLE_KEY: string;
+  IS_PROD: boolean;
 }
 
 const vars = [
@@ -13,7 +14,7 @@ const vars = [
   'VITE_PROD_API_URL',
   'VITE_API_URL',
   'VITE_SUPABASE_URL',
-  'VITE_SUPABASE_ANON_KEY'
+  'VITE_SUPABASE_PUBLISHABLE_KEY'
 ];
 
 const environment = { ...import.meta.env }
@@ -33,9 +34,12 @@ if (!env.DEV_API_URL) {
   env.DEV_API_URL = 'http://localhost:3000/api';
 }
 
+const mode = env.REACT_ENV.toLowerCase();
+env.REACT_ENV = mode;
+env.IS_PROD = mode === 'prod' || mode === 'production';
+
 if (!env.API_URL) {
-  const mode = env.REACT_ENV.toLowerCase();
-  env.API_URL = (mode === 'prod' || mode === 'production') ? env.PROD_API_URL : env.DEV_API_URL;
+  env.API_URL = env.IS_PROD ? env.PROD_API_URL : env.DEV_API_URL;
 }
 
 export const envs = env as Envs;

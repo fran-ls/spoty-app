@@ -28,6 +28,7 @@ export interface SongDTO {
   artistName: string;
   artistId?: string;
   cover?: string | null;
+  fileUrl?: string | null;
   albumId?: string;
   quality: string;
   audio: File | null;

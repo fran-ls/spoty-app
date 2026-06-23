@@ -1,8 +1,9 @@
 import type { SearchResponse } from "../../../shared/types/common.types";
 import type { Song, SongDTO } from "../song.types";
-import { api, apiFetch } from "../../../shared/utils/api";
+import { api, apiFetch, ApiResponse } from "../../../shared/utils/api";
 import { envs } from "../../../shared/utils/envs";
 import { tokenService } from "../../auth/services/token.service";
+import { uploadToSupabase } from "../../../shared/utils/uploadToSupabase";
 
 class SongService {
   async searchSongs(filters: Record<string, any> | undefined = undefined) {
@@ -32,7 +33,13 @@ class SongService {
     ));
   }
 
-  streamUrl(songId: string) {
+  streamUrl(songId: string, fileUrl = '') {
+    if (typeof fileUrl !== 'string') {
+      return '';
+    }
+    if (!fileUrl.includes('/api/')) {
+      return fileUrl;
+    }
     return `${envs.API_URL}/songs/stream/${songId}`;
   }
 
@@ -74,9 +81,33 @@ class SongService {
       }
     ];
 
-    for (const f of files) {
-      const file = (data as any)[f.field];
-      if (file) formData.append(f.fieldname, file);
+    if (data.audio && envs.IS_PROD) {
+      const extname = data.audio.name.split('.')[1];
+
+      const upload = await uploadToSupabase({
+        bucketName: 'Audios',
+        file: data.audio,
+        filepath: `${data.quality}/${crypto.randomUUID()}.${extname}`
+      });
+
+      if (upload.error) {
+        alert('Error uploading to server');
+
+        return ApiResponse({
+          success: false,
+          status: 400,
+          message: 'Error uploading to server',
+          error: upload.error
+        });
+      }
+
+      data.fileUrl = upload.data;
+    }
+    else {
+      for (const f of files) {
+        const file = (data as any)[f.field];
+        if (file) formData.append(f.fieldname, file);
+      }
     }
 
     const exclude = 'audio coverFile'.split(' ');

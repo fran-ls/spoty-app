@@ -21,8 +21,8 @@ interface PlayerContextType {
   seek: (time: number) => void;
   toggleMute: () => void;
   togglePlay: () => void;
-  play: (songs: Song[], index: number, meta: PlaylistMeta) => void;
-  playQueueSong: (song: Song, index: number) => void;
+  play: (tracks: Song[], index: number, meta: PlaylistMeta) => void;
+  playQueueSong: (track: Song, index: number) => void;
   setQueue: React.Dispatch<React.SetStateAction<Song[]>>;
   setVolume: React.Dispatch<React.SetStateAction<number>>;
   setIsPlaying: React.Dispatch<React.SetStateAction<boolean>>;
@@ -38,7 +38,7 @@ export const PlayerContext = createContext<PlayerContextType>({
   duration: 0,
   volume: 1,
   isMuted: false,
-  isQueue: false,
+  isQueue: true,
   isPlaying: false,
   queue: [],
   queueMeta: {
@@ -96,7 +96,7 @@ export const PlayerProvider = ({ children }: any) => {
     setCurrentIndex(index);
     setCurrentSong(track);
 
-    audioRef.current.src = songService.streamUrl(track.id);
+    audioRef.current.src = songService.streamUrl(track.id, track.fileUrl);
     audioRef.current.play();
 
     setIsPlaying(true);
@@ -132,17 +132,17 @@ export const PlayerProvider = ({ children }: any) => {
     // if (currentIndex >= queue.length - 1) return;
 
     const newIndex = currentIndex >= queue.length - 1 ? 0 : currentIndex + 1;
-    const song = queue[newIndex];
+    const track = queue[newIndex];
 
     setCurrentIndex(newIndex);
-    setCurrentSong(song);
+    setCurrentSong(track);
 
     if (!isPlaying && currentIndex !== queue.length - 1) {
       setIsPlaying(true);
     }
 
     if (audioRef.current) {
-      audioRef.current.src = songService.streamUrl(song.id);
+      audioRef.current.src = songService.streamUrl(track.id, track.fileUrl);
       audioRef.current.play();
     }
   }
@@ -151,17 +151,17 @@ export const PlayerProvider = ({ children }: any) => {
     // if (currentIndex <= 0) return;
 
     const newIndex = currentIndex <= 0 ? queue.length - 1 : currentIndex - 1;
-    const song = queue[newIndex];
+    const track = queue[newIndex];
 
     setCurrentIndex(newIndex);
-    setCurrentSong(song);
+    setCurrentSong(track);
 
     if (!isPlaying && currentIndex !== 0) {
       setIsPlaying(true);
     }
 
     if (audioRef.current) {
-      audioRef.current.src = songService.streamUrl(song.id);
+      audioRef.current.src = songService.streamUrl(track.id, track.fileUrl);
       audioRef.current.play();
     }
   }
@@ -219,7 +219,7 @@ export const PlayerProvider = ({ children }: any) => {
           setDuration(audioRef.current.duration);
         }}
         onEnded={next} // 🔥 autoplay siguiente,
-        crossOrigin="use-credentials"
+        crossOrigin="anonymous"
       />
     </PlayerContext.Provider>
   )

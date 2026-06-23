@@ -2,9 +2,9 @@ import { createClient } from '@supabase/supabase-js';
 import { envs } from './envs';
 
 const SUPABASE_URL = envs.SUPABASE_URL;
-const SUPABASE_ANON_KEY = envs.SUPABASE_ANON_KEY
+const SUPABASE_PUBLISHABLE_KEY = envs.SUPABASE_PUBLISHABLE_KEY;
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY); // anon key aquí sí es seguro
+const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
 interface UploadDTO {
   bucketName: string;
@@ -17,7 +17,7 @@ export async function uploadToSupabase({ bucketName, filepath, file }: UploadDTO
 
   const { error } = await supabase.storage
     .from(bucketName)
-    .upload(filepath, file);
+    .upload(path, file);
 
   if (error) return { data: null, error }
 
