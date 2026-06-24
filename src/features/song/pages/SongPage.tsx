@@ -12,7 +12,7 @@ import songService from '../services/song.service';
 import SongListEmpty from '../components/SongListEmpty';
 import { usePlayer } from '../../../shared/context/PlayerContext';
 import useAuth from '../../auth/hooks/useAuth';
-import { GRADIENT_CSS } from '../../../shared/data/gradientColors.data';
+import { GRADIENT_COLORS, GRADIENT_CSS } from '../../../shared/data/gradientColors.data';
 import PlaylistMenu from '../../playlist/components/PlaylistMenu';
 import TrackModal from '../components/TrackModal';
 import SongDeleteConfirm from '../components/SongDeleteConfirm';
@@ -22,9 +22,9 @@ const SongPage: React.FC = () => {
   const { user } = useAuth();
   const { setQueueMeta } = usePlayer();
 
-  const [gradientCSS, setGradientCSS] = useState<string>('');
-  const [bgColor, setBgColor] = useState('#3b3b3b');
-  const [gradientColor, setGradientColor] = useState('#111111');
+  const [gradientCSS, setGradientCSS] = useState<string>(GRADIENT_CSS);
+  const [bgColor, setBgColor] = useState(GRADIENT_COLORS[0].color || '#3b3b3b');
+  const [gradientColor, setGradientColor] = useState(GRADIENT_COLORS[1].color || '#111111');
   const [isPublic, setIsPublic] = useState(false);
 
   // const [currentCover, setCurrentCover] = useState('');
@@ -217,7 +217,6 @@ const SongPage: React.FC = () => {
         coverInputRef.current?.click();
         return;
       case 'save':
-        console.log('guarda..')
         setIsEdit(false);
         return;
       default:
@@ -235,7 +234,7 @@ const SongPage: React.FC = () => {
         <div className="animate-fade-in">
           <div
             style={{
-              background: gradientCSS || GRADIENT_CSS
+              background: gradientCSS
             }}
             className="p-6 pb-44 flex items-center gap-6 overflow-x-auto hide-scrollbar"
           >
