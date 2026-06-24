@@ -3,8 +3,10 @@ export interface User {
   username: string;
   email: string;
   photoURL: string | null;
-  role: string;
+  role: Role;
 }
+
+type Role = 'USER' | 'ADMIN' | 'ADMIN-MEMBER';
 
 export interface UserDTO {
   email: string;

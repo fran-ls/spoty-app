@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { CameraIcon, CircleXIcon, EyeIcon, EyeOffIcon } from "lucide-react";
 import type { UserDTO } from "../auth.types";
 import useAuth from "../hooks/useAuth";
@@ -7,6 +7,11 @@ import { authService } from "../services/auth.service";
 
 const UserProfile = () => {
   const { user, isProfile, dispatch, showProfile } = useAuth();
+
+  const splitName = user?.username?.split(' ') || [];
+  const username = splitName[0]?.[0].toUpperCase() + (splitName[1]?.[0].toUpperCase() || '');
+  const image = user && user.photoURL ? authService.userImage(user.id) : null;
+
   const inputFileRef = useRef<HTMLInputElement>(null);
 
   const [isHover, setIsHover] = useState(false);
@@ -16,12 +21,8 @@ const UserProfile = () => {
   const [form, setForm] = useState<Partial<UserDTO>>({
     email: user?.email || '',
     username: user?.username || '',
-    photoURL: null,
+    photoURL: image
   });
-
-  const splitName = user?.username?.split(' ') || [];
-  const username = splitName[0]?.[0].toUpperCase() + (splitName[1]?.[0].toUpperCase() || '');
-  const image = authService.userImage(user?.id!);
 
   const onFileChange = (e: React.ChangeEvent<HTMLInputElement, HTMLInputElement>) => {
     const f = e.target.files?.[0];
@@ -53,8 +54,6 @@ const UserProfile = () => {
     showProfile();
     setForm({ ...user!, photoURL: image });
   }
-
-  useEffect(() => { image && setForm({ ...form, photoURL: image }) }, []);
 
   return (!isProfile ? <></> :
     <>
