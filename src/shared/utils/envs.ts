@@ -17,29 +17,32 @@ const vars = [
   'VITE_SUPABASE_PUBLISHABLE_KEY'
 ];
 
-const environment = { ...import.meta.env }
+const metaEnv = { ...import.meta.env }
 const env: any = {}
 const prefix = 'VITE_';
 
 for (const v of vars) {
   const k = v.replace(prefix, '');
-  env[k] = environment[v];
+  env[k] = metaEnv[v];
 }
 
-if (!env.REACT_ENV) {
-  env.REACT_ENV = 'dev';
-}
+const { REACT_ENV, DEV_API_URL, PROD_API_URL } = env;
+const MODE = REACT_ENV ? REACT_ENV.toLowerCase() : 'dev';
+const IS_PROD = MODE === 'prod' || MODE === 'production';
 
-if (!env.DEV_API_URL) {
+env.REACT_ENV = MODE;
+env.IS_PROD = IS_PROD;
+
+if (!DEV_API_URL) {
   env.DEV_API_URL = 'http://localhost:3000/api';
 }
 
-const mode = env.REACT_ENV.toLowerCase();
-env.REACT_ENV = mode;
-env.IS_PROD = mode === 'prod' || mode === 'production';
+if (!env.API_URL || !IS_PROD) {
+  env.API_URL = DEV_API_URL;
+}
 
-if (!env.API_URL) {
-  env.API_URL = env.IS_PROD ? env.PROD_API_URL : env.DEV_API_URL;
+if (IS_PROD && PROD_API_URL) {
+  env.API_URL = PROD_API_URL;
 }
 
 export const envs = env as Envs;
