@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Music, User as UserIcon, LogIn, MailIcon, LockIcon } from 'lucide-react';
+import { Music, User as UserIcon, LogIn, MailIcon, LockIcon, EyeIcon, EyeOffIcon } from 'lucide-react';
 import "../../../assets/css/toaster.css";
 import Toaster from '../../../shared/components/Toaster';
 import useAuth from '../hooks/useAuth';
@@ -10,6 +10,7 @@ const AuthPage: React.FC = () => {
     setForm, login, register, onCloseToast
   } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
+  const [isHidePass, setIsHidePass] = useState(true);
 
   const inputs = [
     {
@@ -94,7 +95,7 @@ const AuthPage: React.FC = () => {
             <div className="space-y-4 max-h-37 overflow-auto input-wrap">
               {inputs.map((input) => (
                 <div
-                  className={`${!input.isHide ? 'block' : 'hidden'} space-y-1.5`}
+                  className={`${!input.isHide ? 'block' : 'hidden'} space-y-1.5 relative`}
                   key={input.name}
                 >
                   <label className="text-[10px] font-mono uppercase tracking-wider text-[#adaaaa] font-bold">
@@ -104,15 +105,26 @@ const AuthPage: React.FC = () => {
                     <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#adaaaa] group-focus-within:text-white transition-colors">
                       {input.icon}
                     </div>
+
                     <input
-                      className="w-full bg-[#181818] border border-white/5 rounded-xl py-3 pl-11 pr-4 text-xs font-medium focus:ring-primary focus:border-primary text-white placeholder:text-[#adaaaa]/60 outline-none transition-all"
+                      className={`w-full bg-[#181818] border border-white/5 rounded-xl py-3 pl-11 pr-4 text-xs font-medium focus:ring-primary focus:border-primary text-white placeholder:text-[#adaaaa]/60 outline-none transition-all ${input.type === 'password' ? 'pr-10' : ''}`}
                       onChange={(e) => setForm({ ...form, [input.name]: e.target.value })}
                       name={input.name}
                       value={input.value}
                       placeholder={input.placeholder}
                       required={input.required ?? true}
-                      type={input.type || 'text'}
+                      type={input.type === 'password' && !isHidePass ? 'text' : input.type || 'text'}
                     />
+
+                    {input.type === 'password' &&
+                      <button
+                        onClick={() => setIsHidePass(!isHidePass)}
+                        className="text-[#909090] cursor-pointer absolute top-1/2 right-3 -translate-y-1/2 pass-input"
+                        type="button"
+                      >
+                        {isHidePass ? <EyeIcon size={20} /> : <EyeOffIcon size={20} />}
+                      </button>
+                    }
                   </div>
                 </div>
               ))}

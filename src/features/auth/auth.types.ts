@@ -6,7 +6,7 @@ export interface User {
   role: Role;
 }
 
-type Role = 'USER' | 'ADMIN' | 'ADMIN-MEMBER';
+export type Role = 'USER' | 'ADMIN' | 'ADMIN-MEMBER';
 
 export interface UserDTO {
   email: string;
