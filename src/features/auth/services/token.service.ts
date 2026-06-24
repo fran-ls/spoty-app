@@ -21,20 +21,17 @@ class TokenService {
       return api.post('/auth/refresh');
     });
 
+    r.success = false;
+
     if (r.status === 409) {
       r.success = true;
-      return r;
-    }
-
-    if (!r.success) {
-      r.success = false;
-      return r;
     }
 
     const { data } = r;
 
     if (data && data.accessToken) {
       this.setToken(data.accessToken);
+      r.success = true;
     }
 
     return r;

@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import AppLayout from "../shared/layout/AppLayout";
 import HomePage from "../features/home/HomePage";
 // import SearchPage from "../features/search/SearchPage";
@@ -13,13 +13,14 @@ const AppRoutes = () => {
   return (
     <AppLayout>
       <Routes>
-        <Route path="" element={<HomePage />} />
+        <Route path="/" element={<HomePage />} />
         <Route path={routes.search} element={<SearchPlaylists />} />
         <Route path={routes.library} element={<LibraryPage />} />
         <Route path={routes.playlists} element={<PlaylistPage />} />
         <Route path={`${routes.playlists}/:playlistId`} element={<PlaylistPage />} />
         <Route path={routes.songs} element={<SongPage />} />
         <Route path="/upload" element={<UploadPage />} />
+        <Route path="/*" element={<Navigate to={routes.home} />} />
       </Routes>
     </AppLayout>
   )

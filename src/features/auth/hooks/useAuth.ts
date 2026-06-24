@@ -140,8 +140,6 @@ const useAuth = () => {
         role: data.role
       }
     });
-
-    navigate(routes.home);
   }
 
   const onCloseToast = () => setIsActiveToast(false);
