@@ -7,10 +7,12 @@ export interface AuthState {
   status: AuthStatus;
   errorMessage?: string;
   isProfile: boolean;
+  isUploadModal: boolean;
 }
 
 export type AuthAction =
   | { type: 'checking' }
+  | { type: 'profile' }
   | {
     type: 'login';
     payload: User;
@@ -20,5 +22,6 @@ export type AuthAction =
     payload?: { errorMessage?: string }
   }
   | {
-    type: 'profile';
+    type: 'upload',
+    payload?: { isActive: boolean }
   }

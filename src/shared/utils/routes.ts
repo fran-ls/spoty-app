@@ -6,4 +6,5 @@ export const routes = {
   playlists: '/playlists',
   newPlaylist: '/playlists/new',
   songs: '/songs',
+  upload: '/upload'
 }

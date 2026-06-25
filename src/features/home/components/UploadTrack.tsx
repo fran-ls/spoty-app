@@ -2,26 +2,29 @@ import { useEffect, useRef, useState } from "react";
 import { CircleXIcon, Music2Icon, PlusIcon, UploadIcon } from "lucide-react";
 import { Toaster as SonnerToaster, toast } from 'sonner';
 import type { SongDTO, SongFileUrls } from "../../song/song.types";
-import type { Artist } from "../../song/artist.types";
+import type { Artist } from "../../artist/artist.types";
 import type { PaginationMeta } from "../../../shared/types/common.types";
 import { CameraPlusIcon } from "../../../shared/components/Icons";
 import songService from "../../song/services/song.service";
-import { Player } from "./Player";
-import artistService from "../../song/services/artist.service";
-import ArtistSelect from "../../song/components/ArtistSelect";
+import { AudioPlayer } from "../../../shared/components/AudioPlayer";
+import artistService from "../../artist/services/artist.service";
+import ArtistSelect from "../../artist/components/ArtistSelect";
 import Select from "../../../shared/components/Select";
 
-const SongForm = () => {
+const UploadTrack = () => {
   const audioInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
 
   const [isNewArtist, setIsNewArtist] = useState(false);
+  const [isNewAlbum, setIsNewAlbum] = useState(false);
   const [artists, setArtists] = useState<Artist[]>([]);
-  const [_artistMeta, setArtistMeta] = useState<PaginationMeta>({
-    page: 0,
+
+  const [page, setPage] = useState(0);
+  const [artistMeta, setArtistMeta] = useState<PaginationMeta>({
+    page: 1,
     limit: 10,
     total: 0,
-    totalPages: 0,
+    totalPages: 1,
     hasNextPage: false,
     hasPrevPage: false
   });
@@ -34,6 +37,7 @@ const SongForm = () => {
   const [form, setForm] = useState<SongDTO>({
     title: '',
     artistName: '',
+    albumName: '',
     audio: null,
     quality: '128',
     cover: ''
@@ -75,17 +79,25 @@ const SongForm = () => {
     }
   }
 
-  useEffect(() => {
-    artistService.getArtists().then(({ data }) => {
-      if (!data) return;
+  const getArtists = async (page = 1) => {
+    const { data } = await artistService.getArtists({ page, limit: 5 });
+    if (!data) return;
+
+    setArtistMeta(data.meta);
+
+    if (page > 1) {
+      setArtists((prev) => [...prev, ...data.items]);
+    }
+    else {
       setArtists(data.items);
-      setArtistMeta(data.meta);
-    });
-  }, []);
+    }
+  }
+
+  useEffect(() => { getArtists() }, []);
 
   return (
-    <section className="grid grid-cols-[280px_1fr] gap-12 form-section space-y-12" id="form-song">
-      <div className="max-w-70 relative group aspect-square rounded-xl overflow-hidden bg-surface-container-highest border-2 border-dashed border-[#1a1a1a] flex items-center justify-center cursor-pointer hover:border-primary/50 transition-all">
+    <section className="grid grid-cols-[280px_1fr] gap-12 form-section space-y-6" id="form-song">
+      <div className="max-w-70 relative group aspect-square rounded-xl bg-surface-container-highest border-2 border-dashed border-[#1a1a1a] flex items-center justify-center cursor-pointer hover:border-primary/50 transition-all">
         {(!form.cover || !form.coverFile) &&
           <div
             className="absolute inset-0 bg-cover bg-center opacity-40 group-hover:scale-105 transition-transform duration-700"
@@ -116,7 +128,7 @@ const SongForm = () => {
               className="text-white bg-black/50 w-full h-full flex items-center justify-center absolute top-1/2 left-1/2 -translate-1/2"
               onClick={(e) => {
                 e.stopPropagation();
-                // previewUrls.cover && URL.revokeObjectURL(previewUrls.cover);
+                previewUrls.cover && URL.revokeObjectURL(previewUrls.cover);
                 setPreviewUrls({ ...previewUrls, cover: '' });
                 setForm({ ...form, coverFile: null });
               }}
@@ -162,6 +174,13 @@ const SongForm = () => {
             </label>
 
             <Select
+              selectedIndex={1}
+              items={[
+                { value: '320', label: '320 - Max' },
+                { value: '192', label: '192 - Alta' },
+                { value: '128', label: '128 - Normal' }
+              ]}
+              payload={(option) => setForm({ ...form, quality: option.value })}
               styles={{
                 padding: 0,
                 marginBottom: '8px'
@@ -170,17 +189,10 @@ const SongForm = () => {
                 left: '-20%',
                 width: '160px'
               }}
-              selectedIndex={1}
-              payload={(option) => setForm({ ...form, quality: option.value })}
-              items={[
-                { value: '320', label: '320 - Max' },
-                { value: '192', label: '192 - Alta' },
-                { value: '128', label: '128 - Normal' }
-              ]}
             />
           </div>
 
-          <Player
+          <AudioPlayer
             file={form.audio}
             url={previewUrls.audio}
           />
@@ -231,6 +243,7 @@ const SongForm = () => {
               /> :
               <ArtistSelect
                 items={artists}
+                isLoadMore={page < artistMeta.totalPages}
                 payload={(option) => {
                   const item = option.item;
 
@@ -240,23 +253,55 @@ const SongForm = () => {
                     ...(item && { artistName: item.name })
                   });
                 }}
+                loadMore={() => {
+                  if (page < artistMeta.totalPages) {
+                    getArtists(page + 1);
+                    setPage(page + 1);
+                  }
+                }}
               />
             }
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-4 relative">
             <label className="text-white block text-sm font-bold text-on-surface">
               Álbum
             </label>
-            <select
-              className="text-white w-full bg-surface-container-low border-none rounded-lg p-4 text-on-surface focus:ring-1 focus:ring-primary/40 font-body transition-all appearance-none"
-              value={form.albumId}
-              onChange={({ target }) => setForm({ ...form, albumId: target.value })}
+
+            <button
+              className={`${isNewAlbum ? '-rotate-45' : 'rotate-0'} duration-100 transition-transform absolute top-0 right-0 text-[#adaaaa]`}
+              onClick={() => {
+                setIsNewAlbum(!isNewAlbum);
+                if (!isNewAlbum) {
+                  setForm({ ...form, albumName: '', albumId: '' })
+                }
+              }}
             >
-              <option>Seleccionar Álbum</option>
-              <option>Echoes of Light</option>
-              <option>Single</option>
-            </select>
+              <PlusIcon size={20} />
+            </button>
+
+            {isNewAlbum ?
+              <input
+                className="text-white w-full bg-surface-container-low border-none rounded-lg p-4 text-on-surface placeholder:text-outline focus:ring-1 focus:ring-primary/40 font-body transition-all"
+                value={form.albumName}
+                onChange={({ target }) => setForm({
+                  ...form,
+                  albumName: target.value,
+                  albumId: ''
+                })}
+                placeholder="Ej: Fame"
+                type="text"
+              /> :
+              <select
+                className="text-white w-full bg-surface-container-low border-none rounded-lg p-4 text-on-surface focus:ring-1 focus:ring-primary/40 font-body transition-all appearance-none"
+                value={form.albumId}
+                onChange={({ target }) => setForm({ ...form, albumId: target.value })}
+              >
+                <option>Seleccionar Álbum</option>
+                <option>Echoes of Light</option>
+                <option>Single</option>
+              </select>
+            }
           </div>
         </div>
 
@@ -283,4 +328,4 @@ const SongForm = () => {
   )
 }
 
-export default SongForm;
+export default UploadTrack;

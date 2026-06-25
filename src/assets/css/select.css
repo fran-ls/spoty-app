@@ -83,3 +83,7 @@
 .accordion-wrap .accordion-ul .accordion-option:hover {
   cursor: default;
 }
+
+.accordion-ul::-webkit-scrollbar {
+  width: 6px;
+}

@@ -1,5 +1,5 @@
 import type { SearchResponse } from "../../../shared/types/common.types";
-import type { Artist, ArtistDTO } from "../artist.types";
+import type { Artist, ArtistDTO } from "../../artist/artist.types";
 import { api, apiFetch } from "../../../shared/utils/api";
 import { tokenService } from "../../auth/services/token.service";
 

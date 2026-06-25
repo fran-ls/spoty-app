@@ -108,7 +108,7 @@ class AuthService {
     }
 
     if (auth.status === 401 || auth.status === 400) {
-      await this.logout();
+      // await this.logout();
     }
 
     if (!auth.success) return null;

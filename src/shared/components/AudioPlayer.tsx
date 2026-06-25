@@ -1,33 +1,50 @@
 import { useMemo, useRef, useState } from 'react';
 import { PauseIcon, PlayIcon, Volume2, VolumeX } from 'lucide-react';
-import { formatTime } from '../../../shared/utils/formatTime';
+import { formatTime } from '../utils/formatTime';
+import { cn } from '../utils/tailwindCn';
 
-interface PlayerProps {
-  file: File | null;
-  url: string;
+export interface AudioPlayerState {
+  progress: number;
+  duration: number;
+  isPause: boolean;
+  isPlaying: boolean;
+  play: () => void;
+  togglePlay: () => void;
 }
 
-export const Player: React.FC<PlayerProps> = ({ file, url }) => {
+interface AudioPlayerProps {
+  file: File | null;
+  url: string;
+  unstyled?: boolean;
+  playBtnClassName?: string;
+  setPlayer?: ({ }: AudioPlayerState) => void;
+}
+
+export const AudioPlayer: React.FC<AudioPlayerProps> = (props) => {
+  const { file, url, unstyled = false, playBtnClassName = '', setPlayer } = props;
+
   const audioRef = useRef<HTMLAudioElement>(null);
   const progressRef = useRef<HTMLDivElement>(null);
   const volumeRef = useRef<HTMLDivElement>(null);
+
+  const audio = audioRef.current;
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPause, setIsPause] = useState(true);
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
 
-  const [volume, setVolume] = useState(1);
-  const [isMuted, setIsMuted] = useState(false);
   const [prevVolume, setPrevVolume] = useState<number>(1);
+  const [isMuted, setIsMuted] = useState(false);
+  const [volume, setVolume] = useState(1);
 
   const [hoverTime, setHoverTime] = useState<number | null>(null);
-  const [hoverX, setHoverX] = useState<number>(0);
   const [isDragging, setIsDragging] = useState<boolean>(false);
+  const [hoverX, setHoverX] = useState<number>(0);
 
   const seek = (time: number) => {
-    if (!audioRef.current) return;
-    audioRef.current.currentTime = time;
+    if (!audio) return;
+    audio.currentTime = time;
     setProgress(time);
   }
 
@@ -110,21 +127,21 @@ export const Player: React.FC<PlayerProps> = ({ file, url }) => {
   }
 
   const play = () => {
-    if (!audioRef.current || isPlaying) return;
-    audioRef.current.src = url;
+    if (!audio || isPlaying) return;
+    audio.src = url;
     setIsPlaying(true);
   }
 
   const togglePlay = () => {
-    if (!audioRef.current || !file) return;
+    if (!audio || !file) return;
 
     play();
 
     if (!isPause) {
-      audioRef.current.pause();
+      audio.pause();
       setIsPause(true);
     } else {
-      audioRef.current.play();
+      audio.play();
       setIsPause(false);
     }
   }
@@ -154,22 +171,28 @@ export const Player: React.FC<PlayerProps> = ({ file, url }) => {
     setIsPlaying(false);
     setIsPause(true);
 
-    const audio = audioRef.current;
-
     if (audio) {
-      setProgress(0);
       audio.src = url;
+      setProgress(0);
+      setTimeout(() => { setDuration(audio.duration); }, 1500);
     }
   }, [file]);
 
+  useMemo(() => setPlayer && setPlayer({
+    isPlaying, isPause,
+    progress, duration,
+    togglePlay, play
+  }), [isPlaying, isPause, duration]);
+
   return (
     <>
-      <div className="bg-surface-container-low w-full p-3 rounded-lg flex flex-col items-center gap-2">
+      <div className={unstyled ? '' : 'bg-surface-container-low w-full p-3 rounded-lg flex flex-col items-center gap-2'}>
         <div className="flex items-center justify-between gap-2.5 w-full group">
           <button
             onClick={togglePlay}
-            className="bg-white text-black p-2 rounded-full hover:scale-105 active:scale-95 transition-all shadow-md flex items-center justify-center shrink-0 cursor-pointer"
+            className={cn(`bg-white text-black p-2 rounded-full hover:scale-105 active:scale-95 transition-all shadow-md flex items-center justify-center shrink-0 cursor-pointer`, playBtnClassName)}
             title={!isPause ? "Pausar" : "Reproducir"}
+            type="button"
           >
             {!isPause
               ? <PauseIcon size={16} fill="currentColor" className="translate-x-0" />
@@ -240,12 +263,12 @@ export const Player: React.FC<PlayerProps> = ({ file, url }) => {
         <audio
           ref={audioRef}
           onTimeUpdate={() => {
-            if (!audioRef.current) return;
-            setProgress(audioRef.current.currentTime);
+            if (!audio) return;
+            setProgress(audio.currentTime);
           }}
           onLoadedMetadata={() => {
-            if (!audioRef.current) return;
-            setDuration(audioRef.current.duration);
+            if (!audio) return;
+            setDuration(audio.duration);
           }}
           crossOrigin="anonymous"
         />
@@ -257,11 +280,11 @@ export const Player: React.FC<PlayerProps> = ({ file, url }) => {
           onClick={toggleMute}
           className="text-[#adaaaa] hover:text-white transition-all cursor-pointer"
           title={isMuted || !volume ? 'No silenciar' : 'Silenciar'}
+          type="button"
         >
           {isMuted || volume === 0 ? <VolumeX size={18} /> : <Volume2 size={18} />}
         </button>
 
-        {/* Volume Slider */}
         <div
           ref={volumeRef}
           onMouseDown={handleVolumeChange}

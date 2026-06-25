@@ -1,0 +1,395 @@
+import { useRef, useState } from "react";
+import { DiscIcon, FileAudioIcon, ImageIcon, Music2Icon, PauseIcon, PlayIcon, PlusCircleIcon, Trash2Icon, UploadIcon } from "lucide-react";
+import { Toaster as SonnerToaster, toast } from 'sonner';
+import type { SongDTO, SongFileUrls } from "../song.types";
+import type { Artist } from "../../artist/artist.types";
+import { formatTime } from "../../../shared/utils/formatTime";
+import { AudioPlayer, type AudioPlayerState } from "../../../shared/components/AudioPlayer";
+import ArtistSelect from "../../artist/components/ArtistSelect";
+import AlbumSelect from "../../artist/components/AlbumSelect";
+import songService from "../services/song.service";
+import Select from "../../../shared/components/Select";
+
+interface TrackFormProps {
+  artists: Artist[];
+  isLoadMore: boolean;
+  setArtists: (value: React.SetStateAction<Artist[]>) => void;
+  loadMoreArtist: () => void;
+  triggerCreateArtist: () => void;
+  triggerCreateAlbum: () => void;
+}
+
+const TrackForm = (props: TrackFormProps) => {
+  const {
+    artists, isLoadMore, loadMoreArtist,
+    triggerCreateArtist, triggerCreateAlbum, setArtists
+  } = props;
+
+  const audioInputRef = useRef<HTMLInputElement>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
+  const bgColor = '#181818';
+
+  const [player, setPlayer] = useState<AudioPlayerState>({
+    isPause: true,
+    isPlaying: false,
+    progress: 0,
+    duration: 0,
+    play: () => { },
+    togglePlay: () => { }
+  });
+
+  // const [isImgHover, setIsImgHover] = useState(false);
+  const [previewUrls, setPreviewUrls] = useState<SongFileUrls>({
+    audio: '',
+    cover: ''
+  });
+  const [form, setForm] = useState<SongDTO>({
+    title: '',
+    artistName: '',
+    albumName: '',
+    audio: null,
+    quality: '128',
+    cover: ''
+  });
+
+  const onFormChange = (field: keyof SongDTO, value: any) => {
+    setForm({ ...form, [field]: value });
+  }
+
+  const onFileChange = (e: React.ChangeEvent<HTMLInputElement, HTMLInputElement>, fileField: 'audio' | 'coverFile', fileUrlField?: 'audio' | 'cover') => {
+    const file = e.target.files && e.target.files.length > 0 ? e.target.files[0] : null;
+    const urlField = fileUrlField || fileField;
+
+    if (file) {
+      const url = (previewUrls as any)[fileField];
+      if (url) URL.revokeObjectURL(url);
+
+      const fileUrl = URL.createObjectURL(file);
+      setForm({ ...form, [fileField]: file });
+      setPreviewUrls({ ...previewUrls, [urlField]: fileUrl });
+    }
+  }
+
+  const onRemoveAudio = () => {
+    if (previewUrls.audio) URL.revokeObjectURL(previewUrls.audio);
+
+    setPreviewUrls({ ...previewUrls, audio: '' });
+    onFormChange('audio', null);
+    player.togglePlay();
+  }
+
+  async function onSave() {
+    const r = await songService.uploadSong({ ...form, includeArtist: true });
+    const data = r.data;
+
+    if (data && data?.artist) {
+      setArtists((prev) => [data.artist, ...prev]);
+
+      toast(
+        <div className="text-white bg-black flex items-center gap-2 p-2 pr-3 min-w-10 rounded">
+          <div className="min-w-8 w-8 h-8 rounded overflow-hidden relative">
+            <Music2Icon
+              className="absolute top-1/2 left-1/2 -translate-1/2"
+              size={16}
+            />
+          </div>
+          <span>
+            Subida exitosa
+          </span>
+        </div>
+      );
+    }
+  }
+
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        onSave();
+      }}
+      style={{ position: 'relative' }}
+      className="space-y-5 animate-fade-in relative"
+      noValidate
+    >
+      <div className="space-y-1.5">
+        <label className="block text-[10px] uppercase font-mono tracking-wider font-bold text-gray-400">
+          Archivo de sonido
+        </label>
+
+        {!form.audio ? (
+          <div
+            onClick={() => audioInputRef.current?.click()}
+            className="h-28 border border-dashed border-white/10 hover:border-primary/40 bg-[#161616] hover:bg-[#191919] rounded-2xl flex flex-col items-center justify-center cursor-pointer transition-all gap-1.5 p-3 text-center"
+          >
+            <input
+              type="file"
+              ref={audioInputRef}
+              onChange={(e) => onFileChange(e, 'audio', 'audio')}
+              accept="audio/*"
+              className="hidden"
+            />
+            <UploadIcon className="text-primary animate-pulse" size={20} />
+            <span className="text-[11px] text-gray-300 font-bold">Seleccionar audio</span>
+            <span className="text-[9px] text-gray-500">Archivos MP3, WAV, OGG, M4A</span>
+          </div>
+        ) : (
+          <div className="bg-[#181818] border border-white/5 rounded-2xl p-4 flex flex-col justify-between h-28">
+            <div className="flex items-center gap-3 mb-2.5">
+              <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
+                <FileAudioIcon size={15} />
+              </div>
+              <div className="overflow-hidden">
+                <p className="text-[11px] font-bold text-white truncate leading-none">
+                  {form.audio.name}
+                </p>
+                <span className="text-[9px] text-gray-400 font-mono mt-1 block">
+                  {`${(form.audio.size / (1024 * 1024)).toFixed(2)} MB • ${formatTime(player.duration)}`}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between gap-3 border-t border-white/5 pt-2.5">
+              {!player.isPlaying &&
+                <button
+                  onClick={() => player.togglePlay()}
+                  className="hidden bg-primary hover:scale-103 active:scale-97 text-black font-black text-[9px] tracking-wide uppercase px-3 py-1.5 rounded-full items-center gap-1.5 transition-all outline-none"
+                  type="button"
+                >
+                  {player.isPlaying ? (
+                    <>
+                      <PauseIcon size={10} fill="black" />
+                      <span>Detener</span>
+                    </>
+                  ) : (
+                    <>
+                      <PlayIcon size={10} fill="black" />
+                      <span>Escuchar</span>
+                    </>
+                  )}
+                </button>
+              }
+
+              {form.audio &&
+                <AudioPlayer
+                  unstyled={true}
+                  file={form.audio}
+                  url={previewUrls.audio}
+                  setPlayer={setPlayer}
+                />
+              }
+
+              <button
+                onClick={onRemoveAudio}
+                className="cursor-pointer ml-2 text-[10px] text-red-400 font-bold hover:underline hover:text-red-300 flex items-center gap-0.5"
+                title="Borrar audio"
+                type="button"
+              >
+                <Trash2Icon size={16} />
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="space-y-1.5">
+        <label className="text-[10px] uppercase font-mono tracking-wider font-bold text-gray-400">
+          Título del Tema
+        </label>
+        <input
+          type="text"
+          value={form.title}
+          onChange={(e) => onFormChange('title', e.target.value)}
+          required
+          placeholder="Escribe el título de la canción"
+          className="w-full bg-[#181818] border border-white/5 rounded-xl py-3 px-4 text-xs font-medium focus:ring-1 focus:ring-primary focus:border-primary text-white placeholder:text-gray-600 outline-none transition-all"
+        />
+      </div>
+
+      <div className="grid grid-cols-1 gap-4">
+        <div className="space-y-0.5">
+          <div className="flex justify-between items-center">
+            <label className="text-[10px] uppercase font-mono tracking-wider font-bold text-gray-400">
+              Artista
+            </label>
+            <button
+              onClick={triggerCreateArtist}
+              className="text-[9px] font-bold text-primary hover:underline transition-all flex items-center gap-0.5 outline-none"
+              type="button"
+            >
+              <PlusCircleIcon size={10} />
+              <span>Nuevo artista</span>
+            </button>
+          </div>
+
+          <ArtistSelect
+            items={artists}
+            isLoadMore={isLoadMore}
+            payload={(option) => {
+              const item = option.item;
+
+              setForm({
+                ...form,
+                artistId: option.value,
+                ...(item && { artistName: item.name })
+              });
+            }}
+            loadMore={loadMoreArtist}
+          />
+        </div>
+
+        <div className="space-y-0.5">
+          <div className="flex justify-between items-center">
+            <label className="text-[10px] uppercase font-mono tracking-wider font-bold text-gray-400">
+              Álbum
+            </label>
+            <button
+              type="button"
+              onClick={triggerCreateAlbum}
+              className="text-[9px] font-bold text-primary hover:underline transition-all flex items-center gap-0.5 outline-none"
+            >
+              <PlusCircleIcon size={10} />
+              <span>Nuevo álbum</span>
+            </button>
+          </div>
+
+          <AlbumSelect
+            items={artists}
+            isLoadMore={isLoadMore}
+            payload={(option) => {
+              const item = option.item;
+
+              setForm({
+                ...form,
+                albumId: option.value,
+                ...(item && { albumName: item.name })
+              });
+            }}
+            loadMore={loadMoreArtist}
+          />
+        </div>
+
+        <div className="space-y-0.5 text-white">
+          <label className="text-[10px] uppercase font-mono tracking-wider font-bold text-gray-400">
+            Calidad
+          </label>
+
+          <Select
+            selectedIndex={1}
+            items={[
+              { value: '320', label: '320 - Max' },
+              { value: '192', label: '192 - Alta' },
+              { value: '128', label: '128 - Normal' }
+            ]}
+            payload={(option) => setForm({ ...form, quality: option.value })}
+            styles={{
+              backgroundColor: bgColor,
+              padding: '12px 16px',
+              borderRadius: 12,
+              border: '1px solid #ffffff0d'
+            }}
+            ulStyles={{
+              backgroundColor: bgColor,
+              border: '1px solid #ffffff0d',
+              borderRadius: '12px'
+            }}
+            liStyles={{
+              backgroundColor: bgColor,
+            }}
+          />
+        </div>
+      </div>
+
+      <div className="space-y-1.5">
+        <label className="text-[10px] uppercase font-mono tracking-wider font-bold text-gray-400">
+          Imagen de carátula
+        </label>
+        <div
+          onClick={() => coverInputRef.current?.click()}
+          className="h-28 border border-dashed border-white/10 hover:border-primary/40 bg-[#161616] hover:bg-[#191919] rounded-2xl flex flex-col items-center justify-center cursor-pointer transition-all gap-1.5 p-3 text-center"
+        >
+          <input
+            type="file"
+            ref={coverInputRef}
+            onChange={(e) => onFileChange(e, 'coverFile', 'cover')}
+            accept="image/*"
+            className="hidden"
+          />
+          <ImageIcon className="text-gray-500" size={20} />
+          <span className="text-[11px] text-gray-300 font-bold">
+            {previewUrls.cover ? 'Modificar carátula' : 'Subir foto o arrastrar'}
+          </span>
+          <span className="text-[9px] text-gray-500">JPG, PNG cuadradas de alta resolución</span>
+        </div>
+      </div>
+
+      <div className="bg-[#181818] rounded-2xl p-4 border border-white/5 relative overflow-hidden flex items-center gap-4">
+        <div className="absolute inset-0 bg-linear-to-r from-primary/5 to-transparent pointer-events-none" />
+
+        <div className="w-16 h-16 rounded-xl bg-white/5 flex items-center justify-center border border-white/10 shadow-lg overflow-hidden shrink-0 relative">
+          {previewUrls.cover ? (
+            <img
+              src={previewUrls.cover}
+              className="w-full h-full object-cover"
+              alt="Track preview"
+              referrerPolicy="no-referrer"
+            />
+          ) : (
+            <DiscIcon
+              className="text-gray-600"
+              size={24}
+            />
+          )}
+
+          {player.isPlaying && (
+            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+              <span className="text-[8px] uppercase tracking-wider font-mono font-black text-primary animate-pulse">
+                PLAY
+              </span>
+            </div>
+          )}
+        </div>
+
+        <div className="flex-1 overflow-hidden">
+          <span className="text-[8px] uppercase font-mono tracking-widest text-primary font-bold">
+            PREVIEW EN VIVO
+          </span>
+          <h4 className="text-xs font-black text-white truncate mt-0.5">
+            {form.title || 'Sin título'}
+          </h4>
+          <p className="text-[10px] text-gray-400 truncate leading-none mt-1">
+            {form.artistName || 'Sin artista'}
+          </p>
+          <p className="text-[9px] text-gray-500 font-mono mt-1.5">
+            {form.albumName || 'Sin álbum'} • {formatTime(player.duration)}
+          </p>
+        </div>
+      </div>
+
+      <div className="pt-4 border-t border-white/5 flex gap-3 justify-end">
+        <button
+          className="cursor-pointer px-4 py-2.5 rounded-lg text-[10px] uppercase tracking-wider font-bold text-gray-400 hover:text-white transition-all outline-none"
+          type="button"
+        >
+          Limpiar
+        </button>
+        <button
+          className="cursor-pointer bg-primary text-black font-black uppercase text-[10px] tracking-wider px-5 py-2.5 rounded-xl hover:scale-102 active:scale-95 transition-all shadow-md shadow-primary/10"
+          type="submit"
+        >
+          Subir Canción
+        </button>
+      </div>
+
+      <SonnerToaster
+        duration={5000}
+        visibleToasts={1}
+        position="top-center"
+        toastOptions={{
+          unstyled: true
+        }}
+      />
+    </form>
+  )
+}
+
+export default TrackForm;

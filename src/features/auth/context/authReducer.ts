@@ -3,7 +3,8 @@ import type { AuthState, AuthAction } from "./types";
 export const initialState: AuthState = {
   user: null,
   status: 'checking',
-  isProfile: false
+  isProfile: false,
+  isUploadModal: false
 }
 
 export const authReducer = (state: AuthState, action: AuthAction): AuthState => {
@@ -41,6 +42,12 @@ export const authReducer = (state: AuthState, action: AuthAction): AuthState => 
       return {
         ...state,
         isProfile: !state.isProfile
+      }
+
+    case 'upload':
+      return {
+        ...state,
+        isUploadModal: action.payload?.isActive ?? !state.isUploadModal
       }
 
     default:

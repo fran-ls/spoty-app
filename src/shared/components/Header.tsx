@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Bell, Users, User, Search, Sparkles, XIcon, GlobeIcon, CircleUserRoundIcon, SettingsIcon, LaptopMinimalIcon, LogOutIcon } from 'lucide-react';
-import { routes } from '../utils/routes';
+import { useNavigate } from 'react-router-dom';
+import { ChevronLeft, ChevronRight, Bell, Users, User, Search, Sparkles, XIcon, GlobeIcon, CircleUserRoundIcon, SettingsIcon, LaptopMinimalIcon, LogOutIcon, UploadIcon } from 'lucide-react';
 import useAuth from '../../features/auth/hooks/useAuth';
+import { routes } from '../utils/routes';
 
 interface HeaderProps {
   onExplorePremiumClick?: () => void;
@@ -12,7 +12,7 @@ export const Header: React.FC<HeaderProps> = ({ onExplorePremiumClick }) => {
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const { user, showProfile, logout } = useAuth();
+  const { user, dispatch, showProfile, logout } = useAuth();
   const navigate = useNavigate();
 
   return (
@@ -80,14 +80,6 @@ export const Header: React.FC<HeaderProps> = ({ onExplorePremiumClick }) => {
           Explore Premium
         </button>
 
-        <Link
-          to="/upload"
-          className="bg-white text-black font-bold px-4 py-1.5 rounded-full text-xs sm:text-sm hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 shadow-md cursor-pointer select-none"
-        >
-          <Sparkles size={14} className="text-[#1cb853]" />
-          Subir
-        </Link>
-
         <div className="flex items-center gap-3">
           <button className="text-[#adaaaa] hover:text-white hover:bg-[#262626] rounded-full p-2 transition-all cursor-pointer">
             <Bell size={20} />
@@ -137,6 +129,19 @@ export const Header: React.FC<HeaderProps> = ({ onExplorePremiumClick }) => {
                   >
                     <CircleUserRoundIcon size={20} />
                     <span>Perfil</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowUserDropdown(false);
+                      dispatch({
+                        type: 'upload',
+                        payload: { isActive: true }
+                      });
+                    }}
+                    className="flex items-center gap-2 w-full text-left px-4 py-2 text-[#adaaaa] hover:text-white hover:bg-white/10 transition-colors"
+                  >
+                    <UploadIcon size={20} />
+                    <span>Subir</span>
                   </button>
                   <button
                     onClick={() => setShowUserDropdown(false)}

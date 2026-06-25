@@ -1,4 +1,4 @@
-import type { Artist } from "./artist.types";
+import type { Artist } from "../artist/artist.types";
 
 export interface Song {
   id: string;
@@ -30,6 +30,7 @@ export interface SongDTO {
   cover?: string | null;
   fileUrl?: string | null;
   albumId?: string;
+  albumName?: string;
   quality: string;
   audio: File | null;
   coverFile?: File | null;

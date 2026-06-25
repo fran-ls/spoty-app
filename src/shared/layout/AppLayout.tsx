@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { AnimatePresence } from "motion/react";
 import { Playlists } from "../../features/sidebar/Playlists";
 import { QueueList } from "../../features/sidebar/QueueList";
 import { Header } from "../components/Header";
@@ -7,14 +8,30 @@ import { PremiumModal } from "../components/PremiumModal";
 import { STYLES } from "../utils/styles";
 import { tokenService } from "../../features/auth/services/token.service";
 import UserProfile from "../../features/auth/components/UserProfile";
+import useAuth from "../../features/auth/hooks/useAuth";
+import { UploadView } from "../../features/song/Views/UploadView";
+import AdminLayout from "./AdminLayout";
+import { routes } from "../utils/routes";
 
 const AppLayout = ({ children }: { children: React.ReactNode }) => {
+  const { user, isUploadModal } = useAuth();
   const [isPremiumOpen, setIsPremiumOpen] = useState(false);
+
+  const currentPath = window.location.pathname;
+  const paths: string[] = [routes.upload];
 
   useEffect(() => {
     const timeout = 14 * 60 * 1000 + 500; // 14:30 minutes
     setInterval(() => tokenService.refreshAccessToken(), timeout);
   }, []);
+
+  if (user?.role === 'ADMIN' && paths.includes(currentPath)) {
+    return (
+      <AdminLayout>
+        {children}
+      </AdminLayout>
+    )
+  }
 
   return (
     <div className="h-screen bg-black font-sans text-on-surface antialiased selection:bg-primary selection:text-black">
@@ -40,6 +57,10 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
         isOpen={isPremiumOpen}
         onClose={() => setIsPremiumOpen(false)}
       />
+
+      <AnimatePresence>
+        {(user?.role === 'ADMIN' && isUploadModal) && <UploadView />}
+      </AnimatePresence>
     </div>
   )
 }

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import "../../assets/css/artist_select.css"
+import "../../assets/css/select.css"
 
 type Option<T = any> = {
   label: string;
@@ -14,13 +14,14 @@ interface SelectProps {
   styles?: React.CSSProperties;
   ulStyles?: React.CSSProperties;
   ulWrapStyles?: React.CSSProperties;
+  liStyles?: React.CSSProperties;
   payload?: (option: Option) => void;
 }
 
 const Select = (props: SelectProps) => {
   const {
-    styles, ulStyles, ulWrapStyles, items, selectedIndex = undefined,
-    className = '', payload
+    styles, ulStyles, ulWrapStyles, items, liStyles,
+    selectedIndex = undefined, className = '', payload
   } = props;
 
   const [isActive, setIsActive] = useState(false);
@@ -57,7 +58,8 @@ const Select = (props: SelectProps) => {
         style={styles}
       >
         <input
-          onClick={(e) => setIsActive(e.currentTarget.checked)}
+          onChange={(e) => setIsActive(e.currentTarget.checked)}
+          checked={isActive}
           type="checkbox"
         />
         <span className="truncate">{option.label}</span>
@@ -86,20 +88,40 @@ const Select = (props: SelectProps) => {
           ref={ulRef}
         >
           <li
+            onMouseOver={(e) => {
+              e.currentTarget.style.backgroundColor = '#424242a0';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent';
+            }}
+            onClick={() => {
+              setOption({ label: 'Seleccionar', value: '' });
+              setIsActive(false);
+            }}
+            style={liStyles}
             className="accordion-option"
-            onClick={() => setOption({ label: 'Seleccionar', value: '' })}
           >
             Seleccionar
           </li>
 
           {items.map((a) => (
             <li
+              onMouseOver={(e) => {
+                e.currentTarget.style.backgroundColor = '#424242a0';
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+              }}
+              onClick={() => {
+                setOption({
+                  label: a.label,
+                  value: a.value,
+                  item: a
+                });
+                setIsActive(false);
+              }}
+              style={liStyles}
               className="accordion-option"
-              onClick={() => setOption({
-                label: a.label,
-                value: a.value,
-                item: a
-              })}
               key={a.value}
             >
               {a.label}
