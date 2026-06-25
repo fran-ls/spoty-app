@@ -1,12 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import {
-  User, Disc, PlusCircleIcon, Search, ChevronRight,
-  XIcon, MusicIcon, FolderHeartIcon, SearchIcon,
-  ChevronLeftIcon,
-} from 'lucide-react';
-import type { Artist, ArtistDTO } from '../../artist/artist.types';
-import type { PlaylistDTO } from '../../playlist/playlist.types';
+import { PlusCircleIcon, XIcon, MusicIcon, FolderHeartIcon, SearchIcon, ChevronLeftIcon } from 'lucide-react';
+import type { Artist } from '../../artist/artist.types';
 import type { PaginationMeta } from '../../../shared/types/common.types';
 import useAuth from '../../auth/hooks/useAuth';
 import ArtistForm from '../../artist/components/ArtistForm';
@@ -16,26 +11,14 @@ import AlbumForm from '../../artist/components/AlbumForm';
 import ArtistProfile from '../../artist/components/ArtistProfile';
 import AlbumDetail from '../../artist/components/AlbumDetail';
 import artistService from '../../artist/services/artist.service';
-import { mockAlbums, mockArtists } from '../../home/data/music.data';
+import SearchPanel from '../components/SearchPanel';
 
 export const UploadView: React.FC = () => {
   const { dispatch } = useAuth();
 
-  const [artistForm, setArtistForm] = useState<ArtistDTO>({ name: '' });
-  const [albumForm, setAlbumForm] = useState<any>({});
-  const [playlistForm, setPlaylistForm] = useState<PlaylistDTO>({
-    name: '',
-    description: '',
-    cover: '',
-    isPublic: false,
-    gradientColor: '',
-    bgColor: '',
-    userId: '',
-    file: null
-  });
-
   const [page, setPage] = useState(0);
   const [artists, setArtists] = useState<Artist[]>([]);
+  const [artist, setArtist] = useState<Artist | null>(null);
   const [artistMeta, setArtistMeta] = useState<PaginationMeta>({
     page: 1,
     limit: 10,
@@ -44,19 +27,14 @@ export const UploadView: React.FC = () => {
     hasNextPage: false,
     hasPrevPage: false
   });
-
+  const isLoadMoreArtist = page < artistMeta.totalPages;
 
   const [activeFormTab, setActiveFormTab] = useState<'track' | 'playlist' | 'search'>('track');
 
   // Panel 2 control states
   const [isPanel2Open, setIsPanel2Open] = useState(false);
   const [panel2Mode, setPanel2Mode] = useState<'create-artist' | 'create-album' | 'view-artist' | 'view-album'>('create-artist');
-  const [selectedArtistId, setSelectedArtistId] = useState<string | null>(null);
   const [selectedAlbumId, setSelectedAlbumId] = useState<string | null>(null);
-
-  // Panel 1: Local Search query for artists/albums
-  const [panelSearchQuery, setPanelSearchQuery] = useState('');
-  const [searchFilterType, setSearchFilterType] = useState<'all' | 'artists' | 'albums'>('all');
 
   const triggerCreateArtist = () => {
     setPanel2Mode('create-artist');
@@ -68,27 +46,16 @@ export const UploadView: React.FC = () => {
     setIsPanel2Open(true);
   }
 
-  const triggerViewArtist = (id: string) => {
-    setSelectedArtistId(id);
-    setPanel2Mode('view-artist');
-    setIsPanel2Open(true);
-  }
-
   const triggerViewAlbum = (id: string) => {
     setSelectedAlbumId(id);
     setPanel2Mode('view-album');
     setIsPanel2Open(true);
   }
 
-  // Search filter lists
-  const filteredArtists = mockArtists.filter(a =>
-    a.name.toLowerCase().includes(panelSearchQuery.toLowerCase())
-  );
-
-  const filteredAlbums = mockAlbums.filter(al =>
-    al.title.toLowerCase().includes(panelSearchQuery.toLowerCase()) ||
-    al.artist.toLowerCase().includes(panelSearchQuery.toLowerCase())
-  );
+  const triggerViewArtist = () => {
+    setPanel2Mode('view-artist');
+    setIsPanel2Open(true);
+  }
 
   const getArtists = async (page = 1) => {
     const { data } = await artistService.getArtists({ page, limit: 5 });
@@ -101,6 +68,11 @@ export const UploadView: React.FC = () => {
     }
     else {
       setArtists(data.items);
+    }
+
+    if (page < artistMeta.totalPages) {
+      getArtists(page + 1);
+      setPage(page + 1);
     }
   }
 
@@ -207,126 +179,24 @@ export const UploadView: React.FC = () => {
             {activeFormTab === 'track' && (
               <TrackForm
                 artists={artists}
+                isLoadMore={isLoadMoreArtist}
                 setArtists={setArtists}
+                loadMoreArtist={getArtists}
                 triggerCreateArtist={triggerCreateArtist}
                 triggerCreateAlbum={triggerCreateAlbum}
-                isLoadMore={page < artistMeta.totalPages}
-                loadMoreArtist={() => {
-                  if (page < artistMeta.totalPages) {
-                    getArtists(page + 1);
-                    setPage(page + 1);
-                  }
-                }}
               />
             )}
 
             {activeFormTab === 'playlist' && (
-              <PlaylistForm
-                form={playlistForm}
-                setForm={setPlaylistForm}
-              />
+              <PlaylistForm />
             )}
 
             {activeFormTab === 'search' && (
-              <div className="space-y-5 animate-fade-in">
-                <div className="relative">
-                  <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-500">
-                    <Search size={14} />
-                  </span>
-                  <input
-                    type="text"
-                    value={panelSearchQuery}
-                    onChange={(e) => setPanelSearchQuery(e.target.value)}
-                    placeholder="Buscar por nombre, artista, álbum..."
-                    className="w-full bg-[#181818] border border-white/5 rounded-xl py-3 pl-10 pr-4 text-xs font-medium focus:ring-1 focus:ring-primary focus:border-primary text-white placeholder:text-gray-500 outline-none transition-all"
-                  />
-                </div>
-
-                <div className="flex gap-1.5 shrink-0">
-                  {(['all', 'artists', 'albums'] as const).map(f => (
-                    <button
-                      key={f}
-                      type="button"
-                      onClick={() => setSearchFilterType(f)}
-                      className={`px-3 py-1.5 rounded-full text-[9px] uppercase tracking-wider font-extrabold transition-all outline-none ${searchFilterType === f
-                        ? 'bg-white text-black font-black'
-                        : 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10'
-                        }`}
-                    >
-                      {f === 'all' ? 'Todo' : f === 'artists' ? 'Artistas' : 'Álbumes'}
-                    </button>
-                  ))}
-                </div>
-
-                <div className="space-y-4">
-                  {(searchFilterType === 'all' || searchFilterType === 'artists') && (
-                    <div className="space-y-2">
-                      <h4 className="text-[10px] uppercase font-mono tracking-wider font-extrabold text-gray-500 flex items-center gap-1.5 px-1 leading-none">
-                        <User size={11} />
-                        <span>Artistas Registrados ({filteredArtists.length})</span>
-                      </h4>
-                      {filteredArtists.length === 0 ? (
-                        <p className="text-[10px] text-gray-600 italic px-1">Ningún artista coincide.</p>
-                      ) : (
-                        <div className="grid grid-cols-1 gap-1.5">
-                          {filteredArtists.map(artist => (
-                            <div
-                              key={artist.id}
-                              onClick={() => triggerViewArtist(artist.id)}
-                              className="bg-[#161616] hover:bg-white/5 border border-white/5 p-2 rounded-xl flex items-center justify-between cursor-pointer transition-all group"
-                            >
-                              <div className="flex items-center gap-3 overflow-hidden">
-                                <div className="w-9 h-9 rounded-full bg-white/5 border border-white/10 overflow-hidden shrink-0">
-                                  <img src={artist.imageUrl} className="w-full h-full object-cover" alt={artist.name} referrerPolicy="no-referrer" />
-                                </div>
-                                <div className="overflow-hidden">
-                                  <p className="text-xs font-bold text-white group-hover:text-primary transition-colors truncate">{artist.name}</p>
-                                  <span className="text-[9px] text-gray-400 font-mono">ID: {artist.id}</span>
-                                </div>
-                              </div>
-                              <ChevronRight className="text-gray-600 group-hover:text-primary transition-colors" size={14} />
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Section Albums */}
-                  {(searchFilterType === 'all' || searchFilterType === 'albums') && (
-                    <div className="space-y-2 pt-2">
-                      <h4 className="text-[10px] uppercase font-mono tracking-wider font-extrabold text-gray-500 flex items-center gap-1.5 px-1 leading-none">
-                        <Disc size={11} />
-                        <span>Álbumes Registrados ({filteredAlbums.length})</span>
-                      </h4>
-                      {filteredAlbums.length === 0 ? (
-                        <p className="text-[10px] text-gray-600 italic px-1">Ningún álbum coincide.</p>
-                      ) : (
-                        <div className="grid grid-cols-1 gap-1.5">
-                          {filteredAlbums.map(album => (
-                            <div
-                              key={album.id}
-                              onClick={() => triggerViewAlbum(album.id)}
-                              className="bg-[#161616] hover:bg-white/5 border border-white/5 p-2 rounded-xl flex items-center justify-between cursor-pointer transition-all group"
-                            >
-                              <div className="flex items-center gap-3 overflow-hidden">
-                                <div className="w-9 h-9 rounded-lg bg-white/5 border border-white/10 overflow-hidden shrink-0">
-                                  <img src={album.coverUrl} className="w-full h-full object-cover" alt={album.title} referrerPolicy="no-referrer" />
-                                </div>
-                                <div className="overflow-hidden">
-                                  <p className="text-xs font-bold text-white group-hover:text-primary transition-colors truncate">{album.title}</p>
-                                  <span className="text-[9px] text-gray-400 truncate leading-none mt-0.5 block">{album.artist}</span>
-                                </div>
-                              </div>
-                              <ChevronRight className="text-gray-600 group-hover:text-primary transition-colors" size={14} />
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
+              <SearchPanel
+                setArtist={setArtist}
+                triggerViewArtist={triggerViewArtist}
+                triggerViewAlbum={triggerViewAlbum}
+              />
             )}
 
           </div>
@@ -372,25 +242,30 @@ export const UploadView: React.FC = () => {
               <div className="flex-1 overflow-y-auto p-5 space-y-6 secondary-panel-content">
                 {panel2Mode === 'create-artist' && (
                   <ArtistForm
-                    form={artistForm}
-                    iPanel2Open={isPanel2Open}
-                    setForm={setArtistForm}
+                    setArtists={setArtists}
                     setIsPanel2Open={setIsPanel2Open}
                   />
                 )}
 
                 {panel2Mode === 'create-album' && (
                   <AlbumForm
-                    form={albumForm}
-                    setForm={setAlbumForm}
+                    artists={artists}
+                    isLoadMore={isLoadMoreArtist}
+                    loadMoreArtist={getArtists}
+                    setArtists={setArtists}
                     setIsPanel2Open={setIsPanel2Open}
                   />
                 )}
 
                 {panel2Mode === 'view-artist' && (
                   <ArtistProfile
-                    selectedArtistId={selectedArtistId || ''}
+                    artist={artist}
                     triggerViewAlbum={triggerViewAlbum}
+                    onRemove={async () => {
+                      if (!artist?.id) return;
+                      const { data } = await artistService.deleteArtist(artist.id);
+                      if (data && data.id) setArtists((prev) => prev.filter((a) => a.id !== artist.id));
+                    }}
                   />
                 )}
 

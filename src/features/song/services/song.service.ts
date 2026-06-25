@@ -90,16 +90,12 @@ class SongService {
         filepath: `${data.quality}/${crypto.randomUUID()}.${extname}`
       });
 
-      if (upload.error) {
-        alert('Error uploading to server');
-
-        return ApiResponse({
-          success: false,
-          status: 400,
-          message: 'Error uploading to server',
-          error: upload.error
-        });
-      }
+      if (upload.error) return ApiResponse<null>({
+        success: false,
+        status: 400,
+        message: 'Error uploading to server',
+        error: upload.error
+      });
 
       data.fileUrl = upload.data;
     }
