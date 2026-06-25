@@ -1,97 +1,32 @@
 import { useState } from "react";
-import type { ConfirmToasterPayload } from "../components/ConfirmToaster";
-import type { ToasterPayload } from "../components/Toaster";
+import type { ToasterConfig } from "../components/Toaster";
 
-const useToaster = () => {
-  const [isSimpleToast, setIsSimpleToast] = useState(false);
-  const [simpleToast, setSimpleToast] = useState({
-    message: '',
-    type: ''
-  });
-
-  const [isActiveConfirmToast, setIsActiveConfirmToast] = useState(false);
-  const [confirmToast, setConfirmToast] = useState<ConfirmToasterPayload>({
-    title: 'Borrar historial',
-    message: '¿Quieres limpiar todo el historial?',
-    type: 'del',
-  });
-
-  const [isActiveToast, setIsActiveToast] = useState(false);
-  const [toast, setToast] = useState<ToasterPayload>({
-    title: 'Operación exitosa',
+const useToaster = (duration = 3000) => {
+  const [isFirstLoad, setIsFirstLoad] = useState(false);
+  const [isActive, setIsActive] = useState(false);
+  const [toast, setToast] = useState<ToasterConfig>({
+    title: 'Guardado',
     message: 'Los cambios han sido guardados.',
-    type: 'success',
+    type: 'success'
   });
 
-  const [isFirstLoadConfirmToast, setIsFirstLoadConfirmToast] = useState(true);
-  const [isFirstLoadToast, setIsFirstLoadToast] = useState(true);
+  function showToast(config: ToasterConfig) {
+    if (isActive) return;
 
-  function showSimpleToast(message: string, type: string, reset = false) {
-    setSimpleToast({ ...simpleToast, message, type });
-    setIsSimpleToast(true);
-
-    setTimeout(() => { setIsSimpleToast(false) }, 3500);
-
-    if (reset) return;
-
-    setTimeout(() => {
-      setSimpleToast({
-        ...simpleToast,
-        message: '',
-        type: ''
-      })
-    }, 4000);
-  }
-
-  function showToast(config: ToasterPayload) {
-    if (isActiveToast) return;
-
-    setIsFirstLoadToast(false);
     setToast({ ...toast, ...config });
-    setIsActiveToast(true);
+    setIsActive(true);
 
-    setTimeout(() => { setIsActiveToast(false) }, 3500);
-
-    setTimeout(() => setToast({
-      ...toast,
-      title: '',
-      message: '',
-      type: '',
-    }), 4000);
+    setTimeout(() => { setIsActive(false) }, duration);
   }
 
-  function showConfirmToast(config: ConfirmToasterPayload) {
-    if (isActiveConfirmToast) return;
-
-    setIsFirstLoadConfirmToast(false);
-    setConfirmToast({ ...confirmToast, ...config });
-    setIsActiveConfirmToast(true);
-
-    setTimeout(() => { setIsActiveConfirmToast(false) }, 3500);
-
-    setTimeout(() => setConfirmToast({
-      ...confirmToast,
-      title: '',
-      confirmMsg: false,
-      message: '',
-      type: '',
-    }), 4000);
-  }
+  const onClose = () => setIsActive(false);
 
   return {
-    simpleToast, setSimpleToast,
-    isSimpleToast, setIsSimpleToast,
-    showSimpleToast,
-
+    isFirstLoad, setIsFirstLoad,
+    isActive, setIsActive,
     toast, setToast,
-    isActiveToast, setIsActiveToast,
-    isFirstLoadToast, setIsFirstLoadToast,
     showToast,
-
-    confirmToast, setConfirmToast,
-    isActiveConfirmToast, setIsActiveConfirmToast,
-    isFirstLoadConfirmToast, setIsFirstLoadConfirmToast,
-    showConfirmToast,
+    onClose
   }
 }
 

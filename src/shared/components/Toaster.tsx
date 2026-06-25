@@ -1,13 +1,13 @@
 import { InfoIcon } from "lucide-react";
 
-export interface ToasterPayload {
-  title: string;
+export interface ToasterConfig {
+  title?: string;
   message: string;
   type: string;
   icon?: React.ReactElement;
 }
 
-interface ToasterProps extends ToasterPayload {
+interface ToasterProps extends ToasterConfig {
   isActive: boolean;
   isFirstLoad: boolean;
   onClose: () => void;

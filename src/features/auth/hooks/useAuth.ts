@@ -16,7 +16,7 @@ const useAuth = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const { state, dispatch } = useContext(AuthContext)!;
-  const { toast, isActiveToast, isFirstLoadToast, showToast, setToast, setIsActiveToast } = useToaster();
+  const { toast, isActive, isFirstLoad, showToast, setToast, setIsActive } = useToaster();
   const navigate = useNavigate();
 
   const validation = (data: any, fields: string, custom: string[] = []) => {
@@ -142,7 +142,7 @@ const useAuth = () => {
     });
   }
 
-  const onCloseToast = () => setIsActiveToast(false);
+  const onCloseToast = () => setIsActive(false);
 
   const showProfile = () => {
     dispatch({ type: "profile" });
@@ -150,8 +150,9 @@ const useAuth = () => {
 
   return {
     ...state,
-    isActiveToast,
-    isFirstLoadToast,
+    isAdmin: state.user?.role === 'ADMIN',
+    isActive,
+    isFirstLoad,
     form, setForm,
     errors, setErrors,
     toast, setToast,

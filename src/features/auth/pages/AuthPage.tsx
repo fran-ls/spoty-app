@@ -6,7 +6,7 @@ import useAuth from '../hooks/useAuth';
 
 const AuthPage: React.FC = () => {
   const {
-    form, toast, isActiveToast, isFirstLoadToast, loading,
+    form, toast, isActive, isFirstLoad, loading,
     setForm, login, register, onCloseToast
   } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
@@ -45,8 +45,8 @@ const AuthPage: React.FC = () => {
       <Toaster
         title={toast.title}
         message={toast.message}
-        isActive={isActiveToast}
-        isFirstLoad={isFirstLoadToast}
+        isActive={isActive}
+        isFirstLoad={isFirstLoad}
         onClose={onCloseToast}
         type="error"
       />
@@ -107,7 +107,7 @@ const AuthPage: React.FC = () => {
                     </div>
 
                     <input
-                      className={`w-full bg-[#181818] border border-white/5 rounded-xl py-3 pl-11 pr-4 text-xs font-medium focus:ring-primary focus:border-primary text-white placeholder:text-[#adaaaa]/60 outline-none transition-all ${input.type === 'password' ? 'pr-10' : ''}`}
+                      className={`w-full bg-[#181818] border border-white/5 rounded-xl py-3 pl-11 pr-4 text-xs font-medium focus:ring-primary focus:border-primary text-white placeholder:text-[#adaaaa]/60 outline-none transition-all ${input.type === 'password' ? 'pr-10 pass-input' : ''}`}
                       onChange={(e) => setForm({ ...form, [input.name]: e.target.value })}
                       name={input.name}
                       value={input.value}
@@ -119,7 +119,7 @@ const AuthPage: React.FC = () => {
                     {input.type === 'password' &&
                       <button
                         onClick={() => setIsHidePass(!isHidePass)}
-                        className="text-[#909090] cursor-pointer absolute top-1/2 right-3 -translate-y-1/2 pass-input"
+                        className="text-[#909090] cursor-pointer absolute top-1/2 right-3 -translate-y-1/2"
                         type="button"
                       >
                         {isHidePass ? <EyeIcon size={20} /> : <EyeOffIcon size={20} />}
