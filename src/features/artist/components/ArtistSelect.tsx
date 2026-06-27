@@ -11,10 +11,10 @@ type Option = {
 }
 
 interface ArtistSelectProps {
-  option?: Option;
   items: Artist[];
-  isLoadMore?: boolean;
+  option?: Option;
   bgColor?: string;
+  isLoadMore?: boolean;
   loadMore?: () => void;
   payload?: (option: Option) => void;
 }
@@ -37,6 +37,11 @@ const ArtistSelect = (props: ArtistSelectProps) => {
   const wrap = wrapRef.current!;
   const ul = ulRef.current!;
 
+  const styles: React.CSSProperties = {
+    backgroundColor: bgColor,
+    fontSize: '13px'
+  }
+
   useEffect(() => {
     if (ul && wrap) {
       wrap.style.width = `${ul.offsetWidth > wrap.offsetWidth ? ul.offsetWidth : wrap.offsetWidth}px`;
@@ -51,7 +56,7 @@ const ArtistSelect = (props: ArtistSelectProps) => {
     >
       <label
         style={{
-          backgroundColor: bgColor,
+          ...styles,
           padding: '12px 16px',
           borderRadius: 12,
           border: '1px solid #ffffff0d'
@@ -86,11 +91,11 @@ const ArtistSelect = (props: ArtistSelectProps) => {
       >
         <ul
           style={{
-            maxHeight: '200px',
-            overflowBlock: 'auto',
-            backgroundColor: bgColor,
+            ...styles,
             border: '1px solid #ffffff0d',
-            borderRadius: '12px'
+            overflowBlock: 'auto',
+            borderRadius: '12px',
+            maxHeight: '200px'
           }}
           className="accordion-ul"
           ref={ulRef}
@@ -107,7 +112,10 @@ const ArtistSelect = (props: ArtistSelectProps) => {
               setItem({ label: 'Seleccionar', value: '', item: null });
               setIsActive(false);
             }}
-            style={{ backgroundColor: bgColor }}
+            style={{
+              ...styles,
+              padding: '6px 12px'
+            }}
             className="accordion-option"
           >
             Seleccionar
@@ -127,10 +135,11 @@ const ArtistSelect = (props: ArtistSelectProps) => {
                 setIsActive(false);
               }}
               style={{
+                ...styles,
+                padding: '6px 12px',
                 display: 'block',
                 overflow: 'clip',
-                width: '100%',
-                backgroundColor: bgColor
+                width: '100%'
               }}
               className="accordion-option truncate"
               title={a.name}

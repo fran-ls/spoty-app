@@ -13,13 +13,14 @@ type Option = {
 interface AlbumSelectrops {
   items: Album[];
   option?: Option;
+  bgColor?: string;
   isLoadMore?: boolean;
-  payload?: (option: Option) => void;
   loadMore?: () => void;
+  payload?: (option: Option) => void;
 }
 
 const AlbumSelect = (props: AlbumSelectrops) => {
-  const { option, items, isLoadMore = false, payload, loadMore } = props;
+  const { option, items, isLoadMore = false, bgColor = '#181818', payload, loadMore } = props;
   const [isActive, setIsActive] = useState(false);
   const [item, setItem] = useState<Option>({
     label: 'Seleccionar',
@@ -34,7 +35,11 @@ const AlbumSelect = (props: AlbumSelectrops) => {
 
   const wrap = wrapRef.current!;
   const ul = ulRef.current!;
-  const bgColor = '#181818';
+
+  const styles: React.CSSProperties = {
+    backgroundColor: bgColor,
+    fontSize: '13px'
+  }
 
   useEffect(() => {
     if (ul && wrap) {
@@ -50,7 +55,7 @@ const AlbumSelect = (props: AlbumSelectrops) => {
     >
       <label
         style={{
-          backgroundColor: bgColor,
+          ...styles,
           padding: '12px 16px',
           borderRadius: 12,
           border: '1px solid #ffffff0d'
@@ -85,11 +90,11 @@ const AlbumSelect = (props: AlbumSelectrops) => {
       >
         <ul
           style={{
-            maxHeight: '200px',
-            overflowBlock: 'auto',
-            backgroundColor: bgColor,
+            ...styles,
             border: '1px solid #ffffff0d',
-            borderRadius: '12px'
+            overflowBlock: 'auto',
+            borderRadius: '12px',
+            maxHeight: '200px'
           }}
           className="accordion-ul"
           ref={ulRef}
@@ -106,7 +111,10 @@ const AlbumSelect = (props: AlbumSelectrops) => {
               setItem({ label: 'Seleccionar', value: '', item: null });
               setIsActive(false);
             }}
-            style={{ backgroundColor: bgColor }}
+            style={{
+              ...styles,
+              padding: '6px 12px'
+            }}
             className="accordion-option"
           >
             Seleccionar
@@ -126,10 +134,11 @@ const AlbumSelect = (props: AlbumSelectrops) => {
                 setIsActive(false);
               }}
               style={{
+                ...styles,
+                padding: '6px 12px',
                 display: 'block',
                 overflow: 'clip',
                 width: '100%',
-                backgroundColor: bgColor
               }}
               className="accordion-option truncate"
               title={a.title}

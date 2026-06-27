@@ -58,6 +58,7 @@ const AlbumForm = (props: AlbumFormProps) => {
     artistName: '',
     artistId: ''
   });
+  const imageUrl = form.cover || fileUrl || coverUrl;
 
   const onFormChange = (field: keyof AlbumDTO, value: any) => {
     setForm({ ...form, [field]: value });
@@ -132,20 +133,20 @@ const AlbumForm = (props: AlbumFormProps) => {
 
         <div className="text-center pb-4 border-b border-white/5">
           <div
-            className={`w-28 h-28 rounded-xl overflow-hidden border border-white/10 bg-white/5 mx-auto shadow-2xl relative mb-3.5`}
+            className="bg-white/5 w-28 h-28 rounded-xl overflow-hidden border border-white/10 mx-auto shadow-2xl relative mb-3.5"
             onPointerEnter={() => setIsImgHover(true)}
             onMouseLeave={() => setIsImgHover(false)}
           >
             <SmartImage
-              wrapClassName="w-full h-full bg-white/5 bg-red-500 mx-auto shadow-2xl relative mb-3.5"
-              url={form.cover || fileUrl || coverUrl}
+              wrapClassName="w-full h-full bg-white/5 mx-auto shadow-2xl relative mb-3.5"
+              url={imageUrl}
               icon={(
                 <DiscIcon className="w-[30%] h-[30%] text-gray-400" />
               )}
             />
 
             {isImgHover &&
-              <label className={`${form.cover ? 'bg-black/50 text-white' : 'bg-[#202020] text-gray-400'} p-1 w-full h-full absolute top-1/2 left-1/2 -translate-1/2 flex flex-col items-center justify-center cursor-pointer transition-all gap-1.5 text-center`}>
+              <label className={`${imageUrl ? 'bg-black/50 text-white' : 'bg-[#2f2f2f] text-gray-400'} p-1 w-full h-full absolute top-1/2 left-1/2 -translate-1/2 flex flex-col items-center justify-center cursor-pointer transition-all gap-1.5 text-center`}>
                 <input
                   type="file"
                   onChange={onFileChange}
@@ -175,7 +176,7 @@ const AlbumForm = (props: AlbumFormProps) => {
             onChange={(e) => onFormChange('title', e.target.value)}
             required
             placeholder="ej. Random Access Memories, Discovery"
-            className="w-full bg-[#202020] border border-white/5 rounded-xl py-3 px-4 text-xs font-medium focus:ring-1 focus:ring-primary focus:border-primary text-white placeholder:text-gray-600 outline-none transition-all"
+            className="text-[13px] w-full bg-[#202020] border border-white/5 rounded-xl py-3 px-4 text-xs font-medium focus:ring-1 focus:ring-primary focus:border-primary text-white placeholder:text-gray-600 outline-none transition-all"
           />
         </div>
 
@@ -264,7 +265,7 @@ const AlbumForm = (props: AlbumFormProps) => {
               className="w-full bg-[#181818] border border-white/5 rounded-xl py-3 pl-10 pr-4 text-xs font-medium focus:ring-1 focus:ring-primary focus:border-primary text-white placeholder:text-gray-500 outline-none transition-all"
               onChange={(e) => setSearchQuery(e.target.value)}
               value={searchQuery}
-              placeholder="Buscar por nombre, artista, álbum..."
+              placeholder="Buscar por nombre, artista..."
               type="search"
             />
           </div>

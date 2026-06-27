@@ -136,7 +136,7 @@ const ArtistForm = (props: ArtistFormProps) => {
             onChange={(e) => onFormChange('name', e.target.value)}
             required
             placeholder="ej. Tame Impala, Daft Punk"
-            className="w-full bg-[#202020] border border-white/5 rounded-xl py-3 px-4 text-xs font-medium focus:ring-1 focus:ring-primary focus:border-primary text-white placeholder:text-gray-600 outline-none transition-all"
+            className="text-[13px] w-full bg-[#202020] border border-white/5 rounded-xl py-3 px-4 text-xs font-medium focus:ring-1 focus:ring-primary focus:border-primary text-white placeholder:text-gray-600 outline-none transition-all"
           />
         </div>
 
@@ -149,7 +149,7 @@ const ArtistForm = (props: ArtistFormProps) => {
             value={form.bio || ''}
             onChange={(e) => onFormChange('bio', e.target.value)}
             placeholder="Escribe la trayectoria e historia del artista..."
-            className="w-full bg-[#202020] border border-white/5 rounded-xl py-3 px-4 text-xs font-medium focus:ring-1 focus:ring-primary focus:border-primary text-white placeholder:text-gray-600 outline-none transition-all resize-none"
+            className="text-[13px] w-full bg-[#202020] border border-white/5 rounded-xl py-3 px-4 text-xs font-medium focus:ring-1 focus:ring-primary focus:border-primary text-white placeholder:text-gray-600 outline-none transition-all resize-none"
           />
         </div>
 

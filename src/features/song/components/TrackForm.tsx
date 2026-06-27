@@ -276,7 +276,7 @@ const TrackForm = (props: TrackFormProps) => {
             onChange={(e) => onFormChange('title', e.target.value)}
             required
             placeholder="Escribe el título de la canción"
-            className="w-full bg-[#181818] border border-white/5 rounded-xl py-3 px-4 text-xs font-medium focus:ring-1 focus:ring-primary focus:border-primary text-white placeholder:text-gray-600 outline-none transition-all"
+            className="text-[13px] w-full bg-[#181818] border border-white/5 rounded-xl py-3 px-4 text-xs font-medium focus:ring-1 focus:ring-primary focus:border-primary text-white placeholder:text-gray-600 outline-none transition-all"
           />
         </div>
 
@@ -308,8 +308,8 @@ const TrackForm = (props: TrackFormProps) => {
             </div>
 
             <ArtistSelect
-              option={artistOption}
               items={artists}
+              option={artistOption}
               isLoadMore={isLoadMoreArtist}
               loadMore={loadMoreArtists}
               payload={(option) => {
@@ -323,7 +323,7 @@ const TrackForm = (props: TrackFormProps) => {
                 setForm({
                   ...form,
                   artistId: option.value,
-                  ...(item && { artistName: item.name })
+                  artistName: item?.name || ''
                 });
               }}
             />
@@ -355,8 +355,8 @@ const TrackForm = (props: TrackFormProps) => {
             </div>
 
             <AlbumSelect
-              option={albumOption}
               items={albums}
+              option={albumOption}
               isLoadMore={isLoadMoreAlbums}
               loadMore={loadMoreAlbums}
               payload={(option) => {
@@ -370,7 +370,7 @@ const TrackForm = (props: TrackFormProps) => {
                 setForm({
                   ...form,
                   albumId: option.value,
-                  ...(item && { albumName: item.title })
+                  albumName: item?.title || ''
                 });
               }}
             />
@@ -391,17 +391,21 @@ const TrackForm = (props: TrackFormProps) => {
               payload={(option) => setForm({ ...form, quality: option.value })}
               styles={{
                 backgroundColor: bgColor,
+                border: '1px solid #ffffff0d',
                 padding: '12px 16px',
-                borderRadius: 12,
-                border: '1px solid #ffffff0d'
+                fontSize: '13px',
+                borderRadius: 12
               }}
               ulStyles={{
                 backgroundColor: bgColor,
                 border: '1px solid #ffffff0d',
-                borderRadius: '12px'
+                borderRadius: '12px',
+                fontSize: '13px'
               }}
               liStyles={{
                 backgroundColor: bgColor,
+                padding: '6px 12px',
+                fontSize: '13px'
               }}
             />
           </div>
