@@ -104,10 +104,10 @@ class AuthService {
 
     if (auth.status === 0) {
       auth.success = false;
-      return null;
     }
 
     if (auth.status === 401 || auth.status === 400) {
+      auth.success = false;
       // await this.logout();
     }
 
@@ -131,6 +131,7 @@ class AuthService {
       response.success = false;
     }
 
+    response.success = true;
     return response.data;
   }
 

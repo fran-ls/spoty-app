@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Bell, Users, User, Search, Sparkles, XIcon, GlobeIcon, CircleUserRoundIcon, SettingsIcon, LaptopMinimalIcon, LogOutIcon, UploadIcon } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { ChevronLeft, ChevronRight, Bell, Users, User, Search, Sparkles, XIcon, GlobeIcon, CircleUserRoundIcon, SettingsIcon, LaptopMinimalIcon, LogOutIcon, UploadIcon, MusicIcon } from 'lucide-react';
 import useAuth from '../../features/auth/hooks/useAuth';
 import { routes } from '../utils/routes';
 
@@ -146,6 +146,17 @@ export const Header: React.FC<HeaderProps> = ({ onExplorePremiumClick }) => {
                       <span>Subir</span>
                     </button>
                   }
+
+                  <Link
+                    onClick={() => {
+                      setShowUserDropdown(false);
+                    }}
+                    to={routes.songs}
+                    className="flex items-center gap-2 w-full text-left px-4 py-2 text-[#adaaaa] hover:text-white hover:bg-white/10 transition-colors"
+                  >
+                    <MusicIcon size={20} />
+                    <span>Canciones</span>
+                  </Link>
 
                   <button
                     onClick={() => setShowUserDropdown(false)}
