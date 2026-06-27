@@ -5,20 +5,20 @@ import type { Artist } from '../../artist/artist.types';
 import type { Album } from '../../artist/album.types';
 import useAuth from '../../auth/hooks/useAuth';
 import ArtistForm from '../../artist/components/ArtistForm';
-import TrackForm from '../components/TrackForm';
+import TrackForm from './TrackForm';
 import PlaylistForm from '../../playlist/PlaylistForm';
 import AlbumForm from '../../artist/components/AlbumForm';
 import ArtistProfile from '../../artist/components/ArtistProfile';
 import AlbumDetail from '../../artist/components/AlbumDetail';
 import artistService from '../../artist/services/artist.service';
-import SearchPanel from '../components/SearchPanel';
+import SearchPanel from './SearchPanel';
 import useArtist from '../../artist/hooks/useArtist';
 import useAlbum from '../../artist/hooks/useAlbum';
 import albumService from '../../artist/services/album.service';
 
 export type PanelMode = 'create-artist' | 'create-album' | 'view-artist' | 'view-album';
 
-export const UploadView: React.FC = () => {
+export const UploadPanel: React.FC = () => {
   const { dispatch } = useAuth();
   const { artists, artistMeta, searchArtists, setArtists } = useArtist();
   const { albums, albumMeta, searchAlbums, setAlbums } = useAlbum();

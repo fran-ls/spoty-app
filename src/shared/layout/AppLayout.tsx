@@ -8,8 +8,8 @@ import { PremiumModal } from "../components/PremiumModal";
 import { STYLES } from "../utils/styles";
 import { tokenService } from "../../features/auth/services/token.service";
 import UserProfile from "../../features/auth/components/UserProfile";
+import { UploadPanel } from "../../features/song/components/UploadPanel";
 import useAuth from "../../features/auth/hooks/useAuth";
-import { UploadView } from "../../features/song/views/UploadView";
 import AdminLayout from "./AdminLayout";
 import { routes } from "../utils/routes";
 
@@ -59,7 +59,7 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
       />
 
       <AnimatePresence>
-        {(isAdmin && isUploadModal) && <UploadView />}
+        {(isAdmin && isUploadModal) && <UploadPanel />}
       </AnimatePresence>
     </div>
   )

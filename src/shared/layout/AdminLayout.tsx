@@ -1,6 +1,6 @@
 import UserProfile from "../../features/auth/components/UserProfile";
+import { UploadPanel } from "../../features/song/components/UploadPanel";
 import useAuth from "../../features/auth/hooks/useAuth";
-import { UploadView } from "../../features/song/views/UploadView";
 import { Header } from "../components";
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
@@ -16,7 +16,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
 
       <UserProfile />
 
-      {isUploadModal && <UploadView />}
+      {isUploadModal && <UploadPanel />}
     </div>
   )
 }
