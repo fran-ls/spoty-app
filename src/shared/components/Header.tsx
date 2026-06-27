@@ -12,7 +12,7 @@ export const Header: React.FC<HeaderProps> = ({ onExplorePremiumClick }) => {
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const { user, dispatch, showProfile, logout } = useAuth();
+  const { user, isAdmin, dispatch, showProfile, logout } = useAuth();
   const navigate = useNavigate();
 
   return (
@@ -130,19 +130,23 @@ export const Header: React.FC<HeaderProps> = ({ onExplorePremiumClick }) => {
                     <CircleUserRoundIcon size={20} />
                     <span>Perfil</span>
                   </button>
-                  <button
-                    onClick={() => {
-                      setShowUserDropdown(false);
-                      dispatch({
-                        type: 'upload',
-                        payload: { isActive: true }
-                      });
-                    }}
-                    className="flex items-center gap-2 w-full text-left px-4 py-2 text-[#adaaaa] hover:text-white hover:bg-white/10 transition-colors"
-                  >
-                    <UploadIcon size={20} />
-                    <span>Subir</span>
-                  </button>
+
+                  {isAdmin &&
+                    <button
+                      onClick={() => {
+                        setShowUserDropdown(false);
+                        dispatch({
+                          type: 'upload',
+                          payload: { isActive: true }
+                        });
+                      }}
+                      className="flex items-center gap-2 w-full text-left px-4 py-2 text-[#adaaaa] hover:text-white hover:bg-white/10 transition-colors"
+                    >
+                      <UploadIcon size={20} />
+                      <span>Subir</span>
+                    </button>
+                  }
+
                   <button
                     onClick={() => setShowUserDropdown(false)}
                     className="flex items-center gap-2 w-full text-left px-4 py-2 text-[#adaaaa] hover:text-white hover:bg-white/10 transition-colors"

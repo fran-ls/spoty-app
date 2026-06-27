@@ -14,9 +14,10 @@ interface ApiResponse<T> {
   success: boolean;
   status: number;
   statusText: string;
-  message: string;
-  error: string | null;
   data: T | null;
+  message: string;
+  errorMessage: string | null;
+  error: any;
   errors?: any;
 }
 
@@ -39,6 +40,7 @@ export async function apiFetch<T = any>(callback: () => Promise<any>): ApiRes<T>
       statusText: r.statusText,
       message: r.message,
       data: r.data as T,
+      errorMessage: null,
       error: null,
       ...(r.errors && { ...r.errors })
     }
@@ -47,9 +49,10 @@ export async function apiFetch<T = any>(callback: () => Promise<any>): ApiRes<T>
       success: false,
       status: err.status || err.code || 0,
       statusText: 'ERROR',
+      data: null,
       message: err.message,
-      error: err.error || err.message,
-      data: null
+      errorMessage: err.message,
+      error: err
     }
   }
 }
@@ -69,6 +72,7 @@ export async function ApiResponse<T = any>(response: any): ApiRes<T> {
     statusText: r.statusText || r.success ? 'OK' : 'ERROR',
     message: r.message,
     data: r.data as T || null,
+    errorMessage: r.errorMessage,
     error: r.error || null,
     ...(r.errors && { ...r.errors })
   }

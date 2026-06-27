@@ -1,6 +1,6 @@
 import UserProfile from "../../features/auth/components/UserProfile";
 import useAuth from "../../features/auth/hooks/useAuth";
-import { UploadView } from "../../features/song/Views/UploadView";
+import { UploadView } from "../../features/song/views/UploadView";
 import { Header } from "../components";
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {

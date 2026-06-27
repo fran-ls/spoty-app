@@ -1,3 +1,18 @@
+/* SCROLLBAR SIZE */
+.primary-panel-content::-webkit-scrollbar,
+.secondary-panel-content::-webkit-scrollbar,
+#album-form::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+#album-search-artist::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+
+/* PASSWORD INPUT */
 .pass-input::-ms-reveal,
 .pass-input::-ms-clear {
   display: none;
@@ -109,14 +124,6 @@
 
 .switch input:checked+.slider:before {
   transform: translateX(22px);
-}
-
-
-/* SCROLLBAR SIZE */
-.primary-panel-content::-webkit-scrollbar,
-.secondary-panel-content::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
 }
 
 

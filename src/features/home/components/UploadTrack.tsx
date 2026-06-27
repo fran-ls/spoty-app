@@ -6,7 +6,7 @@ import type { Artist } from "../../artist/artist.types";
 import type { PaginationMeta } from "../../../shared/types/common.types";
 import { CameraPlusIcon } from "../../../shared/components/Icons";
 import songService from "../../song/services/song.service";
-import { AudioPlayer } from "../../../shared/components/AudioPlayer";
+import { AudioPlayer } from "../../player/AudioPlayer";
 import artistService from "../../artist/services/artist.service";
 import ArtistSelect from "../../artist/components/ArtistSelect";
 import Select from "../../../shared/components/Select";
@@ -79,8 +79,8 @@ const UploadTrack = () => {
     }
   }
 
-  const getArtists = async (page = 1) => {
-    const { data } = await artistService.getArtists({ page, limit: 5 });
+  const searchArtists = async (page = 1) => {
+    const { data } = await artistService.searchArtists({ page, limit: 5 });
     if (!data) return;
 
     setArtistMeta(data.meta);
@@ -93,7 +93,7 @@ const UploadTrack = () => {
     }
   }
 
-  useEffect(() => { getArtists() }, []);
+  useEffect(() => { searchArtists() }, []);
 
   return (
     <section className="grid grid-cols-[280px_1fr] gap-12 form-section space-y-6" id="form-song">
@@ -255,7 +255,7 @@ const UploadTrack = () => {
                 }}
                 loadMore={() => {
                   if (page < artistMeta.totalPages) {
-                    getArtists(page + 1);
+                    searchArtists(page + 1);
                     setPage(page + 1);
                   }
                 }}

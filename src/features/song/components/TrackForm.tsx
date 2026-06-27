@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { FileAudioIcon, ImageIcon, InfoIcon, Music2Icon, PauseIcon, PlayIcon, PlusCircleIcon, Trash2Icon, UploadIcon, XIcon } from "lucide-react";
+import { FileAudioIcon, ImageUpIcon, InfoIcon, Music2Icon, PauseIcon, PlayIcon, PlusCircleIcon, Trash2Icon, UploadIcon, XIcon } from "lucide-react";
 import type { SongDTO, SongFileUrls } from "../song.types";
 import type { Artist } from "../../artist/artist.types";
 import { formatTime } from "../../../shared/utils/formatTime";
@@ -16,20 +16,19 @@ interface TrackFormProps {
   artists: Artist[];
   isLoadMore: boolean;
   setArtists: (value: React.SetStateAction<Artist[]>) => void;
-  loadMoreArtist: () => void;
+  loadMoreArtists: () => void;
   triggerCreateArtist: () => void;
   triggerCreateAlbum: () => void;
 }
 
 const TrackForm = (props: TrackFormProps) => {
   const {
-    artists, isLoadMore, loadMoreArtist,
+    artists, isLoadMore, loadMoreArtists,
     triggerCreateArtist, triggerCreateAlbum, setArtists
   } = props;
   const { isActive, toast, showToast, onClose } = useToaster(5000);
 
   const audioInputRef = useRef<HTMLInputElement>(null);
-  const coverInputRef = useRef<HTMLInputElement>(null);
   const bgColor = '#181818';
 
   const [player, setPlayer] = useState<AudioPlayerState>({
@@ -112,7 +111,6 @@ const TrackForm = (props: TrackFormProps) => {
   return (
     <>
       <form
-        noValidate
         onSubmit={(e) => {
           e.preventDefault();
           onSave();
@@ -122,7 +120,7 @@ const TrackForm = (props: TrackFormProps) => {
       >
         <div className="text-center pb-4 border-b border-white/5">
           <div
-            className={`hover:border-primary/40 w-28 h-28 rounded-xl overflow-hidden border border-white/10 bg-white/5 mx-auto shadow-2xl relative mb-3.5`}
+            className="bg-white/5 w-28 h-28 rounded-xl overflow-hidden border border-white/10 mx-auto shadow-2xl relative mb-3.5"
             onPointerEnter={() => setIsImgHover(true)}
             onMouseLeave={() => setIsImgHover(false)}
           >
@@ -134,15 +132,14 @@ const TrackForm = (props: TrackFormProps) => {
             />
 
             {isImgHover &&
-              <label className="p-1 w-full h-full absolute top-1/2 left-1/2 -translate-1/2  bg-[#161616] flex flex-col items-center justify-center cursor-pointer transition-all gap-1.5 text-center">
+              <label className={`${previewUrls.cover ? 'bg-black/50 text-white' : 'text-gray-400 bg-[#161616]'} p-1 w-full h-full absolute top-1/2 left-1/2 -translate-1/2 flex flex-col items-center justify-center cursor-pointer transition-all gap-1.5 text-center`}>
                 <input
                   type="file"
-                  ref={coverInputRef}
                   onChange={(e) => onFileChange(e, 'coverFile', 'cover')}
                   accept="image/*"
                   className="hidden"
                 />
-                <ImageIcon className="text-white" size={20} />
+                <ImageUpIcon size={24} />
               </label>
             }
           </div>
@@ -270,6 +267,7 @@ const TrackForm = (props: TrackFormProps) => {
             <ArtistSelect
               items={artists}
               isLoadMore={isLoadMore}
+              loadMore={loadMoreArtists}
               payload={(option) => {
                 const item = option.item;
 
@@ -279,7 +277,6 @@ const TrackForm = (props: TrackFormProps) => {
                   ...(item && { artistName: item.name })
                 });
               }}
-              loadMore={loadMoreArtist}
             />
           </div>
 
@@ -301,6 +298,7 @@ const TrackForm = (props: TrackFormProps) => {
             <AlbumSelect
               items={artists}
               isLoadMore={isLoadMore}
+              loadMore={loadMoreArtists}
               payload={(option) => {
                 const item = option.item;
 
@@ -310,7 +308,6 @@ const TrackForm = (props: TrackFormProps) => {
                   ...(item && { albumName: item.name })
                 });
               }}
-              loadMore={loadMoreArtist}
             />
           </div>
 
@@ -359,8 +356,6 @@ const TrackForm = (props: TrackFormProps) => {
             Subir Canción
           </button>
         </div>
-
-
       </form>
 
       <div

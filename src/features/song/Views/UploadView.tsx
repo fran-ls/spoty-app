@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { PlusCircleIcon, XIcon, MusicIcon, FolderHeartIcon, SearchIcon, ChevronLeftIcon } from 'lucide-react';
 import type { Artist } from '../../artist/artist.types';
-import type { PaginationMeta } from '../../../shared/types/common.types';
+import type { Album } from '../../artist/album.types';
 import useAuth from '../../auth/hooks/useAuth';
 import ArtistForm from '../../artist/components/ArtistForm';
 import TrackForm from '../components/TrackForm';
@@ -12,29 +12,33 @@ import ArtistProfile from '../../artist/components/ArtistProfile';
 import AlbumDetail from '../../artist/components/AlbumDetail';
 import artistService from '../../artist/services/artist.service';
 import SearchPanel from '../components/SearchPanel';
+import useArtist from '../../artist/hooks/useArtist';
+
+export type PanelMode = 'create-artist' | 'create-album' | 'view-artist' | 'view-album';
 
 export const UploadView: React.FC = () => {
   const { dispatch } = useAuth();
-
-  const [page, setPage] = useState(0);
-  const [artists, setArtists] = useState<Artist[]>([]);
-  const [artist, setArtist] = useState<Artist | null>(null);
-  const [artistMeta, setArtistMeta] = useState<PaginationMeta>({
-    page: 1,
-    limit: 10,
-    total: 0,
-    totalPages: 1,
-    hasNextPage: false,
-    hasPrevPage: false
-  });
-  const isLoadMoreArtist = page < artistMeta.totalPages;
+  const { artists, artistMeta, searchArtists, setArtists } = useArtist();
 
   const [activeFormTab, setActiveFormTab] = useState<'track' | 'playlist' | 'search'>('track');
-
-  // Panel 2 control states
+  const [panel2Mode, setPanel2Mode] = useState<PanelMode>('create-artist');
   const [isPanel2Open, setIsPanel2Open] = useState(false);
-  const [panel2Mode, setPanel2Mode] = useState<'create-artist' | 'create-album' | 'view-artist' | 'view-album'>('create-artist');
+
   const [selectedAlbumId, setSelectedAlbumId] = useState<string | null>(null);
+  const [activeAlbum, setActiveAlbum] = useState<Album | null>(null);
+
+  const [artist, setArtist] = useState<Artist | null>(null);
+  const [page, setPage] = useState(0);
+  const filters = {
+    limit: 5,
+    page: 0
+  }
+
+  function loadMoreArtists() {
+    if (!artistMeta.hasNextPage) return;
+    searchArtists({ ...filters, page: page + 1 });
+    setPage(page + 1);
+  }
 
   const triggerCreateArtist = () => {
     setPanel2Mode('create-artist');
@@ -57,26 +61,20 @@ export const UploadView: React.FC = () => {
     setIsPanel2Open(true);
   }
 
-  const getArtists = async (page = 1) => {
-    const { data } = await artistService.getArtists({ page, limit: 5 });
-    if (!data) return;
+  async function onRemoveArtist() {
+    if (!artist || !artist.id) return false;
 
-    setArtistMeta(data.meta);
+    const { data, error } = await artistService.deleteArtist(artist.id);
 
-    if (page > 1) {
-      setArtists((prev) => [...prev, ...data.items]);
-    }
-    else {
-      setArtists(data.items);
+    if (error || !data || !data.id) {
+      return false;
     }
 
-    if (page < artistMeta.totalPages) {
-      getArtists(page + 1);
-      setPage(page + 1);
-    }
+    setArtists((prev) => prev.filter((a) => a.id !== artist.id));
+    return true;
   }
 
-  useEffect(() => { getArtists() }, []);
+  useEffect(() => { searchArtists(filters) }, []);
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end overflow-hidden" id="upload-panel-root">
@@ -175,13 +173,13 @@ export const UploadView: React.FC = () => {
           </div>
 
           {/* Panel Form / Scroll Body */}
-          <div className="flex-1 overflow-y-auto p-5 space-y-6 primary-panel-content">
+          <div className="flex-1 overflow-y-auto p-5 primary-panel-content">
             {activeFormTab === 'track' && (
               <TrackForm
                 artists={artists}
-                isLoadMore={isLoadMoreArtist}
+                isLoadMore={artistMeta.hasNextPage}
                 setArtists={setArtists}
-                loadMoreArtist={getArtists}
+                loadMoreArtists={loadMoreArtists}
                 triggerCreateArtist={triggerCreateArtist}
                 triggerCreateAlbum={triggerCreateAlbum}
               />
@@ -194,11 +192,11 @@ export const UploadView: React.FC = () => {
             {activeFormTab === 'search' && (
               <SearchPanel
                 setArtist={setArtist}
-                triggerViewArtist={triggerViewArtist}
+                setActiveAlbum={setActiveAlbum}
                 triggerViewAlbum={triggerViewAlbum}
+                triggerViewArtist={triggerViewArtist}
               />
             )}
-
           </div>
         </motion.div>
 
@@ -239,7 +237,7 @@ export const UploadView: React.FC = () => {
               </div>
 
               {/* PANEL 2 CONTENT BODY */}
-              <div className="flex-1 overflow-y-auto p-5 space-y-6 secondary-panel-content">
+              <div className="flex-1 overflow-y-auto secondary-panel-content relative">
                 {panel2Mode === 'create-artist' && (
                   <ArtistForm
                     setArtists={setArtists}
@@ -250,27 +248,26 @@ export const UploadView: React.FC = () => {
                 {panel2Mode === 'create-album' && (
                   <AlbumForm
                     artists={artists}
-                    isLoadMore={isLoadMoreArtist}
-                    loadMoreArtist={getArtists}
+                    isLoadMore={artistMeta.hasNextPage}
                     setArtists={setArtists}
                     setIsPanel2Open={setIsPanel2Open}
+                    loadMoreArtists={loadMoreArtists}
                   />
                 )}
 
                 {panel2Mode === 'view-artist' && (
                   <ArtistProfile
                     artist={artist}
+                    onRemove={onRemoveArtist}
                     triggerViewAlbum={triggerViewAlbum}
-                    onRemove={async () => {
-                      if (!artist?.id) return;
-                      const { data } = await artistService.deleteArtist(artist.id);
-                      if (data && data.id) setArtists((prev) => prev.filter((a) => a.id !== artist.id));
-                    }}
                   />
                 )}
 
                 {panel2Mode === 'view-album' &&
-                  <AlbumDetail selectedAlbumId={selectedAlbumId || ''} />
+                  <AlbumDetail
+                    activeAlbum={activeAlbum}
+                    selectedAlbumId={selectedAlbumId || ''}
+                  />
                 }
               </div>
             </motion.div>

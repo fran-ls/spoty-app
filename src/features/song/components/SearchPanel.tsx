@@ -65,6 +65,7 @@ const SearchPanel = (props: SearchPanelProps) => {
         {(searchFilterType === 'all' || searchFilterType === 'playlists') && (
           <SearchPlaylistList
             query={searchQuery}
+            filter={searchFilterType}
             triggerViewAlbum={triggerViewAlbum}
           />
         )}

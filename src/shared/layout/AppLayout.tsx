@@ -9,12 +9,12 @@ import { STYLES } from "../utils/styles";
 import { tokenService } from "../../features/auth/services/token.service";
 import UserProfile from "../../features/auth/components/UserProfile";
 import useAuth from "../../features/auth/hooks/useAuth";
-import { UploadView } from "../../features/song/Views/UploadView";
+import { UploadView } from "../../features/song/views/UploadView";
 import AdminLayout from "./AdminLayout";
 import { routes } from "../utils/routes";
 
 const AppLayout = ({ children }: { children: React.ReactNode }) => {
-  const { user, isUploadModal } = useAuth();
+  const { isAdmin, isUploadModal } = useAuth();
   const [isPremiumOpen, setIsPremiumOpen] = useState(false);
 
   const currentPath = window.location.pathname;
@@ -25,7 +25,7 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
     setInterval(() => tokenService.refreshAccessToken(), timeout);
   }, []);
 
-  if (user?.role === 'ADMIN' && paths.includes(currentPath)) {
+  if (isAdmin && paths.includes(currentPath)) {
     return (
       <AdminLayout>
         {children}
@@ -59,7 +59,7 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
       />
 
       <AnimatePresence>
-        {(user?.role === 'ADMIN' && isUploadModal) && <UploadView />}
+        {(isAdmin && isUploadModal) && <UploadView />}
       </AnimatePresence>
     </div>
   )

@@ -57,7 +57,7 @@ const TrackModal = (props: TrackModalProps) => {
         </header>
 
         <SmartImage
-          cover={cover}
+          url={cover}
           wrapClassName="bg-[#3e3e3e] mx-auto my-2 w-50 h-50 rounded"
         />
 
