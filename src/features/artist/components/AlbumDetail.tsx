@@ -6,14 +6,21 @@ import useTrack from "../../song/hooks/useTrack";
 import { formatTime } from "../../../shared/utils/formatTime";
 import { useInfiniteScroll } from "../../../shared/hooks/useInfiniteScroll";
 import Loader from "../../../shared/components/Loader";
+import ProfileAdminMenu from "./ProfileAdminMenu";
+import useAuth from "../../auth/hooks/useAuth";
+import Toaster from "../../../shared/components/Toaster";
+import useToaster from "../../../shared/hooks/useToaster";
 
 interface AlbumDetailProps {
   selectedAlbumId: string;
   activeAlbum: Album | null;
+  onRemove: (artistId: string) => Promise<boolean>;
 }
 
-const AlbumDetail = ({ activeAlbum }: AlbumDetailProps) => {
+const AlbumDetail = ({ activeAlbum, onRemove }: AlbumDetailProps) => {
   const { tracks, trackMeta, searchTracks } = useTrack();
+  const { toast, isActive, isFirstLoad, showToast, onClose } = useToaster();
+  const { isAdmin } = useAuth();
 
   const [page, setPage] = useState(0);
   const filters: AlbumFilters = {
@@ -33,7 +40,7 @@ const AlbumDetail = ({ activeAlbum }: AlbumDetailProps) => {
 
   return (
     <div className="p-5 space-y-6 animate-fade-in">
-      <div className="text-center pb-4 border-b border-white/5">
+      <div className="text-center pb-4 border-b border-white/5 relative">
         <SmartImage
           wrapClassName="w-28 h-28 rounded-xl bg-white/5 border border-white/10 overflow-hidden mx-auto shadow-2xl relative mb-3.5"
           url={activeAlbum?.cover || null}
@@ -51,6 +58,19 @@ const AlbumDetail = ({ activeAlbum }: AlbumDetailProps) => {
         <p className="text-[9px] font-mono uppercase tracking-widest text-gray-500 mt-1.5">
           Álbum Musical
         </p>
+
+        {isAdmin &&
+          <ProfileAdminMenu
+            onRemoveArtist={() => (onRemove(activeAlbum!.id))}
+            onOpenToast={() => showToast({
+              message: 'Álbum eliminado',
+              type: 'error',
+              icon: (
+                <DiscIcon />
+              )
+            })}
+          />
+        }
       </div>
 
       <div className="space-y-2">
@@ -107,6 +127,13 @@ const AlbumDetail = ({ activeAlbum }: AlbumDetailProps) => {
           </div>
         }
       </div>
+
+      <Toaster
+        onClose={onClose}
+        isFirstLoad={isFirstLoad}
+        isActive={isActive}
+        {...toast}
+      />
     </div>
   )
 }

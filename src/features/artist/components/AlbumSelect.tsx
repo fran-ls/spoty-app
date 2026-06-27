@@ -1,25 +1,27 @@
 import { useEffect, useRef, useState } from "react";
 import "../../../assets/css/select.css"
-import type { Artist } from "../artist.types";
+import type { Album } from "../album.types";
 import Loader from "../../../shared/components/Loader";
 import { useInfiniteScroll } from "../../../shared/hooks/useInfiniteScroll";
 
 type Option = {
   label: string;
   value: string;
-  item?: Artist | null;
+  item?: Album | null;
 }
 
 interface AlbumSelectrops {
-  items: Artist[];
+  items: Album[];
+  option?: Option;
   isLoadMore?: boolean;
   payload?: (option: Option) => void;
   loadMore?: () => void;
 }
 
-const AlbumSelect = ({ items, isLoadMore = false, payload, loadMore }: AlbumSelectrops) => {
+const AlbumSelect = (props: AlbumSelectrops) => {
+  const { option, items, isLoadMore = false, payload, loadMore } = props;
   const [isActive, setIsActive] = useState(false);
-  const [option, setOption] = useState<Option>({
+  const [item, setItem] = useState<Option>({
     label: 'Seleccionar',
     value: '',
   });
@@ -41,8 +43,6 @@ const AlbumSelect = ({ items, isLoadMore = false, payload, loadMore }: AlbumSele
     }
   }, []);
 
-  useEffect(() => { if (payload) payload(option) }, [option]);
-
   return (
     <div
       className="accordion-wrap"
@@ -62,7 +62,9 @@ const AlbumSelect = ({ items, isLoadMore = false, payload, loadMore }: AlbumSele
           checked={isActive}
           type="checkbox"
         />
-        <span className="truncate">{option.label}</span>
+        <span className="truncate">
+          {option ? option.label : item.label}
+        </span>
         <svg
           className="arrow"
           xmlns="http://www.w3.org/2000/svg"
@@ -100,7 +102,8 @@ const AlbumSelect = ({ items, isLoadMore = false, payload, loadMore }: AlbumSele
               e.currentTarget.style.backgroundColor = 'transparent';
             }}
             onClick={() => {
-              setOption({ label: 'Seleccionar', value: '', item: { name: '', id: '' } });
+              payload && payload({ label: 'Seleccionar', value: '', item: null });
+              setItem({ label: 'Seleccionar', value: '', item: null });
               setIsActive(false);
             }}
             style={{ backgroundColor: bgColor }}
@@ -118,7 +121,8 @@ const AlbumSelect = ({ items, isLoadMore = false, payload, loadMore }: AlbumSele
                 e.currentTarget.style.backgroundColor = 'transparent';
               }}
               onClick={() => {
-                setOption({ label: a.name, value: a.id, item: a });
+                payload && payload({ label: a.title, value: a.id, item: a });
+                setItem({ label: a.title, value: a.id, item: a });
                 setIsActive(false);
               }}
               style={{
@@ -128,10 +132,10 @@ const AlbumSelect = ({ items, isLoadMore = false, payload, loadMore }: AlbumSele
                 backgroundColor: bgColor
               }}
               className="accordion-option truncate"
-              title={a.name}
+              title={a.title}
               key={a.id}
             >
-              {a.name}
+              {a.title}
             </li>
           ))}
 

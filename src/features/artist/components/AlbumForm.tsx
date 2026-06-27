@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { DiscIcon, ImageUpIcon, InfoIcon, SearchIcon, UserIcon, XIcon } from "lucide-react";
 import type { Artist } from "../artist.types";
-import type { AlbumDTO } from "../album.types";
+import type { Album, AlbumDTO } from "../album.types";
 import ArtistSelect from "./ArtistSelect";
 import useToaster from "../../../shared/hooks/useToaster";
 import albumService from "../services/album.service";
@@ -9,19 +9,20 @@ import SmartImage from "../../../shared/components/SmartImage";
 import useArtist from "../hooks/useArtist";
 import Loader from "../../../shared/components/Loader";
 import { useInfiniteScroll } from "../../../shared/hooks/useInfiniteScroll";
+import Toaster from "../../../shared/components/Toaster";
 
 const coverUrl = 'https://lh3.googleusercontent.com/aida-public/AB6AXuDYvobAjd42bG0K_tSQaLfpvHNVFxAgAo-R3C-Ei4Kt_Yv5hU3N5ZTiobLniGnjhECkh1cNd5Fxabf0_pYKOLXmc7j6nfXGGCmopV179tIFexWEB4uJgxST-FFKTU846GKkpwDoWI20uSxTYklnUxOH5FTz4MtgY3NDxPYpbPeukvjtc5Rcy0vu-iMgJfPwvBGUIKYLecfP8xmgOzImY2LRW15GagQZ5oD824sAUXCQRZfc7uG8l01yStM71Dl76Y3YCyhC0ZxEg2JM';
 
 interface AlbumFormProps {
   artists: Artist[];
   isLoadMore: boolean;
-  setArtists: React.Dispatch<React.SetStateAction<Artist[]>>;
+  setAlbums: React.Dispatch<React.SetStateAction<Album[]>>;
   setIsPanel2Open: React.Dispatch<React.SetStateAction<boolean>>;
   loadMoreArtists: () => void;
 }
 
 const AlbumForm = (props: AlbumFormProps) => {
-  const { artists, isLoadMore, loadMoreArtists, setIsPanel2Open } = props;
+  const { artists, isLoadMore, setAlbums, loadMoreArtists, setIsPanel2Open } = props;
   const { artists: artistSearch, artistMeta: searchArtistMeta, searchArtists } = useArtist();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -40,7 +41,7 @@ const AlbumForm = (props: AlbumFormProps) => {
     setPage(page + 1);
   });
 
-  const { isActive, toast, showToast, onClose } = useToaster(5000);
+  const { isActive, toast, isFirstLoad, showToast, onClose } = useToaster(5000);
   const [isLoading, setIsLoading] = useState(false);
 
   const [isImgHover, setIsImgHover] = useState(false);
@@ -73,8 +74,8 @@ const AlbumForm = (props: AlbumFormProps) => {
 
   async function onSave() {
     if (isLoading) return;
-
     setIsLoading(true);
+
     const { data, error, errorMessage } = await albumService.newAlbum(form);
     setIsLoading(false);
 
@@ -93,6 +94,8 @@ const AlbumForm = (props: AlbumFormProps) => {
       });
       return;
     }
+
+    setAlbums((prev) => [data, ...prev]);
 
     showToast({
       message: 'Álbum guardado',
@@ -176,7 +179,7 @@ const AlbumForm = (props: AlbumFormProps) => {
           />
         </div>
 
-        <div className="space-y-1.5">
+        <div className="space-y-1">
           <div className="flex justify-between items-center">
             <label className="text-[10px] uppercase font-mono tracking-wider font-bold text-gray-400">
               Artista del Álbum
@@ -187,7 +190,7 @@ const AlbumForm = (props: AlbumFormProps) => {
               title="Buscar artista"
               type="button"
             >
-              <SearchIcon size={16} />
+              <SearchIcon size={14} />
             </button>
           </div>
 
@@ -323,28 +326,12 @@ const AlbumForm = (props: AlbumFormProps) => {
         </div>
       </section>
 
-      <div
-        className={`${isActive ? 'show-slide-down' : 'hide-slide-up'} ${toast.type === 'error' ? 'bg-red-400' : 'bg-primary text-black'} rounded-md relative slide`}
-        id="toast"
-      >
-        <div className="px-4 py-3 flex items-center gap-3">
-          {toast.icon ? toast.icon : <InfoIcon size={20} />}
-
-          <div className="text-sm">
-            <p className="" id="toast-msg">
-              {toast.message}
-            </p>
-          </div>
-
-          <button
-            onClick={onClose}
-            className={`${toast.type === 'error' ? 'bg-red-400' : 'bg-primary'} absolute -top-2 -right-2 w-5 h-5 p-0.5 rounded-full border border-[#565656] cursor-pointer`}
-            aria-label="Cerrar"
-          >
-            <XIcon className="w-full h-full" />
-          </button>
-        </div>
-      </div>
+      <Toaster
+        onClose={onClose}
+        isFirstLoad={isFirstLoad}
+        isActive={isActive}
+        {...toast}
+      />
     </div>
   )
 }

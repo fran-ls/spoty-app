@@ -28,7 +28,7 @@ const PlaylistForm = ({ }: PlaylistFormProps) => {
       onSubmit={(e) => {
         e.preventDefault();
       }}
-      className="space-y-5 animate-fade-in"
+      className="p-5 space-y-5 animate-fade-in"
     >
       <div className="space-y-1.5">
         <label className="text-[10px] uppercase font-mono tracking-wider font-bold text-gray-400">

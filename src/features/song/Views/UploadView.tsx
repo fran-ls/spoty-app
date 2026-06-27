@@ -13,31 +13,50 @@ import AlbumDetail from '../../artist/components/AlbumDetail';
 import artistService from '../../artist/services/artist.service';
 import SearchPanel from '../components/SearchPanel';
 import useArtist from '../../artist/hooks/useArtist';
+import useAlbum from '../../artist/hooks/useAlbum';
+import albumService from '../../artist/services/album.service';
 
 export type PanelMode = 'create-artist' | 'create-album' | 'view-artist' | 'view-album';
 
 export const UploadView: React.FC = () => {
   const { dispatch } = useAuth();
   const { artists, artistMeta, searchArtists, setArtists } = useArtist();
+  const { albums, albumMeta, searchAlbums, setAlbums } = useAlbum();
 
   const [activeFormTab, setActiveFormTab] = useState<'track' | 'playlist' | 'search'>('track');
   const [panel2Mode, setPanel2Mode] = useState<PanelMode>('create-artist');
   const [isPanel2Open, setIsPanel2Open] = useState(false);
 
   const [selectedAlbumId, setSelectedAlbumId] = useState<string | null>(null);
+  const [activeArtist, setActiveArtist] = useState<Artist | null>(null);
   const [activeAlbum, setActiveAlbum] = useState<Album | null>(null);
 
-  const [artist, setArtist] = useState<Artist | null>(null);
-  const [page, setPage] = useState(0);
-  const filters = {
-    limit: 5,
+  const [artistSearchQuery, setArtistSearchQuery] = useState('');
+  const [artistPage, setArtistPage] = useState(0);
+  const artistFilters = {
+    name: artistSearchQuery.trim(),
+    limit: 10,
+    page: 0
+  }
+
+  const [albumSearchQuery, setAlbumSearchQuery] = useState('');
+  const [albumPage, setAlbumPage] = useState(0);
+  const albumFilters = {
+    title: albumSearchQuery.trim(),
+    limit: 10,
     page: 0
   }
 
   function loadMoreArtists() {
     if (!artistMeta.hasNextPage) return;
-    searchArtists({ ...filters, page: page + 1 });
-    setPage(page + 1);
+    searchArtists({ ...artistFilters, page: artistPage + 1 });
+    setArtistPage(artistPage + 1);
+  }
+
+  function loadMoreAlbums() {
+    if (!albumMeta.hasNextPage) return;
+    searchAlbums({ ...albumFilters, page: albumPage + 1 });
+    setAlbumPage(albumPage + 1);
   }
 
   const triggerCreateArtist = () => {
@@ -51,6 +70,11 @@ export const UploadView: React.FC = () => {
   }
 
   const triggerViewAlbum = (id: string) => {
+    if (!id) {
+      setIsPanel2Open(false);
+      return;
+    }
+
     setSelectedAlbumId(id);
     setPanel2Mode('view-album');
     setIsPanel2Open(true);
@@ -62,19 +86,37 @@ export const UploadView: React.FC = () => {
   }
 
   async function onRemoveArtist() {
-    if (!artist || !artist.id) return false;
+    const artistId = activeArtist?.id;
+    if (!activeArtist || !artistId) return false;
 
-    const { data, error } = await artistService.deleteArtist(artist.id);
+    const { data, error } = await artistService.deleteArtist(artistId);
 
     if (error || !data || !data.id) {
       return false;
     }
 
-    setArtists((prev) => prev.filter((a) => a.id !== artist.id));
+    setArtists((prev) => prev.filter((a) => a.id !== artistId));
     return true;
   }
 
-  useEffect(() => { searchArtists(filters) }, []);
+  async function onRemoveAlbum() {
+    const albumId = activeAlbum?.id;
+    if (!activeAlbum || !albumId) return false;
+
+    const { data, error } = await albumService.deleteAlbum(albumId);
+
+    if (error || !data || !data.id) {
+      return false;
+    }
+
+    setActiveAlbum(null);
+    setIsPanel2Open(false);
+    setAlbums((prev) => prev.filter((a) => a.id !== albumId));
+    return true;
+  }
+
+  useEffect(() => { setTimeout(() => searchArtists(artistFilters), 300) }, [artistSearchQuery]);
+  useEffect(() => { setTimeout(() => searchAlbums(albumFilters), 300) }, [albumSearchQuery]);
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end overflow-hidden" id="upload-panel-root">
@@ -173,13 +215,23 @@ export const UploadView: React.FC = () => {
           </div>
 
           {/* Panel Form / Scroll Body */}
-          <div className="flex-1 overflow-y-auto p-5 primary-panel-content">
+          <div
+            style={{ position: 'relative' }}
+            className="flex-1 overflow-y-auto primary-panel-content relative"
+          >
             {activeFormTab === 'track' && (
               <TrackForm
                 artists={artists}
-                isLoadMore={artistMeta.hasNextPage}
+                albums={albums}
+                isLoadMoreArtist={artistMeta.hasNextPage}
+                isLoadMoreAlbums={albumMeta.hasNextPage}
+                artistSearchQuery={artistSearchQuery}
+                albumSearchQuery={albumSearchQuery}
                 setArtists={setArtists}
                 loadMoreArtists={loadMoreArtists}
+                loadMoreAlbums={loadMoreAlbums}
+                setArtistSearchQuery={setArtistSearchQuery}
+                setAlbumSearchQuery={setAlbumSearchQuery}
                 triggerCreateArtist={triggerCreateArtist}
                 triggerCreateAlbum={triggerCreateAlbum}
               />
@@ -191,7 +243,7 @@ export const UploadView: React.FC = () => {
 
             {activeFormTab === 'search' && (
               <SearchPanel
-                setArtist={setArtist}
+                setActiveArtist={setActiveArtist}
                 setActiveAlbum={setActiveAlbum}
                 triggerViewAlbum={triggerViewAlbum}
                 triggerViewArtist={triggerViewArtist}
@@ -249,7 +301,7 @@ export const UploadView: React.FC = () => {
                   <AlbumForm
                     artists={artists}
                     isLoadMore={artistMeta.hasNextPage}
-                    setArtists={setArtists}
+                    setAlbums={setAlbums}
                     setIsPanel2Open={setIsPanel2Open}
                     loadMoreArtists={loadMoreArtists}
                   />
@@ -257,7 +309,7 @@ export const UploadView: React.FC = () => {
 
                 {panel2Mode === 'view-artist' && (
                   <ArtistProfile
-                    artist={artist}
+                    artist={activeArtist}
                     onRemove={onRemoveArtist}
                     triggerViewAlbum={triggerViewAlbum}
                   />
@@ -267,6 +319,7 @@ export const UploadView: React.FC = () => {
                   <AlbumDetail
                     activeAlbum={activeAlbum}
                     selectedAlbumId={selectedAlbumId || ''}
+                    onRemove={onRemoveAlbum}
                   />
                 }
               </div>

@@ -1,7 +1,8 @@
 import { useRef, useState } from "react";
-import { FileAudioIcon, ImageUpIcon, InfoIcon, Music2Icon, PauseIcon, PlayIcon, PlusCircleIcon, Trash2Icon, UploadIcon, XIcon } from "lucide-react";
+import { DiscIcon, FileAudioIcon, ImageUpIcon, InfoIcon, Music2Icon, PauseIcon, PlayIcon, PlusCircleIcon, SearchIcon, Trash2Icon, UploadIcon, UserIcon, XIcon } from "lucide-react";
 import type { SongDTO, SongFileUrls } from "../song.types";
 import type { Artist } from "../../artist/artist.types";
+import type { Album } from "../../artist/album.types";
 import { formatTime } from "../../../shared/utils/formatTime";
 import { AudioPlayer, type AudioPlayerState } from "../../player/AudioPlayer";
 import ArtistSelect from "../../artist/components/ArtistSelect";
@@ -9,24 +10,36 @@ import AlbumSelect from "../../artist/components/AlbumSelect";
 import songService from "../services/song.service";
 import Select from "../../../shared/components/Select";
 import useToaster from "../../../shared/hooks/useToaster";
+import Loader from "../../../shared/components/Loader";
+import SmartImage from "../../../shared/components/SmartImage";
+import { useInfiniteScroll } from "../../../shared/hooks/useInfiniteScroll";
+import Toaster from "../../../shared/components/Toaster";
 
 const coverUrl = 'https://lh3.googleusercontent.com/aida-public/AB6AXuDYvobAjd42bG0K_tSQaLfpvHNVFxAgAo-R3C-Ei4Kt_Yv5hU3N5ZTiobLniGnjhECkh1cNd5Fxabf0_pYKOLXmc7j6nfXGGCmopV179tIFexWEB4uJgxST-FFKTU846GKkpwDoWI20uSxTYklnUxOH5FTz4MtgY3NDxPYpbPeukvjtc5Rcy0vu-iMgJfPwvBGUIKYLecfP8xmgOzImY2LRW15GagQZ5oD824sAUXCQRZfc7uG8l01yStM71Dl76Y3YCyhC0ZxEg2JM';
 
 interface TrackFormProps {
   artists: Artist[];
-  isLoadMore: boolean;
-  setArtists: (value: React.SetStateAction<Artist[]>) => void;
+  albums: Album[];
+  isLoadMoreArtist: boolean;
+  isLoadMoreAlbums: boolean;
+  artistSearchQuery: string;
+  albumSearchQuery: string;
+  setArtists: React.Dispatch<React.SetStateAction<Artist[]>>;
+  setArtistSearchQuery: React.Dispatch<React.SetStateAction<string>>;
+  setAlbumSearchQuery: React.Dispatch<React.SetStateAction<string>>;
   loadMoreArtists: () => void;
+  loadMoreAlbums: () => void;
   triggerCreateArtist: () => void;
   triggerCreateAlbum: () => void;
 }
 
 const TrackForm = (props: TrackFormProps) => {
   const {
-    artists, isLoadMore, loadMoreArtists,
-    triggerCreateArtist, triggerCreateAlbum, setArtists
+    artists, albums, isLoadMoreArtist, isLoadMoreAlbums, artistSearchQuery, loadMoreAlbums,
+    albumSearchQuery, loadMoreArtists, triggerCreateArtist, triggerCreateAlbum, setArtists,
+    setArtistSearchQuery, setAlbumSearchQuery
   } = props;
-  const { isActive, toast, showToast, onClose } = useToaster(5000);
+  const { isActive, toast, isFirstLoad, showToast, onClose } = useToaster(5000);
 
   const audioInputRef = useRef<HTMLInputElement>(null);
   const bgColor = '#181818';
@@ -52,6 +65,22 @@ const TrackForm = (props: TrackFormProps) => {
     audio: null,
     quality: '128',
     cover: ''
+  });
+
+  const [isArtistSearch, setIsArtistSearch] = useState(false);
+  const [artistOption, setArtistOption] = useState({
+    label: 'Seleccionar',
+    value: ''
+  });
+  const [isAlbumSearch, setIsAlbumSearch] = useState(false);
+  const [albumOption, setAlbumOption] = useState({
+    label: 'Seleccionar',
+    value: ''
+  });
+
+  const { loaderRef } = useInfiniteScroll(() => {
+    if (!isLoadMoreArtist) return;
+    loadMoreArtists();
   });
 
   const onFormChange = (field: keyof SongDTO, value: any) => {
@@ -109,14 +138,17 @@ const TrackForm = (props: TrackFormProps) => {
   }
 
   return (
-    <>
+    <div
+      style={{ position: 'relative' }}
+      className="relative overflow-hidden"
+    >
       <form
         onSubmit={(e) => {
           e.preventDefault();
           onSave();
         }}
         style={{ position: 'relative' }}
-        className="space-y-5 animate-fade-in relative"
+        className="p-5 space-y-5 min-h-full h-[calc(100vh-73px-56px)] animate-fade-in overflow-y-auto relative"
       >
         <div className="text-center pb-4 border-b border-white/5">
           <div
@@ -249,27 +281,44 @@ const TrackForm = (props: TrackFormProps) => {
         </div>
 
         <div className="grid grid-cols-1 gap-4">
-          <div className="space-y-0.5 z-15">
+          <div className="space-y-1 z-15">
             <div className="flex justify-between items-center">
               <label className="text-[10px] uppercase font-mono tracking-wider font-bold text-gray-400">
                 Artista
               </label>
-              <button
-                onClick={triggerCreateArtist}
-                className="text-[9px] font-bold text-primary hover:underline transition-all flex items-center gap-0.5 outline-none"
-                type="button"
-              >
-                <PlusCircleIcon size={10} />
-                <span>Nuevo artista</span>
-              </button>
+
+              <div className="flex justify-between items-center gap-2">
+                <button
+                  onClick={triggerCreateArtist}
+                  className="cursor-pointer text-[9px] font-bold text-primary hover:underline transition-all flex items-center gap-0.5 outline-none"
+                  title="Nuevo artista"
+                  type="button"
+                >
+                  <PlusCircleIcon size={14} />
+                </button>
+                <button
+                  onClick={() => setIsArtistSearch(true)}
+                  className="cursor-pointer text-[9px] p-0.5 font-bold text-primary hover:underline transition-all flex items-center gap-0.5 outline-none"
+                  title="Buscar artista"
+                  type="button"
+                >
+                  <SearchIcon size={14} />
+                </button>
+              </div>
             </div>
 
             <ArtistSelect
+              option={artistOption}
               items={artists}
-              isLoadMore={isLoadMore}
+              isLoadMore={isLoadMoreArtist}
               loadMore={loadMoreArtists}
               payload={(option) => {
                 const item = option.item;
+
+                setArtistOption({
+                  label: item?.name || 'Seleccionar',
+                  value: option.value
+                });
 
                 setForm({
                   ...form,
@@ -280,39 +329,55 @@ const TrackForm = (props: TrackFormProps) => {
             />
           </div>
 
-          <div className="space-y-0.5 z-10">
+          <div className="space-y-1 z-10">
             <div className="flex justify-between items-center">
               <label className="text-[10px] uppercase font-mono tracking-wider font-bold text-gray-400">
                 Álbum
               </label>
-              <button
-                type="button"
-                onClick={triggerCreateAlbum}
-                className="text-[9px] font-bold text-primary hover:underline transition-all flex items-center gap-0.5 outline-none"
-              >
-                <PlusCircleIcon size={10} />
-                <span>Nuevo álbum</span>
-              </button>
+              <div className="flex justify-between items-center gap-2">
+
+                <button
+                  type="button"
+                  onClick={triggerCreateAlbum}
+                  className="cursor-pointer text-[9px] font-bold text-primary hover:underline transition-all flex items-center gap-0.5 outline-none"
+                >
+                  <PlusCircleIcon size={14} />
+                </button>
+                <button
+                  onClick={() => setIsAlbumSearch(true)}
+                  className="cursor-pointer text-[9px] p-0.5 font-bold text-primary hover:underline transition-all flex items-center gap-0.5 outline-none"
+                  title="Buscar artista"
+                  type="button"
+                >
+                  <SearchIcon size={14} />
+                </button>
+              </div>
             </div>
 
             <AlbumSelect
-              items={artists}
-              isLoadMore={isLoadMore}
-              loadMore={loadMoreArtists}
+              option={albumOption}
+              items={albums}
+              isLoadMore={isLoadMoreAlbums}
+              loadMore={loadMoreAlbums}
               payload={(option) => {
                 const item = option.item;
+
+                setAlbumOption({
+                  label: item?.title || 'Seleccionar',
+                  value: option.value
+                });
 
                 setForm({
                   ...form,
                   albumId: option.value,
-                  ...(item && { albumName: item.name })
+                  ...(item && { albumName: item.title })
                 });
               }}
             />
           </div>
 
-          <div className="space-y-0.5 text-white">
-            <label className="text-[10px] uppercase font-mono tracking-wider font-bold text-gray-400">
+          <div className="text-white">
+            <label className="mb-1 block text-[10px] uppercase font-mono tracking-wider font-bold text-gray-400">
               Calidad
             </label>
 
@@ -358,29 +423,191 @@ const TrackForm = (props: TrackFormProps) => {
         </div>
       </form>
 
-      <div
-        className={`${isActive ? 'show-slide-down' : 'hide-slide-up'} ${toast.type === 'error' ? 'bg-red-400' : 'bg-primary text-black'} rounded-md relative slide`}
-        id="toast"
+      <section
+        style={{ boxShadow: '0px 0px 5px 2px #0e0e0e' }}
+        className={`${isArtistSearch ? 'translate-y-0' : 'translate-y-[100vh]'} h-100 p-5 text-gray-400 bg-[#181818] overflow-hidden w-full z-50 transition duration-150 absolute bottom-0 right-0`}
       >
-        <div className="px-4 py-3 flex items-center gap-3">
-          {toast.icon ? toast.icon : <InfoIcon size={20} />}
+        <div className="animate-fade-in">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-sm">
+              Buscar artista
+            </h2>
 
-          <div className="text-sm">
-            <p className="" id="toast-msg">
-              {toast.message}
-            </p>
+            <button
+              onClick={() => setIsArtistSearch(false)}
+              className="p-1 cursor-pointer"
+              type="button"
+            >
+              <XIcon size={20} />
+            </button>
           </div>
 
-          <button
-            onClick={onClose}
-            className={`${toast.type === 'error' ? 'bg-red-400' : 'bg-primary'} absolute -top-2 -right-2 w-5 h-5 p-0.5 rounded-full border border-[#565656] cursor-pointer`}
-            aria-label="Cerrar"
-          >
-            <XIcon className="w-full h-full" />
-          </button>
+          <div className="relative">
+            <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-500">
+              <SearchIcon size={14} />
+            </span>
+            <input
+              className="w-full bg-[#181818] border border-white/5 rounded-xl py-3 pl-10 pr-4 text-xs font-medium focus:ring-1 focus:ring-primary focus:border-primary text-white placeholder:text-gray-500 outline-none transition-all"
+              onChange={(e) => setArtistSearchQuery(e.target.value)}
+              value={artistSearchQuery}
+              placeholder="Buscar por nombre..."
+              type="search"
+            />
+          </div>
         </div>
-      </div>
-    </>
+
+        <div
+          className="mt-4 overflow-y-auto max-h-66"
+          id="album-search-artist"
+        >
+          {artists.map((art) => (
+            <div
+              onClick={() => {
+                setArtistOption({
+                  label: art.name,
+                  value: art.id
+                });
+
+                setForm({
+                  ...form,
+                  artistId: art.id,
+                  artistName: art.name
+                });
+
+                setIsArtistSearch(false);
+              }}
+              className="hover:bg-white/5 cursor-pointer p-2 flex items-center gap-3" key={art.id}
+            >
+              <SmartImage
+                wrapClassName="text-gray-400 min-w-0 w-9 h-9 rounded-full bg-white/5 border border-white/10 overflow-hidden shrink-0"
+                url={null}
+                icon={(
+                  <UserIcon size={16} />
+                )}
+              />
+
+              <div className="overflow-hidden flex flex-col gap-1">
+                <p className="text-xs font-bold text-white group-hover:text-primary transition-colors truncate">
+                  {art.name}
+                </p>
+                <span className="text-[9px] text-gray-400 font-mono">
+                  {art.id}
+                </span>
+              </div>
+            </div>
+          ))}
+
+          {isLoadMoreArtist &&
+            <div
+              className="bg-[#202020] flex items-center justify-center overflow-hidden"
+              ref={loaderRef}
+            >
+              <Loader
+                className="border-transparent border-t-slate-200"
+                size={20}
+                stroke={2}
+              />
+            </div>
+          }
+        </div>
+      </section>
+
+      <section
+        style={{ boxShadow: '0px 0px 5px 2px #0e0e0e' }}
+        className={`${isAlbumSearch ? 'translate-y-0' : 'translate-y-[100vh]'} h-100 p-5 text-gray-400 bg-[#181818] overflow-hidden w-full z-50 transition duration-150 absolute bottom-0 right-0`}
+      >
+        <div className="animate-fade-in">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-sm">
+              Buscar álbum
+            </h2>
+
+            <button
+              onClick={() => setIsAlbumSearch(false)}
+              className="p-1 cursor-pointer"
+              type="button"
+            >
+              <XIcon size={20} />
+            </button>
+          </div>
+
+          <div className="relative">
+            <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-500">
+              <SearchIcon size={14} />
+            </span>
+            <input
+              className="w-full bg-[#181818] border border-white/5 rounded-xl py-3 pl-10 pr-4 text-xs font-medium focus:ring-1 focus:ring-primary focus:border-primary text-white placeholder:text-gray-500 outline-none transition-all"
+              onChange={(e) => setAlbumSearchQuery(e.target.value)}
+              value={albumSearchQuery}
+              placeholder="Buscar por título, artista..."
+              type="search"
+            />
+          </div>
+        </div>
+
+        <div
+          className="mt-4 overflow-y-auto max-h-66"
+          id="album-search-artist"
+        >
+          {albums.map((al) => (
+            <div
+              onClick={() => {
+                setAlbumOption({
+                  label: al.title,
+                  value: al.id
+                });
+
+                setForm({
+                  ...form,
+                  albumId: al.id,
+                  albumName: al.title
+                });
+
+                setIsAlbumSearch(false);
+              }}
+              className="hover:bg-white/5 cursor-pointer p-2 flex items-center gap-3" key={al.id}
+            >
+              <SmartImage
+                wrapClassName="text-gray-400 min-w-0 w-9 h-9 rounded-full bg-white/5 border border-white/10 overflow-hidden shrink-0"
+                url={null}
+                icon={(
+                  <DiscIcon size={16} />
+                )}
+              />
+
+              <div className="overflow-hidden flex flex-col gap-1">
+                <p className="text-xs font-bold text-white group-hover:text-primary transition-colors truncate">
+                  {al.title}
+                </p>
+                <span className="text-[9px] text-gray-400 font-mono">
+                  {al.id}
+                </span>
+              </div>
+            </div>
+          ))}
+
+          {isLoadMoreAlbums &&
+            <div
+              className="bg-[#202020] flex items-center justify-center overflow-hidden"
+              ref={loaderRef}
+            >
+              <Loader
+                className="border-transparent border-t-slate-200"
+                size={20}
+                stroke={2}
+              />
+            </div>
+          }
+        </div>
+      </section>
+
+      <Toaster
+        onClose={onClose}
+        isFirstLoad={isFirstLoad}
+        isActive={isActive}
+        {...toast}
+      />
+    </div>
   )
 }
 

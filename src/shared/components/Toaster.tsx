@@ -1,9 +1,9 @@
-import { InfoIcon } from "lucide-react";
+import { InfoIcon, XIcon } from "lucide-react";
 
 export interface ToasterConfig {
   title?: string;
   message: string;
-  type: string;
+  type?: string;
   icon?: React.ReactElement;
 }
 
@@ -14,45 +14,30 @@ interface ToasterProps extends ToasterConfig {
 }
 
 const Toaster = (props: ToasterProps) => {
-  const isHide = !props.isActive && !props.isFirstLoad;
+  const { type = 'success', message, isActive, isFirstLoad, icon, onClose } = props;
+  const isHide = !isActive && !isFirstLoad;
 
   return (
     <div
-      className={`${props.isActive ? 'show' : ''} ${isHide ? 'hide' : ''} toast-container`}
+      className={`${isActive ? 'show-slide-down' : isHide ? 'hide-slide-up' : ''} ${type === 'error' ? 'bg-red-400' : 'bg-primary text-black'} rounded-md relative slide`}
       id="toast"
     >
-      <div className="toast-body bg-black">
-        <div className={`${props.type} toast-icon`} id="toast-icon">
-          {props.icon ? props.icon : <InfoIcon />}
-        </div>
+      <div className="px-4 py-3 flex items-center gap-3">
+        {icon ? icon : <InfoIcon size={20} />}
 
-        <div className="toast-text">
-          <p className="toast-title" id="toast-title">
-            {props.title}
-          </p>
-          <p className="toast-msg" id="toast-msg">
-            {props.message}
+        <div className="text-sm">
+          <p className="" id="toast-msg">
+            {message}
           </p>
         </div>
 
         <button
-          onClick={props.onClose}
-          className="toast-close"
+          onClick={onClose}
+          className={`${type === 'error' ? 'bg-red-400' : 'bg-primary'} absolute -top-2 -right-2 w-5 h-5 p-0.5 rounded-full border border-[#565656] cursor-pointer`}
           aria-label="Cerrar"
-          id="toast-close"
         >
-          <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6">
-            <line x1="2" y1="2" x2="12" y2="12" />
-            <line x1="12" y1="2" x2="2" y2="12" />
-          </svg>
+          <XIcon className="w-full h-full" />
         </button>
-      </div>
-
-      <div className={`${props.type} toast-progress`}>
-        <div
-          className={`${props.type} toast-progress-bar`}
-          id="progress-bar"
-        />
       </div>
     </div>
   )

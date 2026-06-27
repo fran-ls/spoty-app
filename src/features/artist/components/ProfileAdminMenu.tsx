@@ -2,15 +2,17 @@ import { useState } from "react";
 import { CircleMinus, EllipsisVerticalIcon, SquarePenIcon } from "lucide-react";
 
 interface ProfileAdminMenuProps {
+  onOpenToast?: React.Dispatch<React.SetStateAction<boolean>>
   onRemoveArtist: () => Promise<boolean>;
 }
 
-const ProfileAdminMenu = ({ onRemoveArtist }: ProfileAdminMenuProps) => {
+const ProfileAdminMenu = ({ onOpenToast, onRemoveArtist }: ProfileAdminMenuProps) => {
   const [isActive, setIsActive] = useState(false);
 
   const onRemove = async () => {
     const ok = await onRemoveArtist();
     if (ok) setIsActive(false);
+    onOpenToast && onOpenToast(true);
   }
 
   return (

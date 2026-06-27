@@ -12,18 +12,18 @@ export type FilterKind = 'all' | 'artists' | 'albums' | 'tracks' | 'playlists'
 interface SearchPanelProps {
   triggerViewArtist: (id: string) => void;
   triggerViewAlbum: (id: string) => void;
-  setArtist: React.Dispatch<React.SetStateAction<Artist | null>>;
+  setActiveArtist: React.Dispatch<React.SetStateAction<Artist | null>>;
   setActiveAlbum: React.Dispatch<React.SetStateAction<Album | null>>;
 }
 
 const SearchPanel = (props: SearchPanelProps) => {
-  const { setArtist, setActiveAlbum, triggerViewArtist, triggerViewAlbum } = props;
+  const { setActiveArtist, setActiveAlbum, triggerViewArtist, triggerViewAlbum } = props;
 
   const [searchQuery, setSearchQuery] = useState('');
   const [searchFilterType, setSearchFilterType] = useState<FilterKind>('all');
 
   return (
-    <div className="space-y-5 animate-fade-in">
+    <div className="p-5 space-y-5 animate-fade-in">
       <div className="relative">
         <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-500">
           <SearchIcon size={14} />
@@ -74,7 +74,7 @@ const SearchPanel = (props: SearchPanelProps) => {
           <SearchArtistList
             query={searchQuery}
             filter={searchFilterType}
-            setArtist={setArtist}
+            setArtist={setActiveArtist}
             triggerViewArtist={triggerViewArtist}
           />
         )}

@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { ImageUpIcon, InfoIcon, UserIcon, UserRoundCheckIcon, XIcon } from "lucide-react";
+import { ImageUpIcon, InfoIcon, UserIcon, UserRoundCheckIcon } from "lucide-react";
 import type { Artist, ArtistDTO } from "../artist.types";
 import useToaster from "../../../shared/hooks/useToaster";
 import artistService from "../services/artist.service";
 import SmartImage from "../../../shared/components/SmartImage";
+import Toaster from "../../../shared/components/Toaster";
 
 interface ArtistFormProps {
   setArtists: React.Dispatch<React.SetStateAction<Artist[]>>;
@@ -14,7 +15,7 @@ const ArtistForm = (props: ArtistFormProps) => {
   const { setArtists, setIsPanel2Open } = props;
 
   const [isLoading, setIsLoading] = useState(false);
-  const { isActive, toast, showToast, onClose } = useToaster(5000);
+  const { isActive, toast, isFirstLoad, showToast, onClose } = useToaster(5000);
 
   const [isImgHover, setIsImgHover] = useState(false);
   const [fileUrl, setFileUrl] = useState<string>('');
@@ -38,8 +39,8 @@ const ArtistForm = (props: ArtistFormProps) => {
 
   async function onSave() {
     if (isLoading) return;
-
     setIsLoading(true);
+
     const { data, error } = await artistService.newArtist(form);
     setIsLoading(false);
 
@@ -74,7 +75,6 @@ const ArtistForm = (props: ArtistFormProps) => {
   return (
     <>
       <form
-        noValidate
         onSubmit={(e) => {
           e.preventDefault();
           onSave();
@@ -173,28 +173,12 @@ const ArtistForm = (props: ArtistFormProps) => {
         </div>
       </form>
 
-      <div
-        className={`${isActive ? 'show-slide-down' : 'hide-slide-up'} ${toast.type === 'error' ? 'bg-red-400' : 'bg-primary text-black'} rounded-md relative slide`}
-        id="toast"
-      >
-        <div className="px-4 py-3 flex items-center gap-3">
-          {toast.icon ? toast.icon : <InfoIcon size={20} />}
-
-          <div className="text-sm">
-            <p className="" id="toast-msg">
-              {toast.message}
-            </p>
-          </div>
-
-          <button
-            onClick={onClose}
-            className={`${toast.type === 'error' ? 'bg-red-400' : 'bg-primary'} absolute -top-2 -right-2 w-5 h-5 p-0.5 rounded-full border border-[#565656] cursor-pointer`}
-            aria-label="Cerrar"
-          >
-            <XIcon className="w-full h-full" />
-          </button>
-        </div>
-      </div>
+      <Toaster
+        onClose={onClose}
+        isFirstLoad={isFirstLoad}
+        isActive={isActive}
+        {...toast}
+      />
     </>
   )
 }
