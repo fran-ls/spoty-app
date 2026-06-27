@@ -78,7 +78,6 @@ const AlbumSelect = ({ items, isLoadMore = false, payload, loadMore }: AlbumSele
       <div
         style={{
           height: isActive ? ul.offsetHeight : 0,
-          zIndex: 10
         }}
         className="accordion-ul-wrap"
       >
@@ -101,7 +100,7 @@ const AlbumSelect = ({ items, isLoadMore = false, payload, loadMore }: AlbumSele
               e.currentTarget.style.backgroundColor = 'transparent';
             }}
             onClick={() => {
-              setOption({ label: 'Seleccionar', value: '' });
+              setOption({ label: 'Seleccionar', value: '', item: { name: '', id: '' } });
               setIsActive(false);
             }}
             style={{ backgroundColor: bgColor }}
@@ -137,7 +136,7 @@ const AlbumSelect = ({ items, isLoadMore = false, payload, loadMore }: AlbumSele
           ))}
 
           {isLoadMore &&
-            <li>
+            <li style={{ backgroundColor: bgColor }}>
               <div
                 className="flex items-center justify-center overflow-hidden"
                 ref={loaderRef}
