@@ -11,15 +11,19 @@ type Option = {
 }
 
 interface ArtistSelectProps {
+  option?: Option;
   items: Artist[];
   isLoadMore?: boolean;
-  payload?: (option: Option) => void;
+  bgColor?: string;
   loadMore?: () => void;
+  payload?: (option: Option) => void;
 }
 
-const ArtistSelect = ({ items, isLoadMore = false, payload, loadMore }: ArtistSelectProps) => {
+const ArtistSelect = (props: ArtistSelectProps) => {
+  const { option, items, isLoadMore = false, bgColor = '#181818', payload, loadMore } = props;
+
   const [isActive, setIsActive] = useState(false);
-  const [option, setOption] = useState<Option>({
+  const [item, setItem] = useState<Option>({
     label: 'Seleccionar',
     value: '',
   });
@@ -32,7 +36,6 @@ const ArtistSelect = ({ items, isLoadMore = false, payload, loadMore }: ArtistSe
 
   const wrap = wrapRef.current!;
   const ul = ulRef.current!;
-  const bgColor = '#181818';
 
   useEffect(() => {
     if (ul && wrap) {
@@ -40,8 +43,6 @@ const ArtistSelect = ({ items, isLoadMore = false, payload, loadMore }: ArtistSe
       ul.style.width = `${wrap.offsetWidth > ul.offsetWidth ? wrap.offsetWidth : ul.offsetWidth}px`;
     }
   }, []);
-
-  useEffect(() => { if (payload) payload(option) }, [option]);
 
   return (
     <div
@@ -62,7 +63,9 @@ const ArtistSelect = ({ items, isLoadMore = false, payload, loadMore }: ArtistSe
           checked={isActive}
           type="checkbox"
         />
-        <span className="truncate">{option.label}</span>
+        <span className="truncate">
+          {option ? option.label : item.label}
+        </span>
         <svg
           className="arrow"
           xmlns="http://www.w3.org/2000/svg"
@@ -78,7 +81,6 @@ const ArtistSelect = ({ items, isLoadMore = false, payload, loadMore }: ArtistSe
       <div
         style={{
           height: isActive ? ul.offsetHeight : 0,
-          zIndex: 10
         }}
         className="accordion-ul-wrap"
       >
@@ -101,7 +103,8 @@ const ArtistSelect = ({ items, isLoadMore = false, payload, loadMore }: ArtistSe
               e.currentTarget.style.backgroundColor = 'transparent';
             }}
             onClick={() => {
-              setOption({ label: 'Seleccionar', value: '' });
+              payload && payload({ label: 'Seleccionar', value: '', item: null });
+              setItem({ label: 'Seleccionar', value: '', item: null });
               setIsActive(false);
             }}
             style={{ backgroundColor: bgColor }}
@@ -119,7 +122,8 @@ const ArtistSelect = ({ items, isLoadMore = false, payload, loadMore }: ArtistSe
                 e.currentTarget.style.backgroundColor = 'transparent';
               }}
               onClick={() => {
-                setOption({ label: a.name, value: a.id, item: a });
+                payload && payload({ label: a.name, value: a.id, item: a });
+                setItem({ label: a.name, value: a.id, item: a });
                 setIsActive(false);
               }}
               style={{
@@ -137,7 +141,7 @@ const ArtistSelect = ({ items, isLoadMore = false, payload, loadMore }: ArtistSe
           ))}
 
           {isLoadMore &&
-            <li>
+            <li style={{ backgroundColor: bgColor }}>
               <div
                 className="flex items-center justify-center overflow-hidden"
                 ref={loaderRef}

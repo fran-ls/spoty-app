@@ -10,11 +10,13 @@ interface ArtistFormProps {
   setIsPanel2Open: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const ArtistForm = ({ setArtists, setIsPanel2Open }: ArtistFormProps) => {
-  const [isImgHover, setIsImgHover] = useState(false);
+const ArtistForm = (props: ArtistFormProps) => {
+  const { setArtists, setIsPanel2Open } = props;
+
   const [isLoading, setIsLoading] = useState(false);
   const { isActive, toast, showToast, onClose } = useToaster(5000);
 
+  const [isImgHover, setIsImgHover] = useState(false);
   const [fileUrl, setFileUrl] = useState<string>('');
   const [form, setForm] = useState<ArtistDTO>({ name: '' });
 
@@ -77,7 +79,7 @@ const ArtistForm = ({ setArtists, setIsPanel2Open }: ArtistFormProps) => {
           e.preventDefault();
           onSave();
         }}
-        className="min-h-full flex flex-col gap-5 animate-fade-in"
+        className="p-5 min-h-full flex flex-col gap-5 animate-fade-in"
       >
         <div>
           <h3 className="text-sm font-bold text-white mb-1">
