@@ -1,15 +1,23 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { GlobeIcon, ImageIcon, LockIcon } from "lucide-react";
 import type { PlaylistDTO } from "./playlist.types";
 
 interface PlaylistFormProps {
-  form: PlaylistDTO;
-  setForm: React.Dispatch<React.SetStateAction<PlaylistDTO>>;
 }
 
-const PlaylistForm = (props: PlaylistFormProps) => {
-  const { form, setForm } = props;
+const PlaylistForm = ({ }: PlaylistFormProps) => {
   const coverInputRef = useRef<HTMLInputElement>(null);
+
+  const [form, setForm] = useState<PlaylistDTO>({
+    name: '',
+    description: '',
+    cover: '',
+    isPublic: false,
+    gradientColor: '',
+    bgColor: '',
+    userId: '',
+    file: null
+  });
 
   const onFormChange = (field: keyof PlaylistDTO, value: any) => {
     setForm({ ...form, [field]: value });

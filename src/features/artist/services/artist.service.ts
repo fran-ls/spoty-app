@@ -2,9 +2,10 @@ import type { SearchResponse } from "../../../shared/types/common.types";
 import type { Artist, ArtistDTO } from "../../artist/artist.types";
 import { api, apiFetch } from "../../../shared/utils/api";
 import { tokenService } from "../../auth/services/token.service";
+import { envs } from "../../../shared/utils/envs";
 
 class ArtistService {
-  async getArtists(filters?: Record<string, any>) {
+  async searchArtists(filters?: Record<string, any>) {
     const params: Record<string, any> = {}
 
     for (const f in filters) {
@@ -38,7 +39,7 @@ class ArtistService {
     }
 
     return await apiFetch<Artist>(() => (
-      api.post('/artists', {
+      api.post('/artists', formData, {
         headers: {
           'Authorization': `Bearer ${tokenService.getToken()}`,
           'Content-Type': 'multipart/form-data'
@@ -63,13 +64,33 @@ class ArtistService {
     }
 
     return await apiFetch<Artist>(() => (
-      api.put(`/artists/${id}`, {
+      api.put(`/artists/${id}`, formData, {
         headers: {
           'Authorization': `Bearer ${tokenService.getToken()}`,
           'Content-Type': 'multipart/form-data'
         }
       })
     ));
+  }
+
+  async deleteArtist(id: string) {
+    return await apiFetch<Artist>(() => (
+      api.delete(`/artists/${id}`, {
+        headers: {
+          'Authorization': `Bearer ${tokenService.getToken()}`
+        }
+      })
+    ));
+  }
+
+  artistImage(id: string, imageUrl = '') {
+    if (!imageUrl || typeof imageUrl !== 'string') {
+      return '';
+    }
+    if (!imageUrl.includes('/api/')) {
+      return imageUrl || '';
+    }
+    return `${envs.API_URL}/artists/image/${id}`;
   }
 }
 

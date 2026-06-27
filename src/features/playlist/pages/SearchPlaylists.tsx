@@ -40,7 +40,7 @@ const SearchPlaylists: React.FC = () => {
 
   return (
     <div
-      className="px-[27px] pt-6 pb-10 min-h-full bg-surface text-white select-none scroll-smooth animate-fade-in"
+      className="px-6.75 pt-6 pb-10 min-h-full bg-surface text-white select-none scroll-smooth animate-fade-in"
       id="spotify-search-stage"
     >
       {searchQuery ? (
@@ -216,7 +216,7 @@ const SearchPlaylists: React.FC = () => {
                     </div>
 
                     <SmartImage
-                      cover={cover}
+                      url={cover}
                       wrapStyles={{
                         background: `linear-gradient(to bottom, ${p.bgColor} 0%, ${p.bgColor} 100%)`
                       }}

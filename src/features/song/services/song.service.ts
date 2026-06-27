@@ -1,31 +1,24 @@
 import type { SearchResponse } from "../../../shared/types/common.types";
-import type { Song, SongDTO } from "../song.types";
+import type { Song, SongDTO, TrackFilters } from "../song.types";
 import { api, apiFetch, ApiResponse } from "../../../shared/utils/api";
 import { envs } from "../../../shared/utils/envs";
 import { tokenService } from "../../auth/services/token.service";
 import { uploadToSupabase } from "../../../shared/utils/uploadToSupabase";
 
 class SongService {
-  async searchSongs(filters: Record<string, any> | undefined = undefined) {
-    if (!filters) {
-      return await apiFetch<SearchResponse<Song[]>>(() => (
-        api.get('/songs/search', {
-          headers: {
-            'Authorization': `Bearer ${tokenService.getToken()}`
-          }
-        })
-      ));
-    }
-
+  async searchSongs(filters?: TrackFilters) {
     const params: Record<string, any> = {}
 
-    for (const f in filters) {
-      if (filters[f]) params[f] = filters[f];
+    if (filters) {
+      for (const f in filters) {
+        const v = (filters as any)[f];
+        if (v) params[f] = v;
+      }
     }
 
     return await apiFetch<SearchResponse<Song[]>>(() => (
       api.get(`/songs/search`, {
-        params,
+        params: filters ? params : filters,
         headers: {
           'Authorization': `Bearer ${tokenService.getToken()}`
         }

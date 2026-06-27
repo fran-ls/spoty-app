@@ -1,11 +1,18 @@
 import { api, apiFetch } from "../../../shared/utils/api";
 import type { Playlist, PlaylistDTO, PlaylistResponse, PlaylistSong } from "../playlist.types";
+import type { SearchResponse } from "../../../shared/types/common.types";
 import { envs } from "../../../shared/utils/envs";
 import { tokenService } from "../../auth/services/token.service";
-import type { SearchResponse } from "../../../shared/types/common.types";
 
 class PlaylistService {
-  playlistCover(id: string) {
+  playlistCover(id: string, cover?: string | null) {
+    if (!cover || typeof cover !== 'string') {
+      return '';
+    }
+    if (!cover.includes('/api/')) {
+      return cover || '';
+    }
+
     return `${envs.API_URL}/playlists/cover/${id}`;
   }
 

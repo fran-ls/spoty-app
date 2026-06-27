@@ -1,55 +1,26 @@
-import { useEffect, useState } from "react";
-import { ChevronRightIcon, DiscIcon, SearchIcon, UserIcon } from "lucide-react";
+import { useState } from "react";
+import { SearchIcon } from "lucide-react";
 import type { Artist } from "../../artist/artist.types";
-import type { Song } from "../song.types";
-import { mockAlbums, mockArtists } from "../../home/data/music.data";
-import songService from "../services/song.service";
-import artistService from "../../artist/services/artist.service";
-import SmartImage from "../../artist/components/SmartImage";
+import type { Album } from "../../artist/album.types";
+import SearchPlaylistList from "../../playlist/components/SearchPlaylistList";
+import SearchTrackList from "./SearchTrackList";
+import SearchAlbumList from "../../artist/components/SearchAlbumList";
+import SearchArtistList from "../../artist/components/SearchArtistList";
+
+export type FilterKind = 'all' | 'artists' | 'albums' | 'tracks' | 'playlists'
 
 interface SearchPanelProps {
   triggerViewArtist: (id: string) => void;
   triggerViewAlbum: (id: string) => void;
   setArtist: React.Dispatch<React.SetStateAction<Artist | null>>;
+  setActiveAlbum: React.Dispatch<React.SetStateAction<Album | null>>;
 }
 
 const SearchPanel = (props: SearchPanelProps) => {
-  const { setArtist, triggerViewArtist, triggerViewAlbum } = props;
+  const { setArtist, setActiveAlbum, triggerViewArtist, triggerViewAlbum } = props;
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchFilterType, setSearchFilterType] = useState<'all' | 'artists' | 'albums'>('all');
-
-  const [artists, setArtists] = useState<Artist[]>([]);
-  // const [tracks, setTracks] = useState<Song[]>([]);
-
-  const filteredArtists = mockArtists.filter(a =>
-    a.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const filteredAlbums = mockAlbums.filter(al =>
-    al.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    al.artist.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  // async function getTracks() {
-  //   const { data } = await songService.searchSongs({
-  //     title: searchQuery.trim()
-  //   });
-
-  //   if (data) setTracks(data.items);
-
-  //   console.log(data)
-  // }
-
-  async function searchArtists() {
-    const { data } = await artistService.getArtists({
-      name: searchQuery.trim()
-    });
-
-    if (data) setArtists(data.items);
-  }
-
-  useEffect(() => { setTimeout(() => searchArtists(), 300) }, [searchQuery]);
+  const [searchFilterType, setSearchFilterType] = useState<FilterKind>('all');
 
   return (
     <div className="space-y-5 animate-fade-in">
@@ -67,7 +38,7 @@ const SearchPanel = (props: SearchPanelProps) => {
       </div>
 
       <div className="flex gap-1.5 shrink-0">
-        {(['all', 'artists', 'albums'] as const).map(f => (
+        {(['all', 'tracks', 'playlists', 'artists', 'albums'] as const).map(f => (
           <button
             key={f}
             type="button"
@@ -77,93 +48,43 @@ const SearchPanel = (props: SearchPanelProps) => {
               : 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10'
               }`}
           >
-            {f === 'all' ? 'Todo' : f === 'artists' ? 'Artistas' : 'Álbumes'}
+            {f === 'all' ? 'Todo' : f === 'artists' ? 'Artistas' : f === 'albums' ? 'Álbumes' : f === 'tracks' ? 'Canciones' : 'Listas'}
           </button>
         ))}
       </div>
 
       <div className="space-y-4">
-        {(searchFilterType === 'all' || searchFilterType === 'artists') && (
-          <div className="space-y-2">
-            <h4 className="text-[10px] uppercase font-mono tracking-wider font-extrabold text-gray-500 flex items-center gap-1.5 px-1 leading-none">
-              <UserIcon size={11} />
-              <span>
-                Artistas Registrados ({filteredArtists.length})
-              </span>
-            </h4>
-            {artists.length === 0 ? (
-              <p className="text-[10px] text-gray-600 italic px-1">
-                Ningún artista coincide.
-              </p>
-            ) : (
-              <div className="grid grid-cols-1 gap-1.5">
-                {artists.map((artist) => (
-                  <div
-                    onClick={() => {
-                      triggerViewArtist(artist.id);
-                      setArtist(artist);
-                    }}
-                    className="bg-[#161616] hover:bg-white/5 border border-white/5 p-2 rounded-xl flex items-center justify-between cursor-pointer transition-all group"
-                    key={artist.id}
-                  >
-                    <div className="flex items-center gap-3 overflow-hidden">
-                      <SmartImage
-                        wrapClassName="text-gray-400 min-w-0 w-9 h-9 rounded-full bg-white/5 border border-white/10 overflow-hidden shrink-0"
-                        url={artistService.artistImage(artist.id, artist.image)}
-                      />
-
-                      <div className="overflow-hidden">
-                        <p className="text-xs font-bold text-white group-hover:text-primary transition-colors truncate">
-                          {artist.name}
-                        </p>
-                        <span className="text-[9px] text-gray-400 font-mono">
-                          ID: {artist.id}
-                        </span>
-                      </div>
-                    </div>
-                    <ChevronRightIcon
-                      className="text-gray-600 group-hover:text-primary transition-colors"
-                      size={14}
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+        {(searchFilterType === 'all' || searchFilterType === 'tracks') && (
+          <SearchTrackList
+            query={searchQuery}
+            filter={searchFilterType}
+            triggerViewAlbum={triggerViewAlbum}
+          />
         )}
 
-        {/* Section Albums */}
+        {(searchFilterType === 'all' || searchFilterType === 'playlists') && (
+          <SearchPlaylistList
+            query={searchQuery}
+            triggerViewAlbum={triggerViewAlbum}
+          />
+        )}
+
+        {(searchFilterType === 'all' || searchFilterType === 'artists') && (
+          <SearchArtistList
+            query={searchQuery}
+            filter={searchFilterType}
+            setArtist={setArtist}
+            triggerViewArtist={triggerViewArtist}
+          />
+        )}
+
         {(searchFilterType === 'all' || searchFilterType === 'albums') && (
-          <div className="space-y-2 pt-2">
-            <h4 className="text-[10px] uppercase font-mono tracking-wider font-extrabold text-gray-500 flex items-center gap-1.5 px-1 leading-none">
-              <DiscIcon size={11} />
-              <span>Álbumes Registrados ({filteredAlbums.length})</span>
-            </h4>
-            {filteredAlbums.length === 0 ? (
-              <p className="text-[10px] text-gray-600 italic px-1">Ningún álbum coincide.</p>
-            ) : (
-              <div className="grid grid-cols-1 gap-1.5">
-                {filteredAlbums.map(album => (
-                  <div
-                    key={album.id}
-                    onClick={() => triggerViewAlbum(album.id)}
-                    className="bg-[#161616] hover:bg-white/5 border border-white/5 p-2 rounded-xl flex items-center justify-between cursor-pointer transition-all group"
-                  >
-                    <div className="flex items-center gap-3 overflow-hidden">
-                      <div className="w-9 h-9 rounded-lg bg-white/5 border border-white/10 overflow-hidden shrink-0">
-                        <img src={album.coverUrl} className="w-full h-full object-cover" alt={album.title} referrerPolicy="no-referrer" />
-                      </div>
-                      <div className="overflow-hidden">
-                        <p className="text-xs font-bold text-white group-hover:text-primary transition-colors truncate">{album.title}</p>
-                        <span className="text-[9px] text-gray-400 truncate leading-none mt-0.5 block">{album.artist}</span>
-                      </div>
-                    </div>
-                    <ChevronRightIcon className="text-gray-600 group-hover:text-primary transition-colors" size={14} />
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          <SearchAlbumList
+            query={searchQuery}
+            filter={searchFilterType}
+            triggerViewAlbum={triggerViewAlbum}
+            setActiveAlbum={setActiveAlbum}
+          />
         )}
       </div>
     </div>
