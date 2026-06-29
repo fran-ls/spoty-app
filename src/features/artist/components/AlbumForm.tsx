@@ -119,8 +119,7 @@ const AlbumForm = (props: AlbumFormProps) => {
           e.preventDefault();
           onSave();
         }}
-        className="p-5 min-h-full h-[calc(100vh-73px)] flex flex-col gap-5 animate-fade-in overflow-y-auto"
-        id="album-form"
+        className="p-5 min-h-full h-[calc(100vh-73px)] flex flex-col gap-5 animate-fade-in overflow-y-auto panel-wrap"
       >
         <div>
           <h3 className="text-sm font-bold text-white mb-1">
@@ -271,10 +270,7 @@ const AlbumForm = (props: AlbumFormProps) => {
           </div>
         </div>
 
-        <div
-          className="mt-4 overflow-y-auto max-h-66"
-          id="album-search-artist"
-        >
+        <div className="mt-4 overflow-y-auto max-h-66 search-widget-content">
           {artistSearch.map((art) => (
             <div
               onClick={() => {
@@ -296,9 +292,7 @@ const AlbumForm = (props: AlbumFormProps) => {
               <SmartImage
                 wrapClassName="text-gray-400 min-w-0 w-9 h-9 rounded-full bg-white/5 border border-white/10 overflow-hidden shrink-0"
                 url={null}
-                icon={(
-                  <UserIcon size={16} />
-                )}
+                icon={<UserIcon size={16} />}
               />
 
               <div className="overflow-hidden flex flex-col gap-1">

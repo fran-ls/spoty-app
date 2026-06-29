@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { ChevronRightIcon, UserIcon } from "lucide-react";
 import type { Artist } from "../artist.types";
-import type { FilterKind } from "../../song/components/SearchPanel";
+import type { FilterKind } from "../../search/SearchPanel";
 import artistService from "../services/artist.service";
 import SmartImage from "../../../shared/components/SmartImage";
 import useArtist from "../hooks/useArtist";
@@ -11,12 +11,11 @@ import { useInfiniteScroll } from "../../../shared/hooks/useInfiniteScroll";
 interface SearchArtistListProps {
   query: string;
   filter: FilterKind;
-  setArtist: React.Dispatch<React.SetStateAction<Artist | null>>;
-  triggerViewArtist: (id: string) => void;
+  triggerViewArtist: (artist: Artist) => void;
 }
 
 const SearchArtistList = (props: SearchArtistListProps) => {
-  const { query, filter, setArtist, triggerViewArtist } = props;
+  const { query, filter, triggerViewArtist } = props;
   const { artists, artistMeta, searchArtists } = useArtist();
   const isLoadMore = artistMeta.hasNextPage && filter === 'artists';
 
@@ -52,10 +51,7 @@ const SearchArtistList = (props: SearchArtistListProps) => {
         <div className="grid grid-cols-1 gap-1.5">
           {artists.map((artist) => (
             <div
-              onClick={() => {
-                triggerViewArtist(artist.id);
-                setArtist(artist);
-              }}
+              onClick={() => triggerViewArtist(artist)}
               className="bg-[#161616] hover:bg-white/5 border border-white/5 p-2 rounded-xl flex items-center justify-between cursor-pointer transition-all group"
               key={artist.id}
             >

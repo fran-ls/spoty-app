@@ -1,3 +1,10 @@
+export interface IncludeArgs {
+  where?: Record<string, any>;
+  include?: Record<string, any>;
+  select?: Record<string, any>;
+  omit?: Record<string, any>;
+}
+
 export interface PaginationMeta {
   total: number;
   page: number;

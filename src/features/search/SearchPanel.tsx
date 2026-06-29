@@ -1,23 +1,24 @@
 import { useState } from "react";
 import { SearchIcon } from "lucide-react";
-import type { Artist } from "../../artist/artist.types";
-import type { Album } from "../../artist/album.types";
-import SearchPlaylistList from "../../playlist/components/SearchPlaylistList";
-import SearchTrackList from "./SearchTrackList";
-import SearchAlbumList from "../../artist/components/SearchAlbumList";
-import SearchArtistList from "../../artist/components/SearchArtistList";
+import type { Artist } from "../artist/artist.types";
+import type { Album } from "../artist/album.types";
+import type { Playlist } from "../playlist/playlist.types";
+import SearchPlaylistList from "../playlist/components/SearchPlaylistList";
+import SearchTrackList from "../song/components/SearchTrackList";
+import SearchAlbumList from "../artist/components/SearchAlbumList";
+import SearchArtistList from "../artist/components/SearchArtistList";
 
-export type FilterKind = 'all' | 'artists' | 'albums' | 'tracks' | 'playlists'
+export type FilterKind = 'all' | 'artists' | 'albums' | 'tracks' | 'playlists';
 
 interface SearchPanelProps {
-  triggerViewArtist: (id: string) => void;
-  triggerViewAlbum: (id: string) => void;
-  setActiveArtist: React.Dispatch<React.SetStateAction<Artist | null>>;
+  triggerViewArtist: (artist: Artist) => void;
+  triggerViewAlbum: (album: Album) => void;
+  triggerViewPlaylist: (playlist: Playlist) => void;
   setActiveAlbum: React.Dispatch<React.SetStateAction<Album | null>>;
 }
 
 const SearchPanel = (props: SearchPanelProps) => {
-  const { setActiveArtist, setActiveAlbum, triggerViewArtist, triggerViewAlbum } = props;
+  const { setActiveAlbum, triggerViewArtist, triggerViewAlbum, triggerViewPlaylist } = props;
 
   const [searchQuery, setSearchQuery] = useState('');
   const [searchFilterType, setSearchFilterType] = useState<FilterKind>('all');
@@ -38,7 +39,7 @@ const SearchPanel = (props: SearchPanelProps) => {
       </div>
 
       <div className="flex gap-1.5 shrink-0">
-        {(['all', 'tracks', 'playlists', 'artists', 'albums'] as const).map(f => (
+        {(['all', 'tracks', 'artists', 'playlists', 'albums'] as const).map(f => (
           <button
             key={f}
             type="button"
@@ -58,7 +59,7 @@ const SearchPanel = (props: SearchPanelProps) => {
           <SearchTrackList
             query={searchQuery}
             filter={searchFilterType}
-            triggerViewAlbum={triggerViewAlbum}
+            triggerViewTrack={() => { }}
           />
         )}
 
@@ -66,7 +67,7 @@ const SearchPanel = (props: SearchPanelProps) => {
           <SearchPlaylistList
             query={searchQuery}
             filter={searchFilterType}
-            triggerViewAlbum={triggerViewAlbum}
+            triggerViewPlaylist={triggerViewPlaylist}
           />
         )}
 
@@ -74,7 +75,6 @@ const SearchPanel = (props: SearchPanelProps) => {
           <SearchArtistList
             query={searchQuery}
             filter={searchFilterType}
-            setArtist={setActiveArtist}
             triggerViewArtist={triggerViewArtist}
           />
         )}

@@ -148,7 +148,7 @@ const TrackForm = (props: TrackFormProps) => {
           onSave();
         }}
         style={{ position: 'relative' }}
-        className="p-5 space-y-5 min-h-full h-[calc(100vh-73px-56px)] animate-fade-in overflow-y-auto relative"
+        className="p-5 space-y-5 min-h-full h-[calc(100vh-73px-56px)] animate-fade-in overflow-y-auto relative panel-wrap"
       >
         <div className="text-center pb-4 border-b border-white/5">
           <div

@@ -1,5 +1,5 @@
 import { api, apiFetch } from "../../../shared/utils/api";
-import type { Playlist, PlaylistDTO, PlaylistResponse, PlaylistSong } from "../playlist.types";
+import type { Playlist, PlaylistDTO, PlaylistResponse, PlaylistSong, PlaylistSongDTO } from "../playlist.types";
 import type { SearchResponse } from "../../../shared/types/common.types";
 import { envs } from "../../../shared/utils/envs";
 import { tokenService } from "../../auth/services/token.service";
@@ -21,12 +21,14 @@ class PlaylistService {
 
     if (filters) {
       for (const f in filters) {
-        if (filters[f]) params[f] = filters[f];
+        const v = filters[f];
+        if (v) params[f] = v;
       }
     }
 
     return await apiFetch<PlaylistResponse>(() => (
       api.get(`/playlists/${playlistId}/songs`, {
+        params: filters ? params : undefined,
         headers: {
           'Authorization': `Bearer ${tokenService.getToken()}`
         }
@@ -44,9 +46,9 @@ class PlaylistService {
     ));
   }
 
-  async addSongToPlaylist(playlistId: string, songId: string) {
+  async addSongToPlaylist(data: PlaylistSongDTO) {
     return await apiFetch<PlaylistSong>(() => (
-      api.post(`/playlists/add-song`, { playlistId, songId }, {
+      api.post(`/playlists/add-song`, data, {
         headers: {
           'Authorization': `Bearer ${tokenService.getToken()}`
         }
@@ -131,13 +133,14 @@ class PlaylistService {
 
     if (filters) {
       for (const f in filters) {
-        if (filters[f]) params[f] = filters[f];
+        const v = filters[f];
+        if (v) params[f] = v;
       }
     }
 
     return await apiFetch<SearchResponse<Playlist[]>>(() => (
       api.get(`/playlists/search`, {
-        params,
+        params: filters ? params : undefined,
         headers: {
           'Authorization': `Bearer ${tokenService.getToken()}`
         }

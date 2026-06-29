@@ -29,11 +29,11 @@ const PlaylistPage: React.FC = () => {
     onFileChange, getPlaylist, onSavePlaylist, onRemovePlaylist, getPlaylistSongs, findSongs,
     addSongToPlaylist, onChangeVisibility, setIsOpen, setIsRemove, setIsBackground,
     removeSongFromPlaylist, setActiveItem, getPlaylistCover
-  } = usePlaylist(playlistId);
+  } = usePlaylist();
 
   useEffect(() => {
-    getPlaylist();
-    getPlaylistSongs();
+    getPlaylist(playlistId!);
+    playlistId && getPlaylistSongs(playlistId);
   }, [playlistId]);
 
   const onRemoveSong = async (id: string) => {
@@ -243,7 +243,7 @@ const PlaylistPage: React.FC = () => {
                     setIsRemove(false);
                   }}
                   onIsBackground={() => setIsBackground(!isBackground)}
-                  onChangeVisibility={onChangeVisibility}
+                  onChangeVisibility={() => onChangeVisibility(playlistId!)}
                   onClose={() => setIsOpenAction(!isOpenAction)}
                   onRemove={() => {
                     setIsEdit(false);
@@ -351,7 +351,7 @@ const PlaylistPage: React.FC = () => {
             searchMeta={searchMeta}
             loadMore={() => { }}
             addSongToPlaylist={async (id) => {
-              const data = await addSongToPlaylist(id);
+              const data = await addSongToPlaylist({ playlistId: playlistId!, songId: id });
               setToasterTime(2500);
               if (data?.id) toast(
                 <div className="flex items-center gap-2 p-2 pr-3 min-w-10 rounded bg-black">
@@ -390,7 +390,7 @@ const PlaylistPage: React.FC = () => {
             setGradientColor={setGradientColor}
             onClose={() => setIsBackground(false)}
             onSave={async () => {
-              const data = await onSavePlaylist({ ...form, bgColor, gradientColor });
+              const data = await onSavePlaylist(playlistId!, { ...form, bgColor, gradientColor });
               if (data?.id) setIsBackground(false);
             }}
           />
@@ -421,10 +421,10 @@ const PlaylistPage: React.FC = () => {
           isPublic={isPublic}
           currentCover={currentCover}
           coverImages={coverImages}
-          setForm={setForm}
-          onChangeVisibility={onChangeVisibility}
           coverInputRef={coverInputRef}
-          onSave={() => onSavePlaylist()}
+          setForm={setForm}
+          onChangeVisibility={() => onChangeVisibility(playlistId!)}
+          onSave={() => onSavePlaylist(playlistId!)}
           onClose={() => setIsEdit(false)}
         />
       }
@@ -434,7 +434,7 @@ const PlaylistPage: React.FC = () => {
           isOpen={isRemove}
           playlistName={form.name}
           onClose={() => setIsRemove(false)}
-          onConfirm={onRemovePlaylist}
+          onConfirm={() => onRemovePlaylist(playlistId!)}
         />
       }
 

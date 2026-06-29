@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { ChevronRightIcon, MusicIcon } from "lucide-react";
 import type { Playlist } from "../playlist.types";
 import type { SearchMeta } from "../../../shared/types/common.types";
-import type { FilterKind } from "../../song/components/SearchPanel";
+import type { FilterKind } from "../../search/SearchPanel";
 import SmartImage from "../../../shared/components/SmartImage";
 import playlistService from "../services/playlist.service";
 import Loader from "../../../shared/components/Loader";
@@ -11,10 +11,10 @@ import { useInfiniteScroll } from "../../../shared/hooks/useInfiniteScroll";
 interface SearchPlaylistListProps {
   query: string;
   filter: FilterKind;
-  triggerViewAlbum: (id: string) => void;
+  triggerViewPlaylist: (playlist: Playlist) => void;
 }
 
-const SearchPlaylistList = ({ query, filter, triggerViewAlbum }: SearchPlaylistListProps) => {
+const SearchPlaylistList = ({ query, filter, triggerViewPlaylist }: SearchPlaylistListProps) => {
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [playlistMeta, setPlaylistMeta] = useState<SearchMeta>({
     page: 0,
@@ -71,7 +71,7 @@ const SearchPlaylistList = ({ query, filter, triggerViewAlbum }: SearchPlaylistL
           {playlists.map((playlist) => (
             <div
               key={playlist.id}
-              onClick={() => triggerViewAlbum(playlist.id)}
+              onClick={() => triggerViewPlaylist(playlist)}
               className="bg-[#161616] hover:bg-white/5 border border-white/5 p-2 rounded-xl flex items-center justify-between cursor-pointer transition-all group"
             >
               <div className="flex items-center gap-3 overflow-hidden">
@@ -81,9 +81,9 @@ const SearchPlaylistList = ({ query, filter, triggerViewAlbum }: SearchPlaylistL
                 />
 
                 <div className="overflow-hidden">
-                  <p className="text-xs font-bold text-white group-hover:text-primary transition-colors truncate">
+                  <h3 className="text-xs font-bold text-white group-hover:text-primary transition-colors truncate">
                     {playlist.name}
-                  </p>
+                  </h3>
                   <span className="text-[9px] text-gray-400 truncate leading-none mt-0.5 block">
                     {playlist.id}
                   </span>

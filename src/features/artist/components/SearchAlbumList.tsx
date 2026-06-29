@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { ChevronRightIcon, DiscIcon } from "lucide-react";
 import type { Album, AlbumFilters } from "../album.types";
-import type { FilterKind } from "../../song/components/SearchPanel";
+import type { FilterKind } from "../../search/SearchPanel";
 import SmartImage from "../../../shared/components/SmartImage";
 import useAlbum from "../hooks/useAlbum";
 import { useInfiniteScroll } from "../../../shared/hooks/useInfiniteScroll";
@@ -10,7 +10,7 @@ import Loader from "../../../shared/components/Loader";
 interface SearchAlbumListProps {
   query: string;
   filter: FilterKind;
-  triggerViewAlbum: (id: string) => void;
+  triggerViewAlbum: (album: Album) => void;
   setActiveAlbum: React.Dispatch<React.SetStateAction<Album | null>>;
 }
 
@@ -56,7 +56,7 @@ const SearchAlbumList = (props: SearchAlbumListProps) => {
             <div
               key={album.id}
               onClick={() => {
-                triggerViewAlbum(album.id);
+                triggerViewAlbum(album);
                 setActiveAlbum(album);
               }}
               className="bg-[#161616] hover:bg-white/5 border border-white/5 p-2 rounded-xl flex items-center justify-between cursor-pointer transition-all group"
@@ -65,15 +65,13 @@ const SearchAlbumList = (props: SearchAlbumListProps) => {
                 <SmartImage
                   wrapClassName="text-gray-400 w-9 h-9 rounded-lg bg-white/5 border border-white/10 overflow-hidden shrink-0"
                   url={album.cover || null}
-                  icon={(
-                    <DiscIcon size={16} />
-                  )}
+                  icon={<DiscIcon size={16} />}
                 />
 
                 <div className="overflow-hidden">
-                  <p className="text-xs font-bold text-white group-hover:text-primary transition-colors truncate">
+                  <h3 className="text-xs font-bold text-white group-hover:text-primary transition-colors truncate">
                     {album.title}
-                  </p>
+                  </h3>
                   <span className="text-[9px] text-gray-400 truncate leading-none mt-0.5 block">
                     {album.artist?.name}
                   </span>

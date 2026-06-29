@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import type { Playlist, PlaylistDTO, PlaylistMeta, PlaylistSong } from "../playlist.types";
+import type { Playlist, PlaylistDTO, PlaylistMeta, PlaylistSong, PlaylistSongDTO } from "../playlist.types";
 import type { SearchMeta } from "../../../shared/types/common.types";
 import type { Song, SongCover } from "../../song/song.types";
 import playlistService from "../services/playlist.service";
@@ -10,7 +10,7 @@ import { routes } from "../../../shared/utils/routes";
 import { getTimeParts } from "../../../shared/utils/formatTime";
 import useAuth from "../../auth/hooks/useAuth";
 
-const usePlaylist = (playlistId?: string) => {
+const usePlaylist = () => {
   const [currentCover, setCurrentCover] = useState<string | null>(null);
   const [gradientColor, setGradientColor] = useState('#121212');
   const [bgColor, setBgColor] = useState('#3a3a3a');
@@ -38,7 +38,7 @@ const usePlaylist = (playlistId?: string) => {
     totalDuration: 0,
     hasNextPage: false,
     hasPrevPage: false,
-    playlistId: playlistId || ''
+    playlistId: ''
   });
 
   const [isBackground, setIsBackground] = useState(false);
@@ -100,7 +100,7 @@ const usePlaylist = (playlistId?: string) => {
     }
   }
 
-  const getPlaylist = async () => {
+  const getPlaylist = async (playlistId: string) => {
     if (!playlistId) return;
 
     const r = await playlistService.getPlaylist(playlistId);
@@ -130,7 +130,7 @@ const usePlaylist = (playlistId?: string) => {
     return r.data;
   }
 
-  const onSavePlaylist = async (values: PlaylistDTO = form, isNew = false) => {
+  const onSavePlaylist = async (playlistId: string | null, values: PlaylistDTO = form, isNew = false) => {
     if (!playlistId) return null;
 
     if (!isNew) {
@@ -147,7 +147,7 @@ const usePlaylist = (playlistId?: string) => {
     return r.data;
   }
 
-  const onChangeVisibility = async () => {
+  const onChangeVisibility = async (playlistId: string) => {
     if (!playlistId) return null;
 
     return await updatePlaylist(playlistId, {
@@ -155,7 +155,7 @@ const usePlaylist = (playlistId?: string) => {
     });
   }
 
-  const onRemovePlaylist = async () => {
+  const onRemovePlaylist = async (playlistId: string) => {
     if (!playlistId) return;
     const { data } = await playlistService.removePlaylist(playlistId);
 
@@ -164,20 +164,27 @@ const usePlaylist = (playlistId?: string) => {
     }
   }
 
-  const getPlaylistSongs = async () => {
+  const getPlaylistSongs = async (playlistId: string, filters?: Record<string, any>) => {
     if (!playlistId) return;
 
-    const { data } = await playlistService.getPlaylistSongs(playlistId);
+    const { data } = await playlistService.getPlaylistSongs(playlistId, filters);
+    if (!data) return;
 
-    if (data) {
-      setIsSearch(data.items.length === 0);
-      setPlaylistItems(data.items);
-      setPlaylistSongs(data.songs);
-      setPlaylistMeta({
-        ...data.meta,
-        totalDuration: data.totalDuration || 0
-      });
+    setIsSearch(data.items.length === 0);
+
+    setPlaylistMeta({
+      ...data.meta,
+      totalDuration: data.totalDuration || 0
+    });
+
+    if (filters?.page > 1) {
+      setPlaylistItems((prev) => [...prev, ...data.items]);
+      setPlaylistSongs((prev) => [...prev, ...data.songs]);
+      return;
     }
+
+    setPlaylistItems(data.items);
+    setPlaylistSongs(data.songs);
   }
 
   const getPlaylistCover = () => {
@@ -208,10 +215,10 @@ const usePlaylist = (playlistId?: string) => {
     }
   }
 
-  const addSongToPlaylist = async (songId: string) => {
-    if (!playlistId) return;
+  const addSongToPlaylist = async (dto: PlaylistSongDTO) => {
+    if (!dto.playlistId) return;
 
-    const { data } = await playlistService.addSongToPlaylist(playlistId, songId);
+    const { data } = await playlistService.addSongToPlaylist(dto);
 
     if (data && data.id) {
       setPlaylistItems((prev) => [...prev, data]);
@@ -223,21 +230,20 @@ const usePlaylist = (playlistId?: string) => {
 
   const removeSongFromPlaylist = async (id: string) => {
     if (!id) return false;
-
     const { data } = await playlistService.removeSongFromPlaylist(id);
-
-    if (data && data.success) {
+    if (data) {
       setPlaylistItems((prev) => prev.filter((p) => p.id !== id));
       setPlaylistSongs((prev) => prev.filter((p) => p.id !== id));
+      return true;
     }
-
-    return data?.success ?? false;
+    return false;
   }
 
   return {
     isPlay: playlistSongs.length > 0,
     playlistMeta, duration,
-    playlistSongs, playlistItems,
+    playlistSongs, setPlaylistSongs,
+    playlistItems, setPlaylistItems,
     playlists, setPlaylists,
     currentCover, setCurrentCover,
     gradientColor, setGradientColor,

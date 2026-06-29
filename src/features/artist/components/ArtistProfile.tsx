@@ -1,25 +1,23 @@
 import { useEffect } from "react";
-import { ChevronRight, DiscIcon, InfoIcon, UserIcon } from "lucide-react";
+import { CheckIcon, ChevronRight, DiscIcon, InfoIcon, UserIcon } from "lucide-react";
 import type { Artist } from "../artist.types";
-import type { AlbumFilters } from "../album.types";
+import type { Album, AlbumFilters } from "../album.types";
 import type { TrackFilters } from "../../song/song.types";
 import SmartImage from "../../../shared/components/SmartImage";
 import artistService from "../services/artist.service";
-import useAuth from "../../auth/hooks/useAuth";
 import useTrack from "../../song/hooks/useTrack";
 import ProfileTrackList from "./ProfileTrackList";
-import ProfileAdminMenu from "./ProfileAdminMenu";
 import useAlbum from "../hooks/useAlbum";
+import MenuItem from "../../../shared/components/MenuItem";
 
 interface ArtistProfileProps {
   artist: Artist | null;
   onRemove: (artistId: string) => Promise<boolean>;
-  triggerViewAlbum: (id: string) => void;
+  triggerViewAlbum: (album: Album) => void;
 }
 
 const ArtistProfile = (props: ArtistProfileProps) => {
   const { artist, triggerViewAlbum, onRemove } = props;
-  const { isAdmin } = useAuth();
   const { tracks, trackMeta, searchTracks } = useTrack();
   const { albums, albumMeta, searchAlbums } = useAlbum();
 
@@ -47,29 +45,28 @@ const ArtistProfile = (props: ArtistProfileProps) => {
         <SmartImage
           wrapClassName="text-gray-400 w-28 h-28 rounded-full border-1 border-white/20 bg-white/5 overflow-hidden mx-auto shadow-2xl relative mb-3.5"
           url={artist ? artistService.artistImage(artist.id, artist.image) : null}
-          icon={(
-            <UserIcon className="w-[30%] h-[30%]" />
-          )}
+          icon={<UserIcon className="w-[30%] h-[30%]" />}
         />
 
         <h3 className="text-base font-black text-white flex items-center justify-center gap-1">
           <span>{artist?.name}</span>
           <span
-            className="w-3 h-3 rounded-full bg-blue-500 text-white flex items-center justify-center text-[6px] font-black"
+            className="p-0.5 w-3 h-3 rounded-full bg-blue-500 text-white flex items-center justify-center text-[6px] font-black"
             title="Perfil Registrado"
           >
-            ✓
+            <CheckIcon />
           </span>
         </h3>
         <p className="text-[9px] font-mono uppercase tracking-wider text-primary font-bold mt-1">
           Artista Registrado
         </p>
 
-        {isAdmin &&
-          <ProfileAdminMenu
-            onRemoveArtist={() => (onRemove(artist!.id))}
-          />
-        }
+        <MenuItem
+          styles={{ btn: 'absolute top-0 right-0' }}
+          actions={(action: string) => {
+            if (action === 'remove') onRemove(artist!.id);
+          }}
+        />
       </div>
 
       <div className="space-y-1.5 bg-[#202020] p-4 rounded-xl border border-white/5">
@@ -82,7 +79,6 @@ const ArtistProfile = (props: ArtistProfileProps) => {
         </p>
       </div>
 
-      {/* Albums under Artist */}
       <div className="space-y-2">
         <h4 className="text-[10px] font-mono uppercase tracking-wider font-extrabold text-gray-500">
           Álbumes del Artista ({albumMeta.total})
@@ -97,7 +93,7 @@ const ArtistProfile = (props: ArtistProfileProps) => {
             {albums.map((al, i) => (
               <div
                 key={al.id}
-                onClick={() => triggerViewAlbum(al.id)}
+                onClick={() => triggerViewAlbum(al)}
                 className="bg-[#202020] hover:bg-[#252525] p-2 rounded-xl flex items-center justify-between cursor-pointer border border-white/5 group transition-all"
               >
                 <div className="flex items-center gap-2.5 overflow-hidden">
@@ -108,13 +104,12 @@ const ArtistProfile = (props: ArtistProfileProps) => {
                   <SmartImage
                     wrapClassName="text-gray-400 w-8 h-8 rounded-md shrink-0 bg-transparent border border-white/20"
                     url={null}
-                    icon={(
-                      <DiscIcon size={20} />
-                    )}
+                    icon={<DiscIcon size={20} />}
                   />
-                  <span className="text-xs font-bold text-gray-200 group-hover:text-primary transition-colors truncate">
+
+                  <h3 className="text-xs font-bold text-gray-200 group-hover:text-primary transition-colors truncate">
                     {al.title}
-                  </span>
+                  </h3>
                 </div>
 
                 <ChevronRight

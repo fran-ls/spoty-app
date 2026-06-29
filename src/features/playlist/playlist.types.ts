@@ -31,6 +31,12 @@ export interface PlaylistSong {
   song: Song | null;
 }
 
+export interface PlaylistSongDTO {
+  playlistId: string;
+  songId: string;
+  include?: Record<string, any>;
+}
+
 export type PlaylistMeta = PaginationMeta & {
   playlistId: string;
   totalDuration: number;

@@ -7,7 +7,6 @@ import PlaylistPage from "../features/playlist/pages/PlaylistPage";
 import SongPage from "../features/song/pages/SongPage";
 import { routes } from "../shared/utils/routes";
 import SearchPlaylists from "../features/playlist/pages/SearchPlaylists";
-import UploadPage from "../features/home/UploadPage";
 
 const AppRoutes = () => {
   return (
@@ -19,7 +18,6 @@ const AppRoutes = () => {
         <Route path={routes.playlists} element={<PlaylistPage />} />
         <Route path={`${routes.playlists}/:playlistId`} element={<PlaylistPage />} />
         <Route path={routes.songs} element={<SongPage />} />
-        <Route path="/upload" element={<UploadPage />} />
         <Route path="/*" element={<Navigate to={routes.home} />} />
       </Routes>
     </AppLayout>

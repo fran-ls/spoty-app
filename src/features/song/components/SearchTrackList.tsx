@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { ChevronRightIcon, MusicIcon } from "lucide-react";
-import type { TrackFilters } from "../song.types";
-import type { FilterKind } from "./SearchPanel";
+import type { Track, TrackFilters } from "../song.types";
+import type { FilterKind } from "../../search/SearchPanel";
 import songService from "../services/song.service";
 import SmartImage from "../../../shared/components/SmartImage";
 import useTrack from "../hooks/useTrack";
@@ -11,10 +11,10 @@ import Loader from "../../../shared/components/Loader";
 interface SearchTrackListProps {
   query: string;
   filter: FilterKind;
-  triggerViewAlbum: (id: string) => void;
+  triggerViewTrack: (track: Track) => void;
 }
 
-const SearchTrackList = ({ query, filter, triggerViewAlbum }: SearchTrackListProps) => {
+const SearchTrackList = ({ query, filter, triggerViewTrack }: SearchTrackListProps) => {
   const { tracks, trackMeta, searchTracks } = useTrack();
   const isLoadMore = trackMeta.hasNextPage && filter === 'tracks';
 
@@ -49,7 +49,7 @@ const SearchTrackList = ({ query, filter, triggerViewAlbum }: SearchTrackListPro
           {tracks.map((track) => (
             <div
               key={track.id}
-              onClick={() => triggerViewAlbum(track.id)}
+              onClick={() => triggerViewTrack(track)}
               className="bg-[#161616] hover:bg-white/5 border border-white/5 p-2 rounded-xl flex items-center justify-between cursor-pointer transition-all group"
             >
               <div className="flex items-center gap-3 overflow-hidden">

@@ -171,7 +171,7 @@ const SearchPage: React.FC = () => {
 
           {/* Grid list */}
           <div className="grid grid-cols-[repeat(4,270px)] gap-4.5">
-          {/* <div className="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-6"> */}
+            {/* <div className="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-6"> */}
             {mockGenres.map((genre) => (
               <div
                 key={genre.id}

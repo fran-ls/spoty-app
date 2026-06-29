@@ -23,17 +23,23 @@ const ProfileTrackList = ({ tracks }: ProfileTrackListProps) => {
             />
 
             <div className="overflow-hidden">
-              <span className="text-xs font-bold text-white block truncate leading-tight">
-                {tr.title}
-              </span>
-              <span className="text-[9px] text-gray-400 block truncate">
-                {tr.album?.title}
+              <h3
+                className="text-xs font-bold text-white block truncate leading-tight"
+                title={tr.title}
+              >
+                {tr.title || 'Canción'}
+              </h3>
+              <span
+                className="text-[9px] text-gray-400 block truncate"
+                title={tr.album?.title || ''}
+              >
+                {tr.album?.title || 'Álbum'}
               </span>
             </div>
           </div>
 
           <span className="text-[10px] text-gray-400 font-mono shrink-0">
-            {formatTime(tr.duration ?? 0)}
+            {formatTime(tr.duration ?? 0) ?? '00:00'}
           </span>
         </div>
       ))}

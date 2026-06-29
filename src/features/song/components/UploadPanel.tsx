@@ -1,35 +1,37 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { PlusCircleIcon, XIcon, MusicIcon, FolderHeartIcon, SearchIcon, ChevronLeftIcon } from 'lucide-react';
+import { PlusCircleIcon, XIcon, MusicIcon, SearchIcon, ChevronLeftIcon, ListVideoIcon } from 'lucide-react';
 import type { Artist } from '../../artist/artist.types';
 import type { Album } from '../../artist/album.types';
+import type { Playlist } from '../../playlist/playlist.types';
 import useAuth from '../../auth/hooks/useAuth';
 import ArtistForm from '../../artist/components/ArtistForm';
 import TrackForm from './TrackForm';
-import PlaylistForm from '../../playlist/PlaylistForm';
+import PlaylistForm from '../../playlist/components/PanelPlaylistForm';
+import PlaylistDetail from '../../playlist/components/PanelPlaylistDetail';
 import AlbumForm from '../../artist/components/AlbumForm';
 import ArtistProfile from '../../artist/components/ArtistProfile';
 import AlbumDetail from '../../artist/components/AlbumDetail';
 import artistService from '../../artist/services/artist.service';
-import SearchPanel from './SearchPanel';
+import SearchPanel from '../../search/SearchPanel';
 import useArtist from '../../artist/hooks/useArtist';
 import useAlbum from '../../artist/hooks/useAlbum';
 import albumService from '../../artist/services/album.service';
 
-export type PanelMode = 'create-artist' | 'create-album' | 'view-artist' | 'view-album';
+export type PanelMode = 'create-artist' | 'create-album' | 'view-artist' | 'view-album' | 'view-playlist';
 
 export const UploadPanel: React.FC = () => {
   const { dispatch } = useAuth();
   const { artists, artistMeta, searchArtists, setArtists } = useArtist();
   const { albums, albumMeta, searchAlbums, setAlbums } = useAlbum();
 
-  const [activeFormTab, setActiveFormTab] = useState<'track' | 'playlist' | 'search'>('track');
+  const [activeTab, setActiveTab] = useState<'track' | 'playlist' | 'search'>('track');
   const [panel2Mode, setPanel2Mode] = useState<PanelMode>('create-artist');
   const [isPanel2Open, setIsPanel2Open] = useState(false);
 
-  const [selectedAlbumId, setSelectedAlbumId] = useState<string | null>(null);
   const [activeArtist, setActiveArtist] = useState<Artist | null>(null);
   const [activeAlbum, setActiveAlbum] = useState<Album | null>(null);
+  const [activePlaylist, setActivePlaylist] = useState<Playlist | null>(null);
 
   const [artistSearchQuery, setArtistSearchQuery] = useState('');
   const [artistPage, setArtistPage] = useState(0);
@@ -69,19 +71,36 @@ export const UploadPanel: React.FC = () => {
     setIsPanel2Open(true);
   }
 
-  const triggerViewAlbum = (id: string) => {
-    if (!id) {
+  const triggerViewAlbum = (album: Album) => {
+    if (!album) {
       setIsPanel2Open(false);
       return;
     }
 
-    setSelectedAlbumId(id);
     setPanel2Mode('view-album');
+    setActiveAlbum(album);
     setIsPanel2Open(true);
   }
 
-  const triggerViewArtist = () => {
+  const triggerViewArtist = (artist: Artist) => {
+    if (!artist) {
+      setIsPanel2Open(false);
+      return;
+    }
+
     setPanel2Mode('view-artist');
+    setActiveArtist(artist);
+    setIsPanel2Open(true);
+  }
+
+  const triggerViewPlaylist = (playlist: Playlist) => {
+    if (!playlist) {
+      setIsPanel2Open(false);
+      return;
+    }
+
+    setPanel2Mode('view-playlist');
+    setActivePlaylist(playlist);
     setIsPanel2Open(true);
   }
 
@@ -115,7 +134,7 @@ export const UploadPanel: React.FC = () => {
     return true;
   }
 
-  useEffect(() => { setTimeout(() => searchArtists(artistFilters), 300) }, [artistSearchQuery]);
+  // useEffect(() => { setTimeout(() => searchArtists(artistFilters), 300) }, [artistSearchQuery]);
   useEffect(() => { setTimeout(() => searchAlbums(albumFilters), 300) }, [albumSearchQuery]);
 
   return (
@@ -175,10 +194,10 @@ export const UploadPanel: React.FC = () => {
           <div className="px-4 py-3 bg-[#161616] border-b border-white/5 flex gap-1 shrink-0">
             <button
               onClick={() => {
-                setActiveFormTab('track');
+                setActiveTab('track');
                 setIsPanel2Open(false);
               }}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-1 rounded-lg text-[10px] uppercase font-bold tracking-wider transition-all ${activeFormTab === 'track'
+              className={`cursor-pointer flex-1 flex items-center justify-center gap-1.5 py-2 px-1 rounded-lg text-[10px] uppercase font-bold tracking-wider transition-all ${activeTab === 'track'
                 ? 'bg-primary text-black font-black shadow-md shadow-primary/10'
                 : 'text-gray-400 hover:text-white hover:bg-white/5'
                 }`}
@@ -188,23 +207,23 @@ export const UploadPanel: React.FC = () => {
             </button>
             <button
               onClick={() => {
-                setActiveFormTab('playlist');
+                setActiveTab('playlist');
                 setIsPanel2Open(false);
               }}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-1 rounded-lg text-[10px] uppercase font-bold tracking-wider transition-all ${activeFormTab === 'playlist'
+              className={`cursor-pointer flex-1 flex items-center justify-center gap-1.5 py-2 px-1 rounded-lg text-[10px] uppercase font-bold tracking-wider transition-all ${activeTab === 'playlist'
                 ? 'bg-primary text-black font-black shadow-md shadow-primary/10'
                 : 'text-gray-400 hover:text-white hover:bg-white/5'
                 }`}
             >
-              <FolderHeartIcon size={12} />
+              <ListVideoIcon size={13} />
               <span>Playlist</span>
             </button>
             <button
               onClick={() => {
-                setActiveFormTab('search');
+                setActiveTab('search');
                 setIsPanel2Open(false);
               }}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-1 rounded-lg text-[10px] uppercase font-bold tracking-wider transition-all ${activeFormTab === 'search'
+              className={`cursor-pointer flex-1 flex items-center justify-center gap-1.5 py-2 px-1 rounded-lg text-[10px] uppercase font-bold tracking-wider transition-all ${activeTab === 'search'
                 ? 'bg-primary text-black font-black shadow-md shadow-primary/10'
                 : 'text-gray-400 hover:text-white hover:bg-white/5'
                 }`}
@@ -217,9 +236,9 @@ export const UploadPanel: React.FC = () => {
           {/* Panel Form / Scroll Body */}
           <div
             style={{ position: 'relative' }}
-            className="flex-1 overflow-y-auto primary-panel-content relative"
+            className="flex-1 overflow-y-auto primary-panel-content relative panel-wrap"
           >
-            {activeFormTab === 'track' && (
+            {activeTab === 'track' && (
               <TrackForm
                 artists={artists}
                 albums={albums}
@@ -228,7 +247,8 @@ export const UploadPanel: React.FC = () => {
                 artistSearchQuery={artistSearchQuery}
                 albumSearchQuery={albumSearchQuery}
                 setArtists={setArtists}
-                loadMoreArtists={loadMoreArtists}
+                loadMoreArtists={() => { }}
+                // loadMoreArtists={loadMoreArtists}
                 loadMoreAlbums={loadMoreAlbums}
                 setArtistSearchQuery={setArtistSearchQuery}
                 setAlbumSearchQuery={setAlbumSearchQuery}
@@ -237,16 +257,16 @@ export const UploadPanel: React.FC = () => {
               />
             )}
 
-            {activeFormTab === 'playlist' && (
+            {activeTab === 'playlist' && (
               <PlaylistForm />
             )}
 
-            {activeFormTab === 'search' && (
+            {activeTab === 'search' && (
               <SearchPanel
-                setActiveArtist={setActiveArtist}
                 setActiveAlbum={setActiveAlbum}
                 triggerViewAlbum={triggerViewAlbum}
                 triggerViewArtist={triggerViewArtist}
+                triggerViewPlaylist={triggerViewPlaylist}
               />
             )}
           </div>
@@ -263,7 +283,7 @@ export const UploadPanel: React.FC = () => {
               className="w-screen sm:w-115 h-full bg-[#181818] border-l border-white/10 flex flex-col shadow-2xl pointer-events-auto relative z-20"
               id="creator-panel-2"
             >
-              <div className="relative p-5 border-b border-white/5 flex items-center justify-between bg-[#1b1b1b]">
+              <div className="relative p-5 border-b border-white/5 flex items-center justify-between bg-[#1b1b1b] max-w-115">
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setIsPanel2Open(false)}
@@ -278,6 +298,7 @@ export const UploadPanel: React.FC = () => {
                     {panel2Mode === 'create-album' && 'Nuevo Álbum'}
                     {panel2Mode === 'view-artist' && 'Detalles Artista'}
                     {panel2Mode === 'view-album' && 'Detalles Álbum'}
+                    {panel2Mode === 'view-playlist' && 'Playlist'}
                   </span>
                 </div>
                 <button
@@ -289,7 +310,7 @@ export const UploadPanel: React.FC = () => {
               </div>
 
               {/* PANEL 2 CONTENT BODY */}
-              <div className="flex-1 overflow-y-auto secondary-panel-content relative">
+              <div className="max-w-115 flex-1 overflow-y-auto secondary-panel-content relative panel-wrap">
                 {panel2Mode === 'create-artist' && (
                   <ArtistForm
                     setArtists={setArtists}
@@ -318,7 +339,13 @@ export const UploadPanel: React.FC = () => {
                 {panel2Mode === 'view-album' &&
                   <AlbumDetail
                     activeAlbum={activeAlbum}
-                    selectedAlbumId={selectedAlbumId || ''}
+                    onRemove={onRemoveAlbum}
+                  />
+                }
+
+                {panel2Mode === 'view-playlist' &&
+                  <PlaylistDetail
+                    activePlaylist={activePlaylist}
                     onRemove={onRemoveAlbum}
                   />
                 }
