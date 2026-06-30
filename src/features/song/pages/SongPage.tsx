@@ -111,12 +111,12 @@ const SongPage: React.FC = () => {
         </div>
         <div>
           <span
-            className="line-clamp-1"
+            className="line-clamp-1 font-medium"
             title={activeTrack?.title}
           >
             {activeTrack?.title}
           </span>
-          <span className="text-sm block text-red-500 font-medium">
+          <span className="text-sm block text-red-500">
             Se quitó de la lista
           </span>
         </div>

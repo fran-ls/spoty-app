@@ -1,7 +1,6 @@
 import { useRef, useState } from "react";
 import { DiscIcon, FileAudioIcon, ImageUpIcon, InfoIcon, Music2Icon, PauseIcon, PlayIcon, PlusCircleIcon, SearchIcon, Trash2Icon, UploadIcon, UserIcon, XIcon } from "lucide-react";
 import type { SongDTO, SongFileUrls } from "../song.types";
-import type { Artist } from "../../artist/artist.types";
 import type { Album } from "../../artist/album.types";
 import { formatTime } from "../../../shared/utils/formatTime";
 import { AudioPlayer, type AudioPlayerState } from "../../player/AudioPlayer";
@@ -14,20 +13,16 @@ import Loader from "../../../shared/components/Loader";
 import SmartImage from "../../../shared/components/SmartImage";
 import { useInfiniteScroll } from "../../../shared/hooks/useInfiniteScroll";
 import Toaster from "../../../shared/components/Toaster";
+import SearchWidget, { type WidgetSearch } from "../../../shared/components/SearchWidget";
+import useArtist from "../../artist/hooks/useArtist";
 
 const coverUrl = 'https://lh3.googleusercontent.com/aida-public/AB6AXuDYvobAjd42bG0K_tSQaLfpvHNVFxAgAo-R3C-Ei4Kt_Yv5hU3N5ZTiobLniGnjhECkh1cNd5Fxabf0_pYKOLXmc7j6nfXGGCmopV179tIFexWEB4uJgxST-FFKTU846GKkpwDoWI20uSxTYklnUxOH5FTz4MtgY3NDxPYpbPeukvjtc5Rcy0vu-iMgJfPwvBGUIKYLecfP8xmgOzImY2LRW15GagQZ5oD824sAUXCQRZfc7uG8l01yStM71Dl76Y3YCyhC0ZxEg2JM';
 
 interface TrackFormProps {
-  artists: Artist[];
   albums: Album[];
-  isLoadMoreArtist: boolean;
   isLoadMoreAlbums: boolean;
-  artistSearchQuery: string;
   albumSearchQuery: string;
-  setArtists: React.Dispatch<React.SetStateAction<Artist[]>>;
-  setArtistSearchQuery: React.Dispatch<React.SetStateAction<string>>;
   setAlbumSearchQuery: React.Dispatch<React.SetStateAction<string>>;
-  loadMoreArtists: () => void;
   loadMoreAlbums: () => void;
   triggerCreateArtist: () => void;
   triggerCreateAlbum: () => void;
@@ -35,10 +30,11 @@ interface TrackFormProps {
 
 const TrackForm = (props: TrackFormProps) => {
   const {
-    artists, albums, isLoadMoreArtist, isLoadMoreAlbums, artistSearchQuery, loadMoreAlbums,
-    albumSearchQuery, loadMoreArtists, triggerCreateArtist, triggerCreateAlbum, setArtists,
-    setArtistSearchQuery, setAlbumSearchQuery
+    isLoadMoreAlbums, albums, loadMoreAlbums,
+    albumSearchQuery, triggerCreateArtist, triggerCreateAlbum,
+    setAlbumSearchQuery
   } = props;
+  const { artists, artistMeta, searchArtists, setArtists } = useArtist();
   const { isActive, toast, isFirstLoad, showToast, onClose } = useToaster(5000);
 
   const audioInputRef = useRef<HTMLInputElement>(null);
@@ -68,10 +64,15 @@ const TrackForm = (props: TrackFormProps) => {
   });
 
   const [isArtistSearch, setIsArtistSearch] = useState(false);
+  const [search, setSearch] = useState<WidgetSearch>({
+    query: '',
+    page: 0
+  });
   const [artistOption, setArtistOption] = useState({
     label: 'Seleccionar',
     value: ''
   });
+
   const [isAlbumSearch, setIsAlbumSearch] = useState(false);
   const [albumOption, setAlbumOption] = useState({
     label: 'Seleccionar',
@@ -79,31 +80,33 @@ const TrackForm = (props: TrackFormProps) => {
   });
 
   const { loaderRef } = useInfiniteScroll(() => {
-    if (!isLoadMoreArtist) return;
-    loadMoreArtists();
+    if (!artistMeta.hasNextPage) return;
+    // loadMoreArtists();
   });
 
   const onFormChange = (field: keyof SongDTO, value: any) => {
     setForm({ ...form, [field]: value });
   }
 
-  const onFileChange = (e: React.ChangeEvent<HTMLInputElement, HTMLInputElement>, fileField: 'audio' | 'coverFile', fileUrlField?: 'audio' | 'cover') => {
-    const file = e.target.files && e.target.files.length > 0 ? e.target.files[0] : null;
+  function onFileChange(
+    e: React.ChangeEvent<HTMLInputElement, HTMLInputElement>,
+    fileField: 'audio' | 'coverFile',
+    fileUrlField?: 'audio' | 'cover'
+  ) {
+    const file = e.target.files?.[0] || null;
     const urlField = fileUrlField || fileField;
+    if (!file) return;
 
-    if (file) {
-      const url = (previewUrls as any)[fileField];
-      if (url) URL.revokeObjectURL(url);
+    const url = (previewUrls as any)[fileField];
+    if (url) URL.revokeObjectURL(url);
 
-      const fileUrl = URL.createObjectURL(file);
-      setForm({ ...form, [fileField]: file });
-      setPreviewUrls({ ...previewUrls, [urlField]: fileUrl });
-    }
+    const fileUrl = URL.createObjectURL(file);
+    setForm({ ...form, [fileField]: file });
+    setPreviewUrls({ ...previewUrls, [urlField]: fileUrl });
   }
 
-  const onRemoveAudio = () => {
+  function onRemoveAudio() {
     if (previewUrls.audio) URL.revokeObjectURL(previewUrls.audio);
-
     setPreviewUrls({ ...previewUrls, audio: '' });
     onFormChange('audio', null);
     player.togglePlay();
@@ -137,18 +140,24 @@ const TrackForm = (props: TrackFormProps) => {
     });
   }
 
+  const loadMoreArtists = async (query: string, page: number, isSelect = false) => {
+    await searchArtists({
+      name: query,
+      limit: 10,
+      page
+    });
+
+    if (isSelect) setSearch({ ...search, page: page + 1 });
+  }
+
   return (
-    <div
-      style={{ position: 'relative' }}
-      className="relative overflow-hidden"
-    >
+    <div className="relative overflow-hidden">
       <form
         onSubmit={(e) => {
           e.preventDefault();
           onSave();
         }}
-        style={{ position: 'relative' }}
-        className="p-5 space-y-5 min-h-full h-[calc(100vh-73px-56px)] animate-fade-in overflow-y-auto relative panel-wrap"
+        className="p-5 animate-fade-in relative upload-panel-main-wrap"
       >
         <div className="text-center pb-4 border-b border-white/5">
           <div
@@ -175,18 +184,18 @@ const TrackForm = (props: TrackFormProps) => {
               </label>
             }
           </div>
-          <h3 className="text-base font-black text-white leading-tight">
-            {form?.title}
+          <h3 className="text-xl font-black text-white leading-tight">
+            {form?.title || 'Tema'}
           </h3>
           <p className="text-xs text-primary font-bold mt-1">
-            {form?.artistName || 'Canción'}
+            {form?.artistName || 'Artista'}
           </p>
           <p className="text-[9px] font-mono uppercase tracking-widest text-gray-500 mt-1.5">
-            {form.albumName || 'Álbum Musical'}
+            {form.albumName || 'Tema'}
           </p>
         </div>
 
-        <div className="space-y-1.5">
+        <div className="space-y-1.5 my-4">
           <label className="block text-[10px] uppercase font-mono tracking-wider font-bold text-gray-400">
             Archivo de sonido
           </label>
@@ -266,21 +275,21 @@ const TrackForm = (props: TrackFormProps) => {
           )}
         </div>
 
-        <div className="space-y-1.5">
-          <label className="text-[10px] uppercase font-mono tracking-wider font-bold text-gray-400">
-            Título del Tema
-          </label>
-          <input
-            type="text"
-            value={form.title}
-            onChange={(e) => onFormChange('title', e.target.value)}
-            required
-            placeholder="Escribe el título de la canción"
-            className="text-[13px] w-full bg-[#181818] border border-white/5 rounded-xl py-3 px-4 text-xs font-medium focus:ring-1 focus:ring-primary focus:border-primary text-white placeholder:text-gray-600 outline-none transition-all"
-          />
-        </div>
-
         <div className="grid grid-cols-1 gap-4">
+          <div className="space-y-1.5">
+            <label className="text-[10px] uppercase font-mono tracking-wider font-bold text-gray-400">
+              Título del Tema
+            </label>
+            <input
+              type="text"
+              value={form.title}
+              onChange={(e) => onFormChange('title', e.target.value)}
+              required
+              placeholder="Escribe el título de la canción"
+              className="text-[13px] w-full bg-[#181818] border border-white/5 rounded-xl py-3 px-4 text-xs font-medium focus:ring-1 focus:ring-primary focus:border-primary text-white placeholder:text-gray-600 outline-none transition-all"
+            />
+          </div>
+
           <div className="space-y-1 z-15">
             <div className="flex justify-between items-center">
               <label className="text-[10px] uppercase font-mono tracking-wider font-bold text-gray-400">
@@ -310,19 +319,17 @@ const TrackForm = (props: TrackFormProps) => {
             <ArtistSelect
               items={artists}
               option={artistOption}
-              isLoadMore={isLoadMoreArtist}
-              loadMore={loadMoreArtists}
-              payload={(option) => {
-                const item = option.item;
-
+              isLoadMore={artistMeta.hasNextPage}
+              loadMore={() => loadMoreArtists(search.query, search.page, true)}
+              payload={({ value, label, item }) => {
                 setArtistOption({
-                  label: item?.name || 'Seleccionar',
-                  value: option.value
+                  label: label || 'Seleccionar',
+                  value: value
                 });
 
                 setForm({
                   ...form,
-                  artistId: option.value,
+                  artistId: value,
                   artistName: item?.name || ''
                 });
               }}
@@ -427,98 +434,45 @@ const TrackForm = (props: TrackFormProps) => {
         </div>
       </form>
 
-      <section
-        style={{ boxShadow: '0px 0px 5px 2px #0e0e0e' }}
-        className={`${isArtistSearch ? 'translate-y-0' : 'translate-y-[100vh]'} h-100 p-5 text-gray-400 bg-[#181818] overflow-hidden w-full z-50 transition duration-150 absolute bottom-0 right-0`}
-      >
-        <div className="animate-fade-in">
-          <div className="flex items-center justify-between mb-2">
-            <h2 className="text-sm">
-              Buscar artista
-            </h2>
+      <SearchWidget
+        keys={{
+          label: 'name',
+          value: 'id',
+          sub: 'id'
+        }}
+        label="Buscar artista"
+        open={isArtistSearch}
+        items={artists}
+        meta={artistMeta}
+        isLoadMore={artistMeta.hasNextPage}
+        loadMore={loadMoreArtists}
+        onClose={() => setIsArtistSearch(false)}
+        payload={({ value, label, item, search: sq }) => {
+          setSearch(sq);
 
-            <button
-              onClick={() => setIsArtistSearch(false)}
-              className="p-1 cursor-pointer"
-              type="button"
-            >
-              <XIcon size={20} />
-            </button>
-          </div>
+          setArtistOption({
+            label: label || 'Seleccionar',
+            value
+          });
 
-          <div className="relative">
-            <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-500">
-              <SearchIcon size={14} />
-            </span>
-            <input
-              className="w-full bg-[#181818] border border-white/5 rounded-xl py-3 pl-10 pr-4 text-xs font-medium focus:ring-1 focus:ring-primary focus:border-primary text-white placeholder:text-gray-500 outline-none transition-all"
-              onChange={(e) => setArtistSearchQuery(e.target.value)}
-              value={artistSearchQuery}
-              placeholder="Buscar por nombre..."
-              type="search"
-            />
-          </div>
-        </div>
-
-        <div
-          className="mt-4 overflow-y-auto max-h-66"
-          id="album-search-artist"
-        >
-          {artists.map((art) => (
-            <div
-              onClick={() => {
-                setArtistOption({
-                  label: art.name,
-                  value: art.id
-                });
-
-                setForm({
-                  ...form,
-                  artistId: art.id,
-                  artistName: art.name
-                });
-
-                setIsArtistSearch(false);
-              }}
-              className="hover:bg-white/5 cursor-pointer p-2 flex items-center gap-3" key={art.id}
-            >
-              <SmartImage
-                wrapClassName="text-gray-400 min-w-0 w-9 h-9 rounded-full bg-white/5 border border-white/10 overflow-hidden shrink-0"
-                url={null}
-                icon={(
-                  <UserIcon size={16} />
-                )}
-              />
-
-              <div className="overflow-hidden flex flex-col gap-1">
-                <p className="text-xs font-bold text-white group-hover:text-primary transition-colors truncate">
-                  {art.name}
-                </p>
-                <span className="text-[9px] text-gray-400 font-mono">
-                  {art.id}
-                </span>
-              </div>
-            </div>
-          ))}
-
-          {isLoadMoreArtist &&
-            <div
-              className="bg-[#202020] flex items-center justify-center overflow-hidden"
-              ref={loaderRef}
-            >
-              <Loader
-                className="border-transparent border-t-slate-200"
-                size={20}
-                stroke={2}
-              />
-            </div>
-          }
-        </div>
-      </section>
+          setForm({
+            ...form,
+            artistId: value,
+            artistName: item?.name || ''
+          });
+        }}
+        loadIcon={({ id, cover }) => (
+          <SmartImage
+            wrapClassName="bg-white/5 text-gray-400 w-9 h-9 rounded-full border border-white/5 overflow-hidden shrink-0"
+            url={id ? songService.songCoverUrl(id, cover) : null}
+            icon={<UserIcon size={16} />}
+          />
+        )}
+      />
 
       <section
         style={{ boxShadow: '0px 0px 5px 2px #0e0e0e' }}
-        className={`${isAlbumSearch ? 'translate-y-0' : 'translate-y-[100vh]'} h-100 p-5 text-gray-400 bg-[#181818] overflow-hidden w-full z-50 transition duration-150 absolute bottom-0 right-0`}
+        className={`hidden ${isAlbumSearch ? 'translate-y-0' : 'translate-y-[100vh]'} h-100 p-5 text-gray-400 bg-[#181818] overflow-hidden w-full z-50 transition duration-150 absolute bottom-0 right-0`}
       >
         <div className="animate-fade-in">
           <div className="flex items-center justify-between mb-2">
@@ -549,12 +503,9 @@ const TrackForm = (props: TrackFormProps) => {
           </div>
         </div>
 
-        <div
-          className="mt-4 overflow-y-auto max-h-66"
-          id="album-search-artist"
-        >
+        <ul className="mt-4 overflow-y-auto max-h-66 search-widget-content">
           {albums.map((al) => (
-            <div
+            <li
               onClick={() => {
                 setAlbumOption({
                   label: al.title,
@@ -587,11 +538,11 @@ const TrackForm = (props: TrackFormProps) => {
                   {al.id}
                 </span>
               </div>
-            </div>
+            </li>
           ))}
 
           {isLoadMoreAlbums &&
-            <div
+            <li
               className="bg-[#202020] flex items-center justify-center overflow-hidden"
               ref={loaderRef}
             >
@@ -600,9 +551,9 @@ const TrackForm = (props: TrackFormProps) => {
                 size={20}
                 stroke={2}
               />
-            </div>
+            </li>
           }
-        </div>
+        </ul>
       </section>
 
       <Toaster

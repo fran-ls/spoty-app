@@ -22,7 +22,7 @@ export type PanelMode = 'create-artist' | 'create-album' | 'view-artist' | 'view
 
 export const UploadPanel: React.FC = () => {
   const { dispatch } = useAuth();
-  const { artists, artistMeta, searchArtists, setArtists } = useArtist();
+  const { setArtists } = useArtist();
   const { albums, albumMeta, searchAlbums, setAlbums } = useAlbum();
 
   const [activeTab, setActiveTab] = useState<'track' | 'playlist' | 'search'>('track');
@@ -33,26 +33,12 @@ export const UploadPanel: React.FC = () => {
   const [activeAlbum, setActiveAlbum] = useState<Album | null>(null);
   const [activePlaylist, setActivePlaylist] = useState<Playlist | null>(null);
 
-  const [artistSearchQuery, setArtistSearchQuery] = useState('');
-  const [artistPage, setArtistPage] = useState(0);
-  const artistFilters = {
-    name: artistSearchQuery.trim(),
-    limit: 10,
-    page: 0
-  }
-
   const [albumSearchQuery, setAlbumSearchQuery] = useState('');
   const [albumPage, setAlbumPage] = useState(0);
   const albumFilters = {
     title: albumSearchQuery.trim(),
     limit: 10,
     page: 0
-  }
-
-  function loadMoreArtists() {
-    if (!artistMeta.hasNextPage) return;
-    searchArtists({ ...artistFilters, page: artistPage + 1 });
-    setArtistPage(artistPage + 1);
   }
 
   function loadMoreAlbums() {
@@ -104,16 +90,20 @@ export const UploadPanel: React.FC = () => {
     setIsPanel2Open(true);
   }
 
-  async function onRemoveArtist() {
-    const artistId = activeArtist?.id;
+  const onClosePanel2 = () => setIsPanel2Open(false);
+
+  async function onRemoveArtist(id?: string, isRemoveFiles?: boolean) {
+    const artistId = id ?? activeArtist?.id;
     if (!activeArtist || !artistId) return false;
 
-    const { data, error } = await artistService.deleteArtist(artistId);
+    const { data, error } = await artistService.deleteArtist(artistId, isRemoveFiles);
 
     if (error || !data || !data.id) {
       return false;
     }
 
+    setActiveArtist(null);
+    setIsPanel2Open(false);
     setArtists((prev) => prev.filter((a) => a.id !== artistId));
     return true;
   }
@@ -134,7 +124,6 @@ export const UploadPanel: React.FC = () => {
     return true;
   }
 
-  // useEffect(() => { setTimeout(() => searchArtists(artistFilters), 300) }, [artistSearchQuery]);
   useEffect(() => { setTimeout(() => searchAlbums(albumFilters), 300) }, [albumSearchQuery]);
 
   return (
@@ -234,23 +223,13 @@ export const UploadPanel: React.FC = () => {
           </div>
 
           {/* Panel Form / Scroll Body */}
-          <div
-            style={{ position: 'relative' }}
-            className="flex-1 overflow-y-auto primary-panel-content relative panel-wrap"
-          >
+          <div className="flex-1 overflow-y-auto primary-panel-content relative upload-panel-main-wrap">
             {activeTab === 'track' && (
               <TrackForm
-                artists={artists}
                 albums={albums}
-                isLoadMoreArtist={artistMeta.hasNextPage}
                 isLoadMoreAlbums={albumMeta.hasNextPage}
-                artistSearchQuery={artistSearchQuery}
                 albumSearchQuery={albumSearchQuery}
-                setArtists={setArtists}
-                loadMoreArtists={() => { }}
-                // loadMoreArtists={loadMoreArtists}
                 loadMoreAlbums={loadMoreAlbums}
-                setArtistSearchQuery={setArtistSearchQuery}
                 setAlbumSearchQuery={setAlbumSearchQuery}
                 triggerCreateArtist={triggerCreateArtist}
                 triggerCreateAlbum={triggerCreateAlbum}
@@ -310,7 +289,7 @@ export const UploadPanel: React.FC = () => {
               </div>
 
               {/* PANEL 2 CONTENT BODY */}
-              <div className="max-w-115 flex-1 overflow-y-auto secondary-panel-content relative panel-wrap">
+              <div className="max-w-115 flex-1 secondary-panel-content relative upload-panel-wrap">
                 {panel2Mode === 'create-artist' && (
                   <ArtistForm
                     setArtists={setArtists}
@@ -320,11 +299,8 @@ export const UploadPanel: React.FC = () => {
 
                 {panel2Mode === 'create-album' && (
                   <AlbumForm
-                    artists={artists}
-                    isLoadMore={artistMeta.hasNextPage}
                     setAlbums={setAlbums}
                     setIsPanel2Open={setIsPanel2Open}
-                    loadMoreArtists={loadMoreArtists}
                   />
                 )}
 
@@ -346,7 +322,7 @@ export const UploadPanel: React.FC = () => {
                 {panel2Mode === 'view-playlist' &&
                   <PlaylistDetail
                     activePlaylist={activePlaylist}
-                    onRemove={onRemoveAlbum}
+                    onClose={onClosePanel2}
                   />
                 }
               </div>

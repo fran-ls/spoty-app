@@ -8,7 +8,7 @@ interface SongDeleteConfirmProps {
 }
 
 const SongDeleteConfirm = ({ songName, onConfirm, onClose }: SongDeleteConfirmProps) => {
-  const [isRemoveFiles, setIsRemoveFiles] = useState(false);
+  const [isRemoveFiles, setIsRemoveFiles] = useState(true);
 
   return (
     <>
@@ -31,6 +31,7 @@ const SongDeleteConfirm = ({ songName, onConfirm, onClose }: SongDeleteConfirmPr
             >
               <input
                 onChange={() => setIsRemoveFiles(!isRemoveFiles)}
+                checked={isRemoveFiles}
                 type="checkbox"
                 id="toggleSwitch"
               />

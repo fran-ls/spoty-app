@@ -85,6 +85,7 @@ export interface TrackFilters {
   id?: string;
   title?: string;
   artistId?: string;
+  albumId?: string;
   artistName?: string;
   page?: number;
   limit?: number;

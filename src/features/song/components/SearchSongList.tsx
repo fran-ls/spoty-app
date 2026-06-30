@@ -2,8 +2,8 @@ import { MusicIcon } from 'lucide-react';
 import type { Song } from '../song.types';
 import type { SearchMeta } from '../../../shared/types/common.types';
 import { usePlayer } from '../../../shared/context/PlayerContext';
-import { showMusicIcon } from '../../../shared/utils/showMusicIcon';
 import Loader from '../../../shared/components/Loader';
+import SmartImage from '../../../shared/components/SmartImage';
 import { useInfiniteScroll } from '../../../shared/hooks/useInfiniteScroll';
 import songService from '../services/song.service';
 
@@ -31,23 +31,11 @@ const SearchSongList: React.FC<SearchSongListProps> = (props) => {
             key={track.id}
           >
             <div className="flex items-center gap-4 overflow-hidden">
-              <div className="min-w-10 w-10 h-10 bg-[#262626] text-white rounded overflow-hidden relative">
-                <MusicIcon
-                  className={`${!cover ? '' : 'hidden opacity-0'} absolute top-1/2 left-1/2 -translate-1/2 music-icon`}
-                  size={20}
-                />
-
-                {cover && (
-                  <img
-                    onError={(e) => showMusicIcon(e.currentTarget, '.song-item')}
-                    className="w-full h-full object-cover"
-                    src={cover}
-                    referrerPolicy="no-referrer"
-                    crossOrigin="anonymous"
-                    alt=""
-                  />
-                )}
-              </div>
+              <SmartImage
+                wrapClassName="min-w-10 w-10 h-10 bg-[#262626] text-white rounded overflow-hidden relative"
+                icon={<MusicIcon size={20} />}
+                url={cover}
+              />
 
               <div className="flex flex-col min-w-0 select-none">
                 <span
@@ -70,7 +58,7 @@ const SearchSongList: React.FC<SearchSongListProps> = (props) => {
               {track.albumId ?? 'Sin albúm'}
             </div>
 
-            <div className="text-sm text-white flex items-center justify-end gap-3">
+            <div className="text-xs text-white flex items-center justify-end gap-3">
               <button
                 onClick={(e) => {
                   e.stopPropagation();

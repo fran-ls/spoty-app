@@ -122,7 +122,7 @@ class SongService {
     ));
   }
 
-  async updateSong(id: string, data: SongDTO) {
+  async updateSong(id: string, data: Partial<SongDTO>) {
     const formData = new FormData();
 
     const files = [
