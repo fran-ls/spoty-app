@@ -23,6 +23,7 @@ export interface PlaylistDTO {
   isPublic: boolean;
   userId: string;
   file: File | null;
+  fileUrl?: string;
 }
 
 export interface PlaylistSong {
@@ -30,7 +31,7 @@ export interface PlaylistSong {
   songId: string;
   playlistId: string;
   position: number;
-  song: Song | null;
+  song?: Song | null;
 }
 
 export interface PlaylistSongDTO {

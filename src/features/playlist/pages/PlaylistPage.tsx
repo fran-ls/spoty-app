@@ -13,6 +13,7 @@ import { usePlayer } from '../../../shared/context/PlayerContext';
 import usePlaylist from '../hooks/usePlaylist';
 import PlaylistMenu from '../components/PlaylistMenu';
 import useAuth from '../../auth/hooks/useAuth';
+import SmartImage from '../../../shared/components/SmartImage';
 
 const PlaylistPage: React.FC = () => {
   const coverInputRef = useRef<HTMLInputElement>(null);
@@ -22,7 +23,7 @@ const PlaylistPage: React.FC = () => {
   const { user } = useAuth();
   const { isPlaying, queueMeta, play, togglePlay } = usePlayer();
   const {
-    isPlay, isPublic, currentCover, playlistSongs, searchMeta, gradientColor, bgColor,
+    isPlay, isPublic, playlistSongs, searchMeta, gradientColor, bgColor,
     form, isBackground, isRemove, isHover, isOpen, isEdit, isOpenAction, query, isSearch,
     searchSongs, duration, playlistMeta, playlistItems, activeItem, coverImages, setGradientColor,
     setBgColor, setForm, setIsHover, setIsEdit, setIsOpenAction, setQuery, setIsSearch, setSearchSongs,
@@ -31,12 +32,9 @@ const PlaylistPage: React.FC = () => {
     removeSongFromPlaylist, setActiveItem, getPlaylistCover
   } = usePlaylist();
 
-  useEffect(() => {
-    getPlaylist(playlistId!);
-    playlistId && getPlaylistSongs(playlistId);
-  }, [playlistId]);
+  const cover = form.fileUrl || form.cover;
 
-  const onRemoveSong = async (id: string) => {
+  const onRemoveTrack = async (id: string) => {
     if (!id) return;
 
     const ok = await removeSongFromPlaylist(id);
@@ -55,18 +53,25 @@ const PlaylistPage: React.FC = () => {
         </div>
         <div>
           <span
-            className="line-clamp-1"
+            className="line-clamp-1 font-medium"
             title={activeItem?.song?.title}
           >
             {activeItem?.song?.title}
           </span>
-          <span className="text-sm block text-red-500 font-medium">
+          <span className="text-sm block text-red-500">
             Se quitó de la lista
           </span>
         </div>
       </div>
     );
   }
+
+  useEffect(() => {
+    if (playlistId) {
+      getPlaylist(playlistId);
+      getPlaylistSongs(playlistId);
+    }
+  }, [playlistId]);
 
   useEffect(() => { getPlaylistCover() }, [playlistSongs]);
   useEffect(() => { if (query) setTimeout(() => findSongs(), 300) }, [query]);
@@ -85,40 +90,39 @@ const PlaylistPage: React.FC = () => {
             onMouseLeave={() => setIsHover(false)}
             className="min-[925px]:max-w-58 min-[925px]:max-h-58 min-[925px]:min-w-58 min-[925px]:min-h-58 w-[25vw] h-[25vw] min-w-[25vw] min-h-[25vw] rounded bg-[#262626] overflow-hidden relative"
           >
-            {form.cover ? (
-              <img
-                className="object-cover w-full h-full"
-                crossOrigin="use-credentials"
-                src={form.cover}
-                alt=""
-              />
-            ) : (
-              coverImages.length > 3 ? (
-                coverImages.map((d, i) => {
-                  const className = i === 0
-                    ? 'top-0 left-0' : i === 1
-                      ? 'top-0 right-0' : i === 3
-                        ? 'bottom-0 left-0' : 'bottom-0 right-0';
+            <SmartImage
+              wrapClassName="w-full h-full"
+              icon={<MusicIcon className="w-1/4 h-1/4" />}
+              url={cover}
+            />
 
-                  return (
-                    <img
-                      className={`${className} absolute w-1/2 h-1/2 object-cover`}
-                      crossOrigin="anonymous"
-                      src={d.url}
-                      alt=""
-                      key={d.id}
-                    />
-                  )
-                })
-              ) : (
-                <MusicIcon className="w-1/4 h-1/4 absolute top-1/2 left-1/2 -translate-1/2" />
-              ))}
+            {!cover && coverImages.length > 3 && (
+              coverImages.map((d, i) => {
+                const className = i === 0
+                  ? 'top-0 left-0' : i === 1
+                    ? 'top-0 right-0' : i === 3
+                      ? 'bottom-0 left-0' : 'bottom-0 right-0';
+
+                return (
+                  <img
+                    className={`${className} absolute w-1/2 h-1/2 object-cover`}
+                    crossOrigin="anonymous"
+                    src={d.url}
+                    alt=""
+                    key={d.id}
+                  />
+                )
+              })
+            )}
 
             {isHover &&
               <>
                 <button
-                  onClick={() => coverInputRef.current?.click()}
-                  className={`${form.cover ? 'bg-black/50' : 'bg-[#262626]'} hover:text-white w-full h-full flex flex-col items-center gap-1 justify-center absolute top-1/2 left-1/2 -translate-1/2`}
+                  onClick={() => {
+                    coverInputRef.current?.click();
+                    setIsEdit(true);
+                  }}
+                  className={`${cover ? 'bg-black/50' : 'bg-[#262626]'} hover:text-white w-full h-full flex flex-col items-center gap-1 justify-center absolute top-1/2 left-1/2 -translate-1/2`}
                   type="button"
                 >
                   <PenIcon className="w-10 h-10" />
@@ -128,10 +132,11 @@ const PlaylistPage: React.FC = () => {
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
+                    if (form.fileUrl) URL.revokeObjectURL(form.fileUrl);
                     setForm({
                       ...form,
                       file: null,
-                      cover: currentCover ? currentCover : ''
+                      fileUrl: ''
                     });
                   }}
                   className="hover:text-white bg-black w-7 h-7 rounded-full flex flex-col items-center gap-1 justify-center absolute top-3 right-3"
@@ -356,21 +361,11 @@ const PlaylistPage: React.FC = () => {
               if (data?.id) toast(
                 <div className="flex items-center gap-2 p-2 pr-3 min-w-10 rounded bg-black">
                   <div className="bg-[#262626] min-w-8 w-8 h-8 rounded overflow-hidden relative">
-                    {form.cover ?
-                      <img
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none'
-                        }}
-                        className="object-cover w-full h-full"
-                        crossOrigin="anonymous"
-                        src={form.cover}
-                        alt=""
-                      /> :
-                      <MusicIcon
-                        className="absolute top-1/2 left-1/2 -translate-1/2"
-                        size={16}
-                      />
-                    }
+                    <SmartImage
+                      url={cover}
+                      wrapClassName="w-full h-full"
+                      icon={<MusicIcon className="w-1/4 h-1/4" />}
+                    />
                   </div>
                   <span>
                     Añadido a {form.name}
@@ -390,7 +385,9 @@ const PlaylistPage: React.FC = () => {
             setGradientColor={setGradientColor}
             onClose={() => setIsBackground(false)}
             onSave={async () => {
-              const data = await onSavePlaylist(playlistId!, { ...form, bgColor, gradientColor });
+              const data = await onSavePlaylist(playlistId!, {
+                ...form, bgColor, gradientColor
+              });
               if (data?.id) setIsBackground(false);
             }}
           />
@@ -402,10 +399,9 @@ const PlaylistPage: React.FC = () => {
           onOpen={(action) => {
             switch (action) {
               case 'add-to-queue':
-
                 return;
               case 'remove':
-                onRemoveSong(activeItem?.id!);
+                onRemoveTrack(activeItem?.id!);
                 return;
               default:
                 return;
@@ -419,7 +415,6 @@ const PlaylistPage: React.FC = () => {
         <EditData
           form={form}
           isPublic={isPublic}
-          currentCover={currentCover}
           coverImages={coverImages}
           coverInputRef={coverInputRef}
           setForm={setForm}

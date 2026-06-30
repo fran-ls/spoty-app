@@ -27,7 +27,7 @@ class PlaylistService {
     }
 
     return await apiFetch<PlaylistResponse>(() => (
-      api.get(`/playlists/${playlistId}/songs`, {
+      api.get(`/playlists/${playlistId}/tracks`, {
         params: filters ? params : undefined,
         headers: {
           'Authorization': `Bearer ${tokenService.getToken()}`
@@ -38,7 +38,7 @@ class PlaylistService {
 
   async removeSongFromPlaylist(id: string) {
     return await apiFetch<Playlist | null>(() => (
-      api.post(`/playlists/remove-song`, { id }, {
+      api.post(`/playlists/remove-track`, { id }, {
         headers: {
           'Authorization': `Bearer ${tokenService.getToken()}`
         }
@@ -48,7 +48,10 @@ class PlaylistService {
 
   async addSongToPlaylist(data: PlaylistSongDTO) {
     return await apiFetch<PlaylistSong>(() => (
-      api.post(`/playlists/add-song`, data, {
+      api.post(`/playlists/new-track`, data, {
+        params: {
+          is_track: true,
+        },
         headers: {
           'Authorization': `Bearer ${tokenService.getToken()}`
         }
@@ -96,7 +99,7 @@ class PlaylistService {
         ...r,
         data: {
           ...data,
-          cover: data.cover ? this.playlistCover(id) : data.cover
+          cover: this.playlistCover(id, data.cover)
         }
       }
     });
@@ -126,7 +129,7 @@ class PlaylistService {
         ...r,
         data: {
           ...data,
-          cover: data.cover ? this.playlistCover(id) : data.cover
+          cover: this.playlistCover(id, data.cover)
         }
       }
     });

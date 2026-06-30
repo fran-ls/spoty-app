@@ -5,13 +5,11 @@ import type { SearchMeta } from "../../../shared/types/common.types";
 import type { Song, SongCover } from "../../song/song.types";
 import playlistService from "../services/playlist.service";
 import songService from "../../song/services/song.service";
-import { fileToDataURL } from "../../../shared/utils/fileToDataURL";
 import { routes } from "../../../shared/utils/routes";
 import { getTimeParts } from "../../../shared/utils/formatTime";
 import useAuth from "../../auth/hooks/useAuth";
 
 const usePlaylist = () => {
-  const [currentCover, setCurrentCover] = useState<string | null>(null);
   const [gradientColor, setGradientColor] = useState('#121212');
   const [bgColor, setBgColor] = useState('#3a3a3a');
   const [isPublic, setIsPublic] = useState(false);
@@ -23,7 +21,8 @@ const usePlaylist = () => {
     gradientColor,
     bgColor,
     userId: '',
-    file: null
+    file: null,
+    fileUrl: ''
   });
 
   const [coverImages, setCoverImages] = useState<SongCover[]>([]);
@@ -69,9 +68,11 @@ const usePlaylist = () => {
 
   const onFileChange = (e: React.ChangeEvent<HTMLInputElement, HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
-
-    file && fileToDataURL(file).then((url) => {
-      setForm({ ...form, file, cover: url });
+    const fileUrl = form.fileUrl;
+    if (fileUrl) URL.revokeObjectURL(fileUrl);
+    if (file) setForm({
+      ...form, file,
+      fileUrl: URL.createObjectURL(file)
     });
   }
 
@@ -80,13 +81,12 @@ const usePlaylist = () => {
       ...form,
       ...data,
       description: data.description || '',
-      cover: data.cover || ''
+      cover: data.cover!
     });
 
     setBgColor(data.bgColor);
     setGradientColor(data.gradientColor);
     setIsPublic(data.isPublic);
-    setCurrentCover(data.cover);
   }
 
   const getUserPlaylists = async () => {
@@ -133,15 +133,19 @@ const usePlaylist = () => {
   const onSavePlaylist = async (playlistId: string | null, values: PlaylistDTO = form, isNew = false) => {
     if (!playlistId) return null;
 
-    if (!isNew) {
-      return await updatePlaylist(playlistId, values);
-    }
+    if (!isNew) return await updatePlaylist(playlistId, {
+      ...values,
+      gradientColor,
+      bgColor
+    });
 
     const r = await playlistService.newPlaylist({
       ...values,
       name: values.name.trim(),
       description: values.description.trim(),
-      userId: user?.id!
+      userId: user?.id!,
+      gradientColor,
+      bgColor
     });
 
     return r.data;
@@ -188,7 +192,7 @@ const usePlaylist = () => {
     const images: SongCover[] = [];
 
     for (const song of playlistSongs) {
-      if (song.cover) {
+      if (song?.cover) {
         const coverUrl = songService.songCoverUrl(song.id, song.cover);
         images.push({ id: song.id, url: coverUrl });
       }
@@ -243,7 +247,6 @@ const usePlaylist = () => {
     playlistSongs, setPlaylistSongs,
     playlistItems, setPlaylistItems,
     playlists, setPlaylists,
-    currentCover, setCurrentCover,
     gradientColor, setGradientColor,
     bgColor, setBgColor,
     isPublic, setIsPublic,

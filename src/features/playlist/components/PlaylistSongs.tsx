@@ -49,9 +49,9 @@ const PlaylistSongs: React.FC<PlaylistSongsProps> = (props) => {
 
       <div className="flex flex-col gap-1 bg-[#131313]">
         {items.map((item, i) => {
-          const song = item.song!;
+          const track = item.song!;
           const isCurrentPlayingNow = currentSong?.id === item.id;
-          const cover = songService.songCoverUrl(song.id, song.cover);
+          const cover = songService.songCoverUrl(track?.id, track?.cover);
 
           return (
             <div
@@ -96,22 +96,22 @@ const PlaylistSongs: React.FC<PlaylistSongsProps> = (props) => {
                   <span
                     className={`font-semibold truncate text-sm leading-tight ${isCurrentPlayingNow ? 'text-primary' : 'text-white'
                       }`}
-                    title={song.title}
+                    title={track?.title}
                   >
-                    {song.title}
+                    {track?.title}
                   </span>
                   <span className="text-[#adaaaa] text-xs truncate hover:text-white hover:underline mt-0.5">
-                    {song.artist?.name}
+                    {track?.artist?.name}
                   </span>
                 </div>
               </div>
 
               <div className="text-[#adaaaa] text-sm truncate hover:text-white transition-colors select-none">
-                {song.albumId || 'Sin albúm'}
+                {track?.albumId || 'Sin albúm'}
               </div>
 
               <div className="text-[#adaaaa] text-sm truncate select-none">
-                {getFmtDate(song.createdAt, 'dd MMM yyyy')}
+                {track?.createdAt ? getFmtDate(track?.createdAt, 'dd MMM yyyy') : 'dd-MMM-yyyy'}
               </div>
 
               <div className="text-sm text-[#adaaaa] flex items-center justify-end gap-3">
@@ -130,7 +130,7 @@ const PlaylistSongs: React.FC<PlaylistSongsProps> = (props) => {
                 </button>
 
                 <span className="w-10 text-right pr-1 select-none">
-                  {formatTime(song.duration)}
+                  {formatTime(track?.duration ?? 0)}
                 </span>
               </div>
 

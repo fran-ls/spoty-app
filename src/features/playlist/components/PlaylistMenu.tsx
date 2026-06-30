@@ -1,4 +1,5 @@
 import { CircleMinusIcon, ListPlusIcon, Music2Icon, UploadIcon } from "lucide-react";
+import { usePlayer } from "../../../shared/context/PlayerContext";
 
 interface PlaylistMenuProps {
   onOpen: (action: "remove" | "add-to-queue" | "edit-track" | "share") => void;
@@ -6,6 +7,8 @@ interface PlaylistMenuProps {
 }
 
 const PlaylistMenu = ({ onOpen, onClose }: PlaylistMenuProps) => {
+  const { isQueue } = usePlayer();
+
   return (
     <>
       <div
@@ -13,7 +16,7 @@ const PlaylistMenu = ({ onOpen, onClose }: PlaylistMenuProps) => {
         onClick={onClose}
       />
 
-      <div className="w-45 z-100 bg-[#282828] text-sm p-1 rounded fixed bottom-22 right-22">
+      <div className={`${!isQueue ? 'right-76' : 'right-22'} w-45 z-100 bg-[#282828] text-sm p-1 rounded fixed bottom-22`}>
         <ul className="text-[#adaaaa] flex flex-col items-center justify-between">
           <li className="w-full font-medium hover:text-white hover:bg-white/10 rounded-xs">
             <button

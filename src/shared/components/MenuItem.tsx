@@ -218,7 +218,7 @@ const MenuItem = (props: MenuItemProps) => {
   const exclude: MenuStylesK[] = ['toggle']
 
   menuStyleKeys.forEach((k) => {
-    const style = (styles as any)[k];
+    const style = (styles as any)?.[k];
 
     if (!exclude.includes(k)) {
       fmtStyles[k] = getStyles(style)

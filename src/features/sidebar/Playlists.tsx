@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { MusicIcon, PlusIcon, SearchIcon, ListIcon, XIcon, PauseIcon, PlayIcon, PanelTopCloseIcon, PanelTopOpenIcon, ListMusicIcon } from 'lucide-react';
+import { PlusIcon, SearchIcon, ListIcon, XIcon, PauseIcon, PlayIcon, PanelTopCloseIcon, PanelTopOpenIcon, ListMusicIcon } from 'lucide-react';
 import { usePlayer } from '../../shared/context/PlayerContext';
 import { routes } from '../../shared/utils/routes';
 import CustomMenu from './CustomMenu';
 import playlistService from '../playlist/services/playlist.service';
-import { showMusicIcon } from '../../shared/utils/showMusicIcon';
 import useAuth from '../auth/hooks/useAuth';
 import usePlaylist from '../playlist/hooks/usePlaylist';
+import SmartImage from '../../shared/components/SmartImage';
 
 export const Playlists: React.FC = () => {
   const [isCollapsed, setIsCollapsed] = useState<boolean>(true);
@@ -166,17 +166,7 @@ export const Playlists: React.FC = () => {
                 key={playlist.id}
               >
                 <div className="min-w-12 w-12 h-12 bg-[#262626] rounded relative overflow-hidden hover:badge:bg-blue-500">
-                  <MusicIcon className={`${!playlist.cover ? '' : 'hidden opacity-0'} absolute top-1/2 left-1/2 -translate-1/2`} />
-
-                  {playlist.cover && (
-                    <img
-                      onError={(e) => showMusicIcon(e.currentTarget, '.playlist-item')}
-                      src={playlistService.playlistCover(playlist.id)}
-                      className="object-cover w-full h-full"
-                      crossOrigin="use-credentials"
-                      alt=""
-                    />
-                  )}
+                  <SmartImage url={playlistService.playlistCover(playlist.id, playlist.cover)} />
 
                   {hoverIndex !== null && hoverIndex === i &&
                     <button

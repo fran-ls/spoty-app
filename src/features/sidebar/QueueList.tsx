@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
-import { MusicIcon, XIcon, PauseIcon, PlayIcon, PanelTopCloseIcon } from 'lucide-react';
-import { showMusicIcon } from '../../shared/utils/showMusicIcon';
+import { XIcon, PauseIcon, PlayIcon, PanelTopCloseIcon } from 'lucide-react';
 import { usePlayer } from '../../shared/context/PlayerContext';
 import Loader from '../../shared/components/Loader';
 import { useInfiniteScroll } from '../../shared/hooks/useInfiniteScroll';
 import playlistService from '../playlist/services/playlist.service';
 import songService from '../song/services/song.service';
+import SmartImage from '../../shared/components/SmartImage';
 
 export const QueueList: React.FC = () => {
   const {
@@ -101,17 +101,7 @@ export const QueueList: React.FC = () => {
                   key={track.id}
                 >
                   <div className="min-w-12 w-12 h-12 bg-[#262626] rounded relative overflow-hidden hover:badge:bg-blue-500">
-                    <MusicIcon className={`${!cover ? '' : 'hidden opacity-0'} absolute top-1/2 left-1/2 -translate-1/2 music-icon`} />
-
-                    {cover && (
-                      <img
-                        onError={(e) => showMusicIcon(e.currentTarget, '.queue-item')}
-                        src={cover}
-                        className="object-cover w-full h-full"
-                        crossOrigin="anonymous"
-                        alt=""
-                      />
-                    )}
+                    <SmartImage url={cover} />
 
                     {(hoverIndex !== null && hoverIndex === i && currentSong?.id !== track.id) &&
                       <button

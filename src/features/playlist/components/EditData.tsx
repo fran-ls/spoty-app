@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { EllipsisIcon, GlobeIcon, InfoIcon, LockIcon, MusicIcon, PenIcon, XIcon } from "lucide-react";
+import { EllipsisIcon, GlobeIcon, InfoIcon, LockIcon, PenIcon, XIcon } from "lucide-react";
 import type { PlaylistDTO } from "../playlist.types";
+import SmartImage from "../../../shared/components/SmartImage";
 
 interface EditDataProps {
   form: PlaylistDTO;
   isPublic: boolean;
-  currentCover: string | null;
   coverInputRef: React.RefObject<HTMLInputElement | null>
   coverImages: { id: string, url: string }[];
   setForm: React.Dispatch<React.SetStateAction<PlaylistDTO>>;
@@ -16,13 +16,14 @@ interface EditDataProps {
 
 const EditData = (props: EditDataProps) => {
   const {
-    isPublic, form, coverInputRef, currentCover, coverImages,
+    isPublic, form, coverInputRef, coverImages,
     setForm, onChangeVisibility, onClose, onSave
   } = props;
 
   const [isInfoMsg, setIsInfoMsg] = useState(false);
   const [isChange, setIsChange] = useState(false);
   const [isHover, setIsHover] = useState(false);
+  const cover = form.fileUrl || form.cover;
 
   const onFormChange = (field: keyof PlaylistDTO, value: any) => {
     setForm({ ...form, [field]: value });
@@ -72,40 +73,36 @@ const EditData = (props: EditDataProps) => {
             onMouseLeave={() => setIsHover(false)}
             className="font-medium text-center min-w-45 w-45 h-45 rounded bg-[#282828] overflow-hidden relative"
           >
-            {form.cover ? (
-              <img
-                className="object-cover w-full h-full"
-                crossOrigin="anonymous"
-                src={form.cover}
-                alt=""
-              />
-            ) : (
-              coverImages.length > 3 ? (
-                coverImages.map((d, i) => {
-                  const className = i === 0
-                    ? 'top-0 left-0' : i === 1
-                      ? 'top-0 right-0' : i === 3
-                        ? 'bottom-0 left-0' : 'bottom-0 right-0';
+            <SmartImage
+              wrapClassName="w-full h-full"
+              iconClassName="w-1/4 h-1/4"
+              url={cover}
+            />
 
-                  return (
-                    <img
-                      className={`${className} absolute w-1/2 h-1/2 object-cover`}
-                      crossOrigin="anonymous"
-                      src={d.url}
-                      alt=""
-                      key={d.id}
-                    />
-                  )
-                })
-              ) : (
-                <MusicIcon className="w-1/4 h-1/4 absolute top-1/2 left-1/2 -translate-1/2" />
-              ))}
+            {!cover && coverImages.length > 3 && (
+              coverImages.map((d, i) => {
+                const className = i === 0
+                  ? 'top-0 left-0' : i === 1
+                    ? 'top-0 right-0' : i === 3
+                      ? 'bottom-0 left-0' : 'bottom-0 right-0';
+
+                return (
+                  <img
+                    className={`${className} absolute w-1/2 h-1/2 object-cover`}
+                    crossOrigin="anonymous"
+                    src={d.url}
+                    alt=""
+                    key={d.id}
+                  />
+                )
+              })
+            )}
 
             {isHover && (
               <>
                 <button
                   onClick={() => coverInputRef.current?.click()}
-                  className={`${(form.cover || coverImages.length > 3) ? 'bg-black/50' : 'bg-[#282828]'} hover:text-white w-full h-full flex flex-col items-center gap-1 justify-center absolute top-1/2 left-1/2 -translate-1/2`}
+                  className={`${(cover || coverImages.length > 3) ? 'bg-black/50' : 'bg-[#282828]'} hover:text-white w-full h-full flex flex-col items-center gap-1 justify-center absolute top-1/2 left-1/2 -translate-1/2`}
                   type="button"
                 >
                   <PenIcon className="w-8 h-8" />
@@ -115,10 +112,12 @@ const EditData = (props: EditDataProps) => {
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
+                    if (form.fileUrl) URL.revokeObjectURL(form.fileUrl);
+
                     setForm({
                       ...form,
                       file: null,
-                      cover: currentCover ? currentCover : ''
+                      fileUrl: ''
                     });
                   }}
                   className="hover:text-white bg-black w-7 h-7 rounded-full flex flex-col items-center gap-1 justify-center absolute top-2 right-2"

@@ -119,7 +119,8 @@ const PanelPlaylistDetail = ({ activePlaylist, onClose }: PanelPlaylistDetailPro
           <MenuItem
             styles={{
               btn: 'absolute top-5 right-5',
-              menu: 'w-50 top-5 right-5',
+              menu: 'top-5 right-5',
+              subtext: 'mt-2'
             }}
             sections={[{
               label: 'actions',
@@ -146,16 +147,11 @@ const PanelPlaylistDetail = ({ activePlaylist, onClose }: PanelPlaylistDetailPro
             }, {
               label: 'files',
               items: [{
-                onAction: (isActive) => setIsRemoveFiles(isActive!),
                 action: 'toggle',
                 label: 'Incluir archivos',
+                subtext: 'Borrar archivos de la lista',
                 isActive: isRemoveFiles,
-                icon: (
-                  <CircleMinus
-                    className="text-current"
-                    size={20}
-                  />
-                )
+                onAction: (isActive) => setIsRemoveFiles(isActive!)
               }]
             }]}
           />
@@ -226,10 +222,12 @@ const PanelPlaylistDetail = ({ activePlaylist, onClose }: PanelPlaylistDetailPro
                     </span>
 
                     <MenuItem
-                      styles={{ menu: 'top-0 right-0' }}
                       onActive={() => setActiveTrackId(tr.id)}
                       open={activeTrackId === track?.id}
                       actions={trackActions}
+                      styles={{
+                        menu: 'top-0 right-0'
+                      }}
                     />
                   </div>
                 )
