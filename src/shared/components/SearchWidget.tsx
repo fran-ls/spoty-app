@@ -5,12 +5,19 @@ import { useInfiniteScroll } from "../hooks/useInfiniteScroll";
 import { getValue } from "../utils/getValue";
 import Loader from "./Loader";
 
+export interface WidgetSearch {
+  query: string;
+  page: number;
+}
+
 type SearchWidgetItem = {
   label: string;
   value: string;
   sub?: string;
   item?: any;
 }
+
+type Payload = SearchWidgetItem & { search: WidgetSearch }
 
 interface SearchWidgetProps {
   label?: string
@@ -22,7 +29,7 @@ interface SearchWidgetProps {
   bgColor?: string;
   loadMore?: (query: string, page: number) => Promise<void>;
   loadIcon?: (payload: any) => React.ReactElement;
-  payload?: (item: SearchWidgetItem) => void;
+  payload?: (data: Payload) => void;
   onClose: () => void;
 }
 
@@ -43,13 +50,21 @@ const SearchWidget = (props: SearchWidgetProps) => {
 
   useEffect(() => { loadMore && setTimeout(() => loadMore(query, 0), 300) }, [query]);
 
+  // useEffect(() => {
+  //   payload?.({
+  //     label: '',
+  //     value: '',
+  //     search: { query, page }
+  //   })
+  // }, [query]);
+
   return (
     <div
       style={{
         boxShadow: '0px 0px 5px 2px #0e0e0e',
         backgroundColor: bgColor
       }}
-      className={`${open ? 'translate-y-0' : 'translate-y-[100vh]'} h-100 p-5 text-gray-400 overflow-hidden w-full z-50 transition duration-150 absolute bottom-0 right-0`}
+      className={`${open ? 'translate-y-0' : 'translate-y-[100vh]'} max-h-[calc(100vh-73px-56px)] h-100 p-5 text-gray-400 overflow-hidden w-full z-50 transition duration-150 absolute bottom-0 right-0`}
     >
       <div className="animate-fade-in">
         <div className="flex items-center justify-between mb-2">
@@ -98,7 +113,12 @@ const SearchWidget = (props: SearchWidgetProps) => {
           return (
             <li
               onClick={() => {
-                payload && payload({ label, value, item: it });
+                payload && payload({
+                  label,
+                  value,
+                  item: it,
+                  search: { query, page }
+                });
                 onClose();
               }}
               className="hover:bg-white/5 cursor-pointer py-2 px-3 flex items-center gap-3"

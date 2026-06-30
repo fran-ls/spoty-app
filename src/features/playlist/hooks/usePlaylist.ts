@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import type { Playlist, PlaylistDTO, PlaylistMeta, PlaylistSong, PlaylistSongDTO } from "../playlist.types";
+import type { Playlist, PlaylistDTO, PlaylistInclude, PlaylistMeta, PlaylistSong, PlaylistSongDTO } from "../playlist.types";
 import type { SearchMeta } from "../../../shared/types/common.types";
 import type { Song, SongCover } from "../../song/song.types";
 import playlistService from "../services/playlist.service";
@@ -100,10 +100,10 @@ const usePlaylist = () => {
     }
   }
 
-  const getPlaylist = async (playlistId: string) => {
+  const getPlaylist = async (playlistId: string, include?: PlaylistInclude) => {
     if (!playlistId) return;
 
-    const r = await playlistService.getPlaylist(playlistId);
+    const r = await playlistService.getPlaylist(playlistId, include);
 
     if (r.status === 404) {
       navigate(routes.home);
@@ -158,10 +158,7 @@ const usePlaylist = () => {
   const onRemovePlaylist = async (playlistId: string) => {
     if (!playlistId) return;
     const { data } = await playlistService.removePlaylist(playlistId);
-
-    if (data?.id) {
-      navigate(routes.home);
-    }
+    if (data?.id) navigate(routes.home);
   }
 
   const getPlaylistSongs = async (playlistId: string, filters?: Record<string, any>) => {
@@ -219,29 +216,30 @@ const usePlaylist = () => {
     if (!dto.playlistId) return;
 
     const { data } = await playlistService.addSongToPlaylist(dto);
+    if (!data || !data.id) return data;
 
-    if (data && data.id) {
-      setPlaylistItems((prev) => [...prev, data]);
-      setPlaylistSongs((prev) => [...prev, data.song!]);
-    }
-
+    setPlaylistItems((prev) => [...prev, data]);
+    setPlaylistSongs((prev) => [...prev, data.song!]);
+    setPlaylistMeta((prev) => ({ ...prev, total: prev.total + 1 }));
     return data;
   }
 
   const removeSongFromPlaylist = async (id: string) => {
     if (!id) return false;
-    const { data } = await playlistService.removeSongFromPlaylist(id);
-    if (data) {
-      setPlaylistItems((prev) => prev.filter((p) => p.id !== id));
-      setPlaylistSongs((prev) => prev.filter((p) => p.id !== id));
-      return true;
-    }
-    return false;
+
+    const { error, data } = await playlistService.removeSongFromPlaylist(id);
+    if (error || !data || !data.id) return false;
+
+    setPlaylistItems((prev) => prev.filter((p) => p.id !== id));
+    setPlaylistSongs((prev) => prev.filter((p) => p.id !== id));
+    setPlaylistMeta((prev) => ({ ...prev, total: prev.total - 1 }));
+    return true;
   }
 
   return {
     isPlay: playlistSongs.length > 0,
-    playlistMeta, duration,
+    duration,
+    playlistMeta, setPlaylistMeta,
     playlistSongs, setPlaylistSongs,
     playlistItems, setPlaylistItems,
     playlists, setPlaylists,

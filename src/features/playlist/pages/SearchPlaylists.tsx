@@ -76,7 +76,7 @@ const SearchPlaylists: React.FC = () => {
               <div className="flex flex-col gap-1">
                 {filteredTracks.map((track, i) => {
                   const isCurrent = '' === track.id;
-                  const isTrackLiked = true
+                  const isTrackLiked = true;
 
                   return (
                     <div

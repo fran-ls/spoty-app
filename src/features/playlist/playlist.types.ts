@@ -1,4 +1,5 @@
 import type { PaginationMeta } from "../../shared/types/common.types";
+import type { User } from "../auth/auth.types";
 import type { Song, SongCover } from "../song/song.types";
 
 export interface Playlist {
@@ -10,6 +11,7 @@ export interface Playlist {
   gradientColor: string;
   isPublic: boolean;
   userId: string;
+  user?: User | null;
 }
 
 export interface PlaylistDTO {
@@ -55,3 +57,8 @@ export type PlaylistFormState = PlaylistDTO & {
 }
 
 export type PlaylistFormAction = 'set-state' | 'select-file' | 'save';
+
+export interface PlaylistInclude {
+  is_user?: boolean;
+  is_tracks?: boolean;
+}

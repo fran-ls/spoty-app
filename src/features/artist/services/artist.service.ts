@@ -73,9 +73,12 @@ class ArtistService {
     ));
   }
 
-  async deleteArtist(id: string) {
+  async deleteArtist(id: string, isRemoveFiles = false) {
     return await apiFetch<Artist>(() => (
       api.delete(`/artists/${id}`, {
+        params: {
+          include_files: isRemoveFiles,
+        },
         headers: {
           'Authorization': `Bearer ${tokenService.getToken()}`
         }

@@ -1,15 +1,14 @@
-import { useEffect, useRef, useState } from "react";
-import { GlobeIcon, InfoIcon, ListVideoIcon, LockIcon, MusicIcon, PaletteIcon, PenIcon, SearchIcon, UserIcon, XIcon } from "lucide-react";
+import { useRef, useState } from "react";
+import { GlobeIcon, InfoIcon, ListVideoIcon, LockIcon, MusicIcon, PaletteIcon, PenIcon, SearchIcon, UserIcon } from "lucide-react";
 import type { PlaylistDTO } from "../playlist.types";
 import SmartImage from "../../../shared/components/SmartImage";
 import Toaster from "../../../shared/components/Toaster";
 import useToaster from "../../../shared/hooks/useToaster";
 import playlistService from "../services/playlist.service";
 import GradientEditor from "./PanelGradientEditor";
-import { useInfiniteScroll } from "../../../shared/hooks/useInfiniteScroll";
 import useUser from "../../artist/hooks/useUser";
 import UserSelect from "../../artist/components/UserSelect";
-import Loader from "../../../shared/components/Loader";
+import SearchWidget from "../../../shared/components/SearchWidget";
 
 const PanelPlaylistForm = () => {
   const { isActive, toast, isFirstLoad, showToast, onClose } = useToaster(5000);
@@ -57,7 +56,8 @@ const PanelPlaylistForm = () => {
     if (isLoading) return;
     setIsLoading(true);
 
-    const { data, error } = await playlistService.newPlaylist(form);
+    const r = await playlistService.newPlaylist({ ...form, bgColor, gradientColor });
+    const { data, error } = r;
     setIsLoading(false);
 
     if (error || !data) {
@@ -87,30 +87,29 @@ const PanelPlaylistForm = () => {
   }
 
   const [isUserSearch, setIsUserSearch] = useState(false);
-  const [userQuery, setUserQuery] = useState('');
-  const [userPage, setUserPage] = useState(0);
   const [userOption, setUserOption] = useState({
-    label: 'Seleccionar',
+    label: 'Usuario',
     value: ''
   });
-  const userFilters = {
-    username: userQuery.trim(),
-    email: userQuery.trim(),
-    limit: 10,
-    page: 0
+
+  const loadMoreUsers = async (query: string, page: number) => {
+    await searchUsers({
+      username: query.trim(),
+      email: query.trim(),
+      limit: 10,
+      page
+    });
   }
-
-  const { loaderRef } = useInfiniteScroll(() => {
-    if (!userMeta.hasNextPage) return;
-    searchUsers({ ...userFilters, page: userPage + 1 });
-    setUserPage(userPage + 1);
-  });
-
-  useEffect(() => { setTimeout(() => searchUsers(userFilters), 300) }, [userFilters]);
 
   return (
     <div className="overflow-hidden relative">
-      <div className="max-h-[calc(100vh-73px-56px)] overflow-y-auto animate-fade-in relative panel-wrap">
+      <div
+        style={{
+          minHeight: 'calc(100vh - 73px - 56px)',
+          maxHeight: 'calc(100vh - 73px - 56px)'
+        }}
+        className="animate-fade-in upload-panel-wrap"
+      >
         <div
           style={{
             background: gradientCSS
@@ -152,13 +151,13 @@ const PanelPlaylistForm = () => {
           </div>
 
           <div className="w-full">
-            <span className="text-gray-400 block text-sm text-center">
+            <span className="text-gray-400 block text-xs text-center">
               {form.isPublic ? 'Pública' : 'Privada'}
             </span>
 
             <h1
               style={{
-                fontSize: '48px'
+                fontSize: '36px'
               }}
               className="playlist-title mt-2 text-white text-center font-black google-sans-flex-font"
             >
@@ -183,12 +182,11 @@ const PanelPlaylistForm = () => {
         </div>
 
         <form
-          noValidate
           onSubmit={(e) => {
             e.preventDefault();
             onSave();
           }}
-          className="p-5 pt-0 space-y-5 animate-fade-in"
+          className="p-5 pt-0 space-y-5"
         >
           <div className="space-y-1.5">
             <label className="text-[10px] uppercase font-mono tracking-wider font-bold text-gray-400">
@@ -267,11 +265,7 @@ const PanelPlaylistForm = () => {
               option={userOption}
               items={users}
               isLoadMore={userMeta.hasNextPage}
-              loadMore={() => {
-                if (!userMeta.hasNextPage) return;
-                searchUsers({ ...userFilters, page: userPage + 1 });
-                setUserPage(userPage + 1);
-              }}
+              loadMore={() => loadMoreUsers}
               payload={(option) => {
                 const item = option.item;
 
@@ -322,85 +316,35 @@ const PanelPlaylistForm = () => {
         onSave={() => { }}
       />
 
-      <section
-        style={{ boxShadow: '0px 0px 5px 2px #0e0e0e' }}
-        className={`${isUserSearch ? 'translate-y-0' : 'translate-y-[100vh]'} h-100 p-5 text-gray-400 bg-[#181818] overflow-hidden w-full z-50 transition duration-150 absolute bottom-0 right-0`}
-      >
-        <div className="animate-fade-in">
-          <div className="flex items-center justify-between mb-2">
-            <h2 className="text-sm">
-              Buscar usuario
-            </h2>
-
-            <button
-              onClick={() => setIsUserSearch(false)}
-              className="p-1 cursor-pointer"
-              type="button"
-            >
-              <XIcon size={20} />
-            </button>
-          </div>
-
-          <div className="relative">
-            <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-500">
-              <SearchIcon size={14} />
-            </span>
-            <input
-              className="w-full bg-[#181818] border border-white/5 rounded-xl py-3 pl-10 pr-4 text-xs font-medium focus:ring-1 focus:ring-primary focus:border-primary text-white placeholder:text-gray-500 outline-none transition-all"
-              onChange={(e) => setUserQuery(e.target.value)}
-              value={userQuery}
-              placeholder="Buscar por nombre, email..."
-              type="search"
-            />
-          </div>
-        </div>
-
-        <div className="mt-4 overflow-y-auto max-h-66 search-widget-content">
-          {users.map((u) => (
-            <div
-              onClick={() => {
-                setUserOption({
-                  label: u.username,
-                  value: u.id
-                });
-
-                setForm({ ...form, userId: u.id });
-
-                setIsUserSearch(false);
-              }}
-              className="hover:bg-white/5 cursor-pointer p-2 flex items-center gap-3" key={u.id}
-            >
-              <SmartImage
-                wrapClassName="text-gray-400 min-w-0 w-9 h-9 rounded-full bg-white/5 border border-white/10 overflow-hidden shrink-0"
-                url={null}
-                icon={<UserIcon size={16} />}
-              />
-
-              <div className="overflow-hidden flex flex-col gap-1">
-                <p className="text-xs font-bold text-white group-hover:text-primary transition-colors truncate">
-                  {u.username}
-                </p>
-                <span className="text-[9px] text-gray-400 font-mono">
-                  {u.email}
-                </span>
-              </div>
-            </div>
-          ))}
-
-          {userMeta.hasNextPage &&
-            <div
-              className="p-1 flex items-center justify-center overflow-hidden"
-              ref={loaderRef}
-            >
-              <Loader
-                className="border-transparent border-t-slate-200"
-                size={20}
-                stroke={2}
-              />
-            </div>
-          }
-        </div>
-      </section>
+      <SearchWidget
+        keys={{
+          label: 'username',
+          value: 'id',
+          sub: 'id'
+        }}
+        label="Buscar usuario"
+        open={isUserSearch}
+        items={users}
+        meta={userMeta}
+        isLoadMore={userMeta.hasNextPage}
+        loadMore={loadMoreUsers}
+        onClose={() => setIsUserSearch(false)}
+        payload={(p) => {
+          setUserOption({
+            label: p.label,
+            value: p.value
+          });
+          setForm({ ...form, userId: p.value });
+        }}
+        loadIcon={() => (
+          <SmartImage
+            wrapClassName="text-gray-400 min-w-0 w-9 h-9 rounded-full bg-white/5 border border-white/10 overflow-hidden shrink-0"
+            url={null}
+            // url={id ? songService.songCoverUrl(id, cover) : null}
+            icon={<UserIcon size={16} />}
+          />
+        )}
+      />
     </div>
   )
 }

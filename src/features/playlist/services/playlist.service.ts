@@ -1,5 +1,5 @@
 import { api, apiFetch } from "../../../shared/utils/api";
-import type { Playlist, PlaylistDTO, PlaylistResponse, PlaylistSong, PlaylistSongDTO } from "../playlist.types";
+import type { Playlist, PlaylistDTO, PlaylistInclude, PlaylistResponse, PlaylistSong, PlaylistSongDTO } from "../playlist.types";
 import type { SearchResponse } from "../../../shared/types/common.types";
 import { envs } from "../../../shared/utils/envs";
 import { tokenService } from "../../auth/services/token.service";
@@ -37,7 +37,7 @@ class PlaylistService {
   }
 
   async removeSongFromPlaylist(id: string) {
-    return await apiFetch<{ success: boolean }>(() => (
+    return await apiFetch<Playlist | null>(() => (
       api.post(`/playlists/remove-song`, { id }, {
         headers: {
           'Authorization': `Bearer ${tokenService.getToken()}`
@@ -56,9 +56,12 @@ class PlaylistService {
     ));
   }
 
-  async removePlaylist(id: string) {
+  async removePlaylist(id: string, isRemoveFiles = false) {
     return await apiFetch<Playlist>(() => (
       api.delete(`/playlists/${id}`, {
+        params: {
+          include_files: isRemoveFiles,
+        },
         headers: {
           'Authorization': `Bearer ${tokenService.getToken()}`
         }
@@ -109,9 +112,10 @@ class PlaylistService {
     ));
   }
 
-  async getPlaylist(id: string) {
+  async getPlaylist(id: string, include?: PlaylistInclude) {
     return await apiFetch<Playlist>(async () => {
       const r = await api.get(`/playlists/${id}`, {
+        params: include ? include : undefined,
         headers: {
           'Authorization': `Bearer ${tokenService.getToken()}`
         }
@@ -128,7 +132,7 @@ class PlaylistService {
     });
   }
 
-  async searchPlaylists(filters?: Record<string, any>) {
+  async searchPlaylists(filters?: Record<string, any>, include?: PlaylistInclude) {
     const params: Record<string, any> = {}
 
     if (filters) {
@@ -140,7 +144,10 @@ class PlaylistService {
 
     return await apiFetch<SearchResponse<Playlist[]>>(() => (
       api.get(`/playlists/search`, {
-        params: filters ? params : undefined,
+        params: !filters ? undefined : {
+          ...params,
+          ...include
+        },
         headers: {
           'Authorization': `Bearer ${tokenService.getToken()}`
         }

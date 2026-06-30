@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import { CircleMinus, ListVideoIcon, MusicIcon, PlusCircleIcon, UploadIcon } from "lucide-react";
 import type { Playlist } from "../playlist.types";
-import type { Song } from "../../song/song.types";
-import type { SearchMeta } from "../../../shared/types/common.types";
 import SmartImage from "../../../shared/components/SmartImage";
 import { formatTime } from "../../../shared/utils/formatTime";
 import { useInfiniteScroll } from "../../../shared/hooks/useInfiniteScroll";
@@ -14,61 +12,40 @@ import songService from "../../song/services/song.service";
 import SearchWidget from "../../../shared/components/SearchWidget";
 import useTrack from "../../song/hooks/useTrack";
 import MenuItem, { type MenuItemAction } from "../../../shared/components/MenuItem";
+import playlistService from "../services/playlist.service";
 
 interface PanelPlaylistDetailProps {
   activePlaylist: Playlist | null;
-  onRemove: (playlistId: string) => Promise<boolean>;
+  onClose: () => void;
 }
 
-const PanelPlaylistDetail = ({ activePlaylist, onRemove }: PanelPlaylistDetailProps) => {
+const PanelPlaylistDetail = ({ activePlaylist, onClose }: PanelPlaylistDetailProps) => {
   const playlistId = activePlaylist?.id;
   const { playlistItems, playlistMeta, getPlaylistSongs, addSongToPlaylist, removeSongFromPlaylist } = usePlaylist();
-  const { toast, isActive, isFirstLoad, onClose } = useToaster();
-  const { searchTracks } = useTrack();
+  const { toast, isActive, isFirstLoad, onClose: onCloseToast } = useToaster();
+  const { tracks, trackMeta, searchTracks } = useTrack();
 
   const [activeTrackId, setActiveTrackId] = useState('');
-  const artist = playlistItems[0]?.song?.artist;
-
+  const [isRemoveFiles, setIsRemoveFiles] = useState(true);
   const [isSearchWiget, setIsSearchWiget] = useState(false);
-  const [artistSearch, setArtistSearch] = useState<Song[]>([]);
-  const [artistSearchMeta, setArtistSearchMeta] = useState<SearchMeta>({
-    page: 0,
-    limit: 10,
-    total: 0,
-    totalPages: 1,
-    hasNextPage: false,
-    hasPrevPage: false
-  });
-
   const [page, setPage] = useState(0);
-  const filters = {
-    limit: 10,
-    page: 0
-  }
+
+  const artist = playlistItems[0]?.song?.artist;
 
   const { loaderRef } = useInfiniteScroll(() => {
     if (!playlistMeta.hasNextPage || !playlistId) return;
-    getPlaylistSongs(playlistId, { ...filters, page: page + 1 });
+    getPlaylistSongs(playlistId, {
+      limit: 10,
+      page: page + 1
+    });
     setPage(page + 1);
   });
 
-  const loadMoreArtists = async (query: string, page: number) => {
-    const searchFilters = {
+  async function loadMoreSearchTracks(query: string, page: number) {
+    await searchTracks({
       title: query,
       limit: 10,
       page
-    }
-
-    await searchTracks(searchFilters, (data) => {
-      if (!data) return;
-      setArtistSearchMeta(data.meta);
-
-      if (page > 1) {
-        setArtistSearch((prev) => [...prev, ...data.items]);
-        return;
-      }
-
-      setArtistSearch(data.items);
     });
   }
 
@@ -89,16 +66,11 @@ const PanelPlaylistDetail = ({ activePlaylist, onRemove }: PanelPlaylistDetailPr
     }
   });
 
-  async function playlistActions(action: MenuItemAction) {
-    switch (action) {
-      case 'remove':
-        const ok = await onRemove(activePlaylist!.id);
-        onClose();
-        return ok;
-      default:
-        onClose();
-        break;
-    }
+  async function removePlaylist() {
+    const { data } = await playlistService.removePlaylist(
+      activePlaylist!.id, isRemoveFiles
+    );
+    if (data?.id) onClose();
   }
 
   async function trackActions(action: MenuItemAction) {
@@ -113,18 +85,22 @@ const PanelPlaylistDetail = ({ activePlaylist, onRemove }: PanelPlaylistDetailPr
       default:
         break;
     }
-
   }
 
   useEffect(() => { playlistId && getPlaylistSongs(playlistId) }, [playlistId]);
 
   return (
-    <div className="animate-fade-in overflow-hidden">
-      <section className="overflow-y-auto max-h-[calc(100vh-73px)] min-h-[calc(100vh-73px)] p-5 space-y-6 panel-wrap">
-        <div className="text-center pb-4 border-b border-white/5 relative">
+    <div className="overflow-hidden relative">
+      <section className="animate-fade-in space-y-6 upload-panel-wrap">
+        <div
+          style={{
+            background: `linear-gradient(to bottom, ${activePlaylist?.bgColor} 0%, ${activePlaylist?.gradientColor} 50%, #121212 100%)`
+          }}
+          className="text-center p-5 border--b border-white/5 relative mb-0"
+        >
           <SmartImage
             wrapClassName="w-28 h-28 rounded-xl bg-white/5 border border-white/10 overflow-hidden mx-auto shadow-2xl relative mb-3.5"
-            url={activePlaylist?.cover || null}
+            url={playlistService.playlistCover(activePlaylist!.id, activePlaylist!.cover)}
             icon={(
               <ListVideoIcon className="w-[30%] h-[30%] text-gray-400" />
             )}
@@ -141,10 +117,13 @@ const PanelPlaylistDetail = ({ activePlaylist, onRemove }: PanelPlaylistDetailPr
           </span>
 
           <MenuItem
-            styles={{ btn: 'absolute top-0 right-0' }}
-            actions={playlistActions}
-            items={[
-              {
+            styles={{
+              btn: 'absolute top-5 right-5',
+              menu: 'w-50 top-5 right-5',
+            }}
+            sections={[{
+              label: 'actions',
+              items: [{
                 action: 'remove',
                 label: 'Eliminar lista',
                 icon: (
@@ -152,9 +131,9 @@ const PanelPlaylistDetail = ({ activePlaylist, onRemove }: PanelPlaylistDetailPr
                     className="text-current"
                     size={20}
                   />
-                )
-              },
-              {
+                ),
+                onAction: () => removePlaylist()
+              }, {
                 action: 'share',
                 label: 'Compartir',
                 icon: (
@@ -163,12 +142,26 @@ const PanelPlaylistDetail = ({ activePlaylist, onRemove }: PanelPlaylistDetailPr
                     size={20}
                   />
                 )
-              }
-            ]}
+              }]
+            }, {
+              label: 'files',
+              items: [{
+                onAction: (isActive) => setIsRemoveFiles(isActive!),
+                action: 'toggle',
+                label: 'Incluir archivos',
+                isActive: isRemoveFiles,
+                icon: (
+                  <CircleMinus
+                    className="text-current"
+                    size={20}
+                  />
+                )
+              }]
+            }]}
           />
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-2 p-5">
           <div className="flex justify-between items-center px-1">
             <h4 className="text-[10px] font-mono uppercase tracking-wider font-extrabold text-gray-500 flex items-center gap-1 leading-none">
               <MusicIcon size={11} />
@@ -233,8 +226,8 @@ const PanelPlaylistDetail = ({ activePlaylist, onRemove }: PanelPlaylistDetailPr
                     </span>
 
                     <MenuItem
-                      onActive={() => setActiveTrackId(tr.id)}
                       styles={{ menu: 'top-0 right-0' }}
+                      onActive={() => setActiveTrackId(tr.id)}
                       open={activeTrackId === track?.id}
                       actions={trackActions}
                     />
@@ -265,11 +258,12 @@ const PanelPlaylistDetail = ({ activePlaylist, onRemove }: PanelPlaylistDetailPr
           value: 'id',
           sub: 'artist.name'
         }}
+        label="Buscar canción"
         open={isSearchWiget}
-        items={artistSearch}
-        meta={artistSearchMeta}
-        isLoadMore={artistSearchMeta.hasNextPage}
-        loadMore={loadMoreArtists}
+        items={tracks}
+        meta={trackMeta}
+        isLoadMore={trackMeta.hasNextPage}
+        loadMore={loadMoreSearchTracks}
         onClose={() => setIsSearchWiget(false)}
         payload={({ value }) => addSong(value)}
         loadIcon={({ id, cover }) => (
@@ -282,7 +276,7 @@ const PanelPlaylistDetail = ({ activePlaylist, onRemove }: PanelPlaylistDetailPr
       />
 
       <Toaster
-        onClose={onClose}
+        onClose={onCloseToast}
         isFirstLoad={isFirstLoad}
         isActive={isActive}
         {...toast}

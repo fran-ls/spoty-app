@@ -84,6 +84,7 @@ interface MenuItemProps {
   styles?: {
     btn?: string | React.CSSProperties;
     menu?: string | React.CSSProperties;
+    backdrop?: string | React.CSSProperties;
   };
   actions?: (action: MenuItemAction) => void;
   onActive?: () => void;
@@ -104,7 +105,8 @@ const MenuItem = (props: MenuItemProps) => {
     <>
       {isActive &&
         <div
-          className="bg-black/50 z-100 fixed min-h-screen w-full left-0 top-0"
+          style={styles?.backdrop && typeof styles?.backdrop !== 'string' ? styles?.backdrop : {}}
+          className={cn("bg-black/50 z-100 fixed min-h-screen w-full left-0 top-0", typeof styles?.backdrop === 'string' ? styles?.backdrop : '')}
           onClick={() => setIsActive(false)}
         />
       }
