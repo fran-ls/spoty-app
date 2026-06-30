@@ -1,18 +1,18 @@
 import { useEffect, useState } from "react";
-import { CircleMinus, DiscIcon, EllipsisVerticalIcon, MusicIcon, PlusCircleIcon, UploadIcon } from "lucide-react";
-import type { Album, AlbumFilters } from "../album.types";
-import type { Song } from "../../song/song.types";
-import type { SearchMeta } from "../../../shared/types/common.types";
+import { CircleMinus, DiscIcon, MusicIcon, PlusCircleIcon, UploadIcon } from "lucide-react";
+import type { Album } from "../album.types";
+import type { TrackFilters } from "../../song/song.types";
 import SmartImage from "../../../shared/components/SmartImage";
 import useTrack from "../../song/hooks/useTrack";
 import Loader from "../../../shared/components/Loader";
 import Toaster from "../../../shared/components/Toaster";
 import useToaster from "../../../shared/hooks/useToaster";
-import songService from "../../song/services/song.service";
 import SearchWidget from "../../../shared/components/SearchWidget";
 import { useInfiniteScroll } from "../../../shared/hooks/useInfiniteScroll";
 import { formatTime } from "../../../shared/utils/formatTime";
 import MenuItem, { type MenuItemAction } from "../../../shared/components/MenuItem";
+import albumService from "../services/album.service";
+import songService from "../../song/services/song.service";
 
 interface AlbumDetailProps {
   activeAlbum: Album | null;
@@ -20,51 +20,35 @@ interface AlbumDetailProps {
 }
 
 const AlbumDetail = ({ activeAlbum, onRemove }: AlbumDetailProps) => {
-  const { tracks, trackMeta, searchTracks } = useTrack();
-  const { toast, isActive, isFirstLoad, onClose } = useToaster();
+  const { tracks, trackMeta, searchTracks, setTracks, setTrackMeta } = useTrack();
+  const {
+    tracks: searchTracksItems,
+    trackMeta: searchTrackMeta,
+    searchTracks: findTracks
+  } = useTrack();
 
+  const { toast, isActive, isFirstLoad, onClose } = useToaster();
   const [isSearchWiget, setIsSearchWiget] = useState(false);
-  const [artistSearch, setArtistSearch] = useState<Song[]>([]);
-  const [artistSearchMeta, setArtistSearchMeta] = useState<SearchMeta>({
-    page: 0,
-    limit: 10,
-    total: 0,
-    totalPages: 1,
-    hasNextPage: false,
-    hasPrevPage: false
-  });
 
   const [isAlbumMenu, setIsAlbumMenu] = useState(false);
   const [page, setPage] = useState(0);
-  const filters: AlbumFilters = {
-    id: activeAlbum?.id,
+  const trackFilters: TrackFilters = {
+    albumId: activeAlbum?.id,
     limit: 10,
-    page: 1
+    page: 0
   }
 
   const { loaderRef } = useInfiniteScroll(() => {
     if (!trackMeta.hasNextPage) return;
-    searchTracks({ ...filters, page: page + 1 });
+    searchTracks({ ...trackFilters, page: page + 1 });
     setPage(page + 1);
   });
 
-  const loadMoreArtists = async (query: string, page: number) => {
-    const searchFilters = {
+  const loadMoreSearchTracks = async (query: string, page: number) => {
+    await findTracks({
       title: query,
-      limit: 5,
+      limit: 10,
       page
-    }
-
-    await searchTracks(searchFilters, (data) => {
-      if (!data) return;
-      setArtistSearchMeta(data.meta);
-
-      if (page > 1) {
-        setArtistSearch((prev) => [...prev, ...data.items]);
-        return;
-      }
-
-      setArtistSearch(data.items);
     });
   }
 
@@ -82,15 +66,15 @@ const AlbumDetail = ({ activeAlbum, onRemove }: AlbumDetailProps) => {
     }
   }
 
-  useEffect(() => { activeAlbum && searchTracks(filters) }, [activeAlbum]);
+  useEffect(() => { activeAlbum && searchTracks({ ...trackFilters, page: 0 }) }, [activeAlbum]);
 
   return (
     <div className="animate-fade-in relative overflow-hidden">
-      <section className="max-h-[calc(100vh-73px)] min-h-[calc(100vh-73px)] p-5 space-y-6 overflow-y-auto panel-wrap">
+      <section className="p-5 space-y-6 upload-panel-wrap">
         <div className="text-center pb-4 border-b border-white/5 relative">
           <SmartImage
             wrapClassName="w-28 h-28 rounded-xl bg-white/5 border border-white/10 overflow-hidden mx-auto shadow-2xl relative mb-3.5"
-            url={activeAlbum?.cover || null}
+            url={activeAlbum ? albumService.albumCover(activeAlbum?.id, activeAlbum.cover) : null}
             icon={(
               <DiscIcon className="w-[30%] h-[30%] text-gray-400" />
             )}
@@ -106,45 +90,38 @@ const AlbumDetail = ({ activeAlbum, onRemove }: AlbumDetailProps) => {
             Álbum Musical
           </span>
 
-          <button
-            onClick={() => setIsAlbumMenu(!isAlbumMenu)}
-            className="p-1 text-[#adaaaa] cursor-pointer absolute top-0 right-0"
-            type="button"
-          >
-            <EllipsisVerticalIcon size={18} />
-          </button>
-
-          {isAlbumMenu &&
-            <MenuItem
-              actions={albumActions}
-              items={[
-                {
-                  action: 'remove',
-                  label: 'Eliminar álbum',
-                  icon: (
-                    <CircleMinus
-                      className="text-current"
-                      size={20}
-                    />
-                  )
-                },
-                {
-                  action: 'share',
-                  label: 'Compartir',
-                  icon: (
-                    <UploadIcon
-                      className="text-current"
-                      size={20}
-                    />
-                  )
-                }
-              ]}
-            />
-          }
+          <MenuItem
+            styles={{ btn: "absolute top-0 right-0" }}
+            onActive={() => setIsAlbumMenu(true)}
+            actions={albumActions}
+            open={isAlbumMenu}
+            items={[
+              {
+                action: 'remove',
+                label: 'Eliminar álbum',
+                icon: (
+                  <CircleMinus
+                    className="text-current"
+                    size={20}
+                  />
+                )
+              },
+              {
+                action: 'share',
+                label: 'Compartir',
+                icon: (
+                  <UploadIcon
+                    className="text-current"
+                    size={20}
+                  />
+                )
+              }
+            ]}
+          />
         </div>
 
         <div className="space-y-2">
-          <div className="flex justify-between items-center px-1">
+          <div className="flex justify-between items-center gap-2 px-1">
             <h4 className="text-[10px] font-mono uppercase tracking-wider font-extrabold text-gray-500 flex items-center gap-1 leading-none">
               <MusicIcon size={11} />
               <span>
@@ -176,7 +153,7 @@ const AlbumDetail = ({ activeAlbum, onRemove }: AlbumDetailProps) => {
 
                     <SmartImage
                       wrapClassName="text-gray-400 w-7 h-7 rounded bg-white/5 border border-white/10 overflow-hidden shrink-0"
-                      url={songService.songCoverUrl(tr.id, tr.cover)}
+                      url={albumService.albumCover(tr.id, tr.cover)}
                     />
 
                     <div className="overflow-hidden">
@@ -224,16 +201,24 @@ const AlbumDetail = ({ activeAlbum, onRemove }: AlbumDetailProps) => {
           value: 'id',
           sub: 'artist.name'
         }}
+        label="Buscar canción"
         open={isSearchWiget}
-        items={artistSearch}
-        meta={artistSearchMeta}
-        isLoadMore={artistSearchMeta.hasNextPage}
-        loadMore={loadMoreArtists}
+        items={searchTracksItems}
+        meta={searchTrackMeta}
+        isLoadMore={searchTrackMeta.hasNextPage}
+        loadMore={loadMoreSearchTracks}
         onClose={() => setIsSearchWiget(false)}
+        payload={async ({ item }) => {
+          if (!item || !activeAlbum?.id) return;
+          const { data } = await songService.updateSong(item.id, { albumId: activeAlbum.id });
+          if (!data) return;
+          setTrackMeta((prev) => ({ ...prev, total: prev.total + 1 }));
+          setTracks((prev) => [data, ...prev]);
+        }}
         loadIcon={({ id, cover }) => (
           <SmartImage
             wrapClassName="text-gray-400 min-w-0 w-9 h-9 rounded border border-white/5 overflow-hidden shrink-0"
-            url={id ? songService.songCoverUrl(id, cover) : null}
+            url={id ? albumService.albumCover(id, cover) : null}
             icon={<MusicIcon size={16} />}
           />
         )}

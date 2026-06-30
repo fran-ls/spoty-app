@@ -1,7 +1,6 @@
 import { useRef, useState } from "react";
-import { DiscIcon, FileAudioIcon, ImageUpIcon, InfoIcon, Music2Icon, PauseIcon, PlayIcon, PlusCircleIcon, SearchIcon, Trash2Icon, UploadIcon, UserIcon, XIcon } from "lucide-react";
-import type { SongDTO, SongFileUrls } from "../song.types";
-import type { Album } from "../../artist/album.types";
+import { DiscIcon, FileAudioIcon, ImageUpIcon, Music2Icon, PauseIcon, PlayIcon, PlusCircleIcon, SearchIcon, Trash2Icon, UploadIcon, UserIcon } from "lucide-react";
+import type { Song, SongDTO, SongFileUrls } from "../song.types";
 import { formatTime } from "../../../shared/utils/formatTime";
 import { AudioPlayer, type AudioPlayerState } from "../../player/AudioPlayer";
 import ArtistSelect from "../../artist/components/ArtistSelect";
@@ -9,33 +8,26 @@ import AlbumSelect from "../../artist/components/AlbumSelect";
 import songService from "../services/song.service";
 import Select from "../../../shared/components/Select";
 import useToaster from "../../../shared/hooks/useToaster";
-import Loader from "../../../shared/components/Loader";
 import SmartImage from "../../../shared/components/SmartImage";
-import { useInfiniteScroll } from "../../../shared/hooks/useInfiniteScroll";
 import Toaster from "../../../shared/components/Toaster";
-import SearchWidget, { type WidgetSearch } from "../../../shared/components/SearchWidget";
 import useArtist from "../../artist/hooks/useArtist";
-
-const coverUrl = 'https://lh3.googleusercontent.com/aida-public/AB6AXuDYvobAjd42bG0K_tSQaLfpvHNVFxAgAo-R3C-Ei4Kt_Yv5hU3N5ZTiobLniGnjhECkh1cNd5Fxabf0_pYKOLXmc7j6nfXGGCmopV179tIFexWEB4uJgxST-FFKTU846GKkpwDoWI20uSxTYklnUxOH5FTz4MtgY3NDxPYpbPeukvjtc5Rcy0vu-iMgJfPwvBGUIKYLecfP8xmgOzImY2LRW15GagQZ5oD824sAUXCQRZfc7uG8l01yStM71Dl76Y3YCyhC0ZxEg2JM';
+import SearchWidget, { type WidgetSearch } from "../../../shared/components/SearchWidget";
+import { images } from "../../../shared/data/images.data";
+import useApiFetch from "../../../shared/hooks/useApiFetch";
+import albumService from "../../artist/services/album.service";
+import useAlbum from "../../artist/hooks/useAlbum";
 
 interface TrackFormProps {
-  albums: Album[];
-  isLoadMoreAlbums: boolean;
-  albumSearchQuery: string;
-  setAlbumSearchQuery: React.Dispatch<React.SetStateAction<string>>;
-  loadMoreAlbums: () => void;
   triggerCreateArtist: () => void;
   triggerCreateAlbum: () => void;
 }
 
 const TrackForm = (props: TrackFormProps) => {
-  const {
-    isLoadMoreAlbums, albums, loadMoreAlbums,
-    albumSearchQuery, triggerCreateArtist, triggerCreateAlbum,
-    setAlbumSearchQuery
-  } = props;
+  const { triggerCreateArtist, triggerCreateAlbum } = props;
   const { artists, artistMeta, searchArtists, setArtists } = useArtist();
+  const { albums, albumMeta, searchAlbums } = useAlbum();
   const { isActive, toast, isFirstLoad, showToast, onClose } = useToaster(5000);
+  const useApi = useApiFetch(showToast);
 
   const audioInputRef = useRef<HTMLInputElement>(null);
   const bgColor = '#181818';
@@ -52,7 +44,7 @@ const TrackForm = (props: TrackFormProps) => {
   const [isImgHover, setIsImgHover] = useState(false);
   const [previewUrls, setPreviewUrls] = useState<SongFileUrls>({
     audio: '',
-    cover: coverUrl
+    cover: images.cover
   });
   const [form, setForm] = useState<SongDTO>({
     title: '',
@@ -74,14 +66,13 @@ const TrackForm = (props: TrackFormProps) => {
   });
 
   const [isAlbumSearch, setIsAlbumSearch] = useState(false);
+  const [albumSearch, setAlbumSearch] = useState<WidgetSearch>({
+    query: '',
+    page: 0
+  });
   const [albumOption, setAlbumOption] = useState({
     label: 'Seleccionar',
     value: ''
-  });
-
-  const { loaderRef } = useInfiniteScroll(() => {
-    if (!artistMeta.hasNextPage) return;
-    // loadMoreArtists();
   });
 
   const onFormChange = (field: keyof SongDTO, value: any) => {
@@ -112,34 +103,6 @@ const TrackForm = (props: TrackFormProps) => {
     player.togglePlay();
   }
 
-  async function onSave() {
-    const { data, error } = await songService.uploadSong({ ...form, includeArtist: true });
-
-    if (error || !data) {
-      showToast({
-        message: 'Ocurrió un error',
-        type: 'error',
-        icon: (
-          <InfoIcon
-            className="min-w-5 stroke-2"
-            size={20}
-          />
-        )
-      });
-      return;
-    }
-
-    if (data.artist) {
-      setArtists((prev) => [data.artist, ...prev]);
-    }
-
-    showToast({
-      message: 'Subida exitosa',
-      type: 'success',
-      icon: <Music2Icon size={16} />
-    });
-  }
-
   const loadMoreArtists = async (query: string, page: number, isSelect = false) => {
     await searchArtists({
       name: query,
@@ -150,12 +113,32 @@ const TrackForm = (props: TrackFormProps) => {
     if (isSelect) setSearch({ ...search, page: page + 1 });
   }
 
+  const loadMoreAlbums = async (query: string, page: number, isSelect = false) => {
+    await searchAlbums({
+      title: query,
+      limit: 10,
+      page
+    });
+
+    if (isSelect) setAlbumSearch({ ...albumSearch, page: page + 1 });
+  }
+
+  async function uploadTrack() {
+    const config = {
+      message: 'Subida exitosa',
+      icon: <Music2Icon size={16} />
+    }
+
+    useApi.save<Song>(() => songService.uploadSong({ ...form, includeArtist: true }), config)
+      .then((data) => data && setArtists((prev) => [data.artist, ...prev]));
+  }
+
   return (
     <div className="relative overflow-hidden">
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          onSave();
+          uploadTrack();
         }}
         className="p-5 animate-fade-in relative upload-panel-main-wrap"
       >
@@ -223,7 +206,10 @@ const TrackForm = (props: TrackFormProps) => {
                   <FileAudioIcon size={15} />
                 </div>
                 <div className="overflow-hidden">
-                  <p className="text-[11px] font-bold text-white truncate leading-none">
+                  <p
+                    className="text-[11px] font-bold text-white truncate leading-none"
+                    title={form.audio.name}
+                  >
                     {form.audio.name}
                   </p>
                   <span className="text-[9px] text-gray-400 font-mono mt-1 block">
@@ -364,19 +350,17 @@ const TrackForm = (props: TrackFormProps) => {
             <AlbumSelect
               items={albums}
               option={albumOption}
-              isLoadMore={isLoadMoreAlbums}
-              loadMore={loadMoreAlbums}
-              payload={(option) => {
-                const item = option.item;
-
+              isLoadMore={albumMeta.hasNextPage}
+              loadMore={() => loadMoreAlbums(albumSearch.query, albumSearch.page, true)}
+              payload={({ label, value, item }) => {
                 setAlbumOption({
-                  label: item?.title || 'Seleccionar',
-                  value: option.value
+                  label: label || 'Seleccionar',
+                  value
                 });
 
                 setForm({
                   ...form,
-                  albumId: option.value,
+                  albumId: value,
                   albumName: item?.title || ''
                 });
               }}
@@ -470,91 +454,41 @@ const TrackForm = (props: TrackFormProps) => {
         )}
       />
 
-      <section
-        style={{ boxShadow: '0px 0px 5px 2px #0e0e0e' }}
-        className={`hidden ${isAlbumSearch ? 'translate-y-0' : 'translate-y-[100vh]'} h-100 p-5 text-gray-400 bg-[#181818] overflow-hidden w-full z-50 transition duration-150 absolute bottom-0 right-0`}
-      >
-        <div className="animate-fade-in">
-          <div className="flex items-center justify-between mb-2">
-            <h2 className="text-sm">
-              Buscar álbum
-            </h2>
+      <SearchWidget
+        keys={{
+          label: 'title',
+          value: 'id',
+          sub: 'id'
+        }}
+        label="Buscar álbum"
+        open={isAlbumSearch}
+        items={albums}
+        meta={albumMeta}
+        isLoadMore={albumMeta.hasNextPage}
+        loadMore={loadMoreAlbums}
+        onClose={() => setIsAlbumSearch(false)}
+        payload={({ value, label, item, search: sq }) => {
+          setAlbumSearch(sq);
 
-            <button
-              onClick={() => setIsAlbumSearch(false)}
-              className="p-1 cursor-pointer"
-              type="button"
-            >
-              <XIcon size={20} />
-            </button>
-          </div>
+          setAlbumOption({
+            label: label || 'Seleccionar',
+            value
+          });
 
-          <div className="relative">
-            <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-500">
-              <SearchIcon size={14} />
-            </span>
-            <input
-              className="w-full bg-[#181818] border border-white/5 rounded-xl py-3 pl-10 pr-4 text-xs font-medium focus:ring-1 focus:ring-primary focus:border-primary text-white placeholder:text-gray-500 outline-none transition-all"
-              onChange={(e) => setAlbumSearchQuery(e.target.value)}
-              value={albumSearchQuery}
-              placeholder="Buscar por título, artista..."
-              type="search"
-            />
-          </div>
-        </div>
-
-        <ul className="mt-4 overflow-y-auto max-h-66 search-widget-content">
-          {albums.map((al) => (
-            <li
-              onClick={() => {
-                setAlbumOption({
-                  label: al.title,
-                  value: al.id
-                });
-
-                setForm({
-                  ...form,
-                  albumId: al.id,
-                  albumName: al.title
-                });
-
-                setIsAlbumSearch(false);
-              }}
-              className="hover:bg-white/5 cursor-pointer p-2 flex items-center gap-3" key={al.id}
-            >
-              <SmartImage
-                wrapClassName="text-gray-400 min-w-0 w-9 h-9 rounded-full bg-white/5 border border-white/10 overflow-hidden shrink-0"
-                url={null}
-                icon={(
-                  <DiscIcon size={16} />
-                )}
-              />
-
-              <div className="overflow-hidden flex flex-col gap-1">
-                <p className="text-xs font-bold text-white group-hover:text-primary transition-colors truncate">
-                  {al.title}
-                </p>
-                <span className="text-[9px] text-gray-400 font-mono">
-                  {al.id}
-                </span>
-              </div>
-            </li>
-          ))}
-
-          {isLoadMoreAlbums &&
-            <li
-              className="bg-[#202020] flex items-center justify-center overflow-hidden"
-              ref={loaderRef}
-            >
-              <Loader
-                className="border-transparent border-t-slate-200"
-                size={20}
-                stroke={2}
-              />
-            </li>
-          }
-        </ul>
-      </section>
+          setForm({
+            ...form,
+            albumId: value,
+            albumName: item.title
+          });
+        }}
+        loadIcon={({ id, cover }) => (
+          <SmartImage
+            wrapClassName="text-gray-400 min-w-0 w-9 h-9 rounded-lg bg-white/5 border border-white/10 overflow-hidden shrink-0"
+            url={albumService.albumCover(id, cover)}
+            icon={<DiscIcon size={16} />}
+          />
+        )}
+      />
 
       <Toaster
         onClose={onClose}

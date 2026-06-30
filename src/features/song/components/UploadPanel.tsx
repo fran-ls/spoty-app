@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { PlusCircleIcon, XIcon, MusicIcon, SearchIcon, ChevronLeftIcon, ListVideoIcon } from 'lucide-react';
 import type { Artist } from '../../artist/artist.types';
@@ -23,7 +23,7 @@ export type PanelMode = 'create-artist' | 'create-album' | 'view-artist' | 'view
 export const UploadPanel: React.FC = () => {
   const { dispatch } = useAuth();
   const { setArtists } = useArtist();
-  const { albums, albumMeta, searchAlbums, setAlbums } = useAlbum();
+  const { setAlbums } = useAlbum();
 
   const [activeTab, setActiveTab] = useState<'track' | 'playlist' | 'search'>('track');
   const [panel2Mode, setPanel2Mode] = useState<PanelMode>('create-artist');
@@ -32,20 +32,6 @@ export const UploadPanel: React.FC = () => {
   const [activeArtist, setActiveArtist] = useState<Artist | null>(null);
   const [activeAlbum, setActiveAlbum] = useState<Album | null>(null);
   const [activePlaylist, setActivePlaylist] = useState<Playlist | null>(null);
-
-  const [albumSearchQuery, setAlbumSearchQuery] = useState('');
-  const [albumPage, setAlbumPage] = useState(0);
-  const albumFilters = {
-    title: albumSearchQuery.trim(),
-    limit: 10,
-    page: 0
-  }
-
-  function loadMoreAlbums() {
-    if (!albumMeta.hasNextPage) return;
-    searchAlbums({ ...albumFilters, page: albumPage + 1 });
-    setAlbumPage(albumPage + 1);
-  }
 
   const triggerCreateArtist = () => {
     setPanel2Mode('create-artist');
@@ -123,8 +109,6 @@ export const UploadPanel: React.FC = () => {
     setAlbums((prev) => prev.filter((a) => a.id !== albumId));
     return true;
   }
-
-  useEffect(() => { setTimeout(() => searchAlbums(albumFilters), 300) }, [albumSearchQuery]);
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end overflow-hidden" id="upload-panel-root">
@@ -226,11 +210,6 @@ export const UploadPanel: React.FC = () => {
           <div className="flex-1 overflow-y-auto primary-panel-content relative upload-panel-main-wrap">
             {activeTab === 'track' && (
               <TrackForm
-                albums={albums}
-                isLoadMoreAlbums={albumMeta.hasNextPage}
-                albumSearchQuery={albumSearchQuery}
-                loadMoreAlbums={loadMoreAlbums}
-                setAlbumSearchQuery={setAlbumSearchQuery}
                 triggerCreateArtist={triggerCreateArtist}
                 triggerCreateAlbum={triggerCreateAlbum}
               />
@@ -275,8 +254,8 @@ export const UploadPanel: React.FC = () => {
                   <span className="text-xs uppercase font-mono font-bold text-gray-400">
                     {panel2Mode === 'create-artist' && 'Nuevo Artista'}
                     {panel2Mode === 'create-album' && 'Nuevo Álbum'}
-                    {panel2Mode === 'view-artist' && 'Detalles Artista'}
-                    {panel2Mode === 'view-album' && 'Detalles Álbum'}
+                    {panel2Mode === 'view-artist' && 'Artista'}
+                    {panel2Mode === 'view-album' && 'Álbum'}
                     {panel2Mode === 'view-playlist' && 'Playlist'}
                   </span>
                 </div>

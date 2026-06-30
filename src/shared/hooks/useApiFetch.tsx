@@ -1,9 +1,17 @@
+import { useState } from "react";
 import { InfoIcon } from "lucide-react";
 import type { ToasterConfig } from "../components/Toaster";
 
 const useApiFetch = (showToast: (config: ToasterConfig) => void) => {
-  async function save<T>(cb: () => any, toast?: Partial<ToasterConfig> & { error?: string }): Promise<T> {
+  const [isSaveLoading, setIsSaveLoading] = useState(false);
+
+  async function save<T>(cb: () => any, toast?: Partial<ToasterConfig> & { error?: string }): Promise<T | null> {
+    if (isSaveLoading) return null;
+    setIsSaveLoading(true);
+
     const { data, error, errorMessage } = await cb();
+    setIsSaveLoading(false);
+
     const err = error?.response?.data?.message;
 
     if (err || error || !data) {
@@ -38,6 +46,7 @@ const useApiFetch = (showToast: (config: ToasterConfig) => void) => {
   }
 
   return {
+    isSaveLoading, setIsSaveLoading,
     save
   }
 }

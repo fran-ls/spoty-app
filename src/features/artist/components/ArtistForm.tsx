@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { ImageUpIcon, InfoIcon, UserIcon, UserRoundCheckIcon } from "lucide-react";
+import { ImageUpIcon, UserIcon, UserRoundCheckIcon } from "lucide-react";
 import type { Artist, ArtistDTO } from "../artist.types";
 import useToaster from "../../../shared/hooks/useToaster";
 import artistService from "../services/artist.service";
 import SmartImage from "../../../shared/components/SmartImage";
 import Toaster from "../../../shared/components/Toaster";
+import useApiFetch from "../../../shared/hooks/useApiFetch";
 
 interface ArtistFormProps {
   setArtists: React.Dispatch<React.SetStateAction<Artist[]>>;
@@ -14,8 +15,8 @@ interface ArtistFormProps {
 const ArtistForm = (props: ArtistFormProps) => {
   const { setArtists, setIsPanel2Open } = props;
 
-  const [isLoading, setIsLoading] = useState(false);
   const { isActive, toast, isFirstLoad, showToast, onClose } = useToaster(5000);
+  const useApi = useApiFetch(showToast);
 
   const [isImgHover, setIsImgHover] = useState(false);
   const [fileUrl, setFileUrl] = useState<string>('');
@@ -37,39 +38,19 @@ const ArtistForm = (props: ArtistFormProps) => {
     setFileUrl(url);
   }
 
-  async function onSave() {
-    if (isLoading) return;
-    setIsLoading(true);
-
-    const { data, error } = await artistService.newArtist(form);
-    setIsLoading(false);
-
-    if (error || !data) {
-      showToast({
-        message: error || 'Ocurrió un error',
-        type: 'error',
-        icon: (
-          <InfoIcon
-            className="min-w-5 stroke-2"
-            size={20}
-          />
-        )
-      });
-      return;
-    }
-
-    setArtists((prev) => [data, ...prev]);
-
-    showToast({
+  async function onSaveArtist() {
+    const config = {
       message: 'Artista guardado',
-      type: 'success',
       icon: (
         <UserRoundCheckIcon
           className="min-w-5 stroke-2"
           size={20}
         />
       )
-    });
+    }
+
+    useApi.save<Artist>(() => artistService.newArtist(form), config)
+      .then((data) => data && setArtists((prev) => [data, ...prev]));
   }
 
   return (
@@ -77,9 +58,9 @@ const ArtistForm = (props: ArtistFormProps) => {
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          onSave();
+          onSaveArtist();
         }}
-        className="p-5 min-h-full flex flex-col gap-5 animate-fade-in"
+        className="p-5 min-h-full flex flex-col gap-5 animate-fade-in upload-panel-wrap"
       >
         <div>
           <h3 className="text-sm font-bold text-white mb-1">
@@ -162,10 +143,10 @@ const ArtistForm = (props: ArtistFormProps) => {
             Cancelar
           </button>
           <button
-            className={`w-36 bg-primary text-black font-black uppercase text-[10px] tracking-wider px-5 py-2.5 rounded-xl hover:scale-102 transition-all shadow-md shadow-primary/10 flex items-center justify-center ${isLoading ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+            className={`w-36 bg-primary text-black font-black uppercase text-[10px] tracking-wider px-5 py-2.5 rounded-xl hover:scale-102 transition-all shadow-md shadow-primary/10 flex items-center justify-center ${useApi.isSaveLoading ? 'cursor-default' : 'cursor-pointer'}`}
             type="submit"
           >
-            {!isLoading
+            {!useApi.isSaveLoading
               ? 'Registrar Perfil'
               : <div className="tex-center w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
             }

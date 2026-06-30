@@ -6,6 +6,7 @@ import SmartImage from "../../../shared/components/SmartImage";
 import useAlbum from "../hooks/useAlbum";
 import { useInfiniteScroll } from "../../../shared/hooks/useInfiniteScroll";
 import Loader from "../../../shared/components/Loader";
+import albumService from "../services/album.service";
 
 interface SearchAlbumListProps {
   query: string;
@@ -64,7 +65,7 @@ const SearchAlbumList = (props: SearchAlbumListProps) => {
               <div className="flex items-center gap-3 overflow-hidden">
                 <SmartImage
                   wrapClassName="text-gray-400 w-9 h-9 rounded-lg bg-white/5 border border-white/10 overflow-hidden shrink-0"
-                  url={album.cover || null}
+                  url={albumService.albumCover(album.id, album.cover)}
                   icon={<DiscIcon size={16} />}
                 />
 

@@ -2,6 +2,7 @@ import type { Album, AlbumDTO, AlbumFilters } from "../album.types";
 import type { SearchResponse } from "../../../shared/types/common.types";
 import { api, apiFetch } from "../../../shared/utils/api";
 import { tokenService } from "../../auth/services/token.service";
+import { envs } from "../../../shared/utils/envs";
 
 class AlbumService {
   async searchAlbums(filters?: AlbumFilters) {
@@ -23,34 +24,44 @@ class AlbumService {
   }
 
   async newAlbum(data: AlbumDTO) {
+    const formData = new FormData();
+
+    if (data.file) {
+      formData.append('album', data.file);
+    }
+
+    for (const f in data) {
+      const v = (data as any)[f];
+      if (f !== 'file' && v) formData.append(f, v);
+    }
+
     return await apiFetch<Album>(() => (
-      api.post('/albums', data, {
+      api.post('/albums', formData, {
         headers: {
-          'Authorization': `Bearer ${tokenService.getToken()}`
+          'Authorization': `Bearer ${tokenService.getToken()}`,
+          'Content-Type': 'multipart/form-data'
         }
       })
     ));
   }
 
   async updateAlbum(id: string, data: Partial<AlbumDTO>) {
-    // const formData = new FormData();
+    const formData = new FormData();
 
-    // if (data.file) {
-    //   formData.append('artist', data.file);
-    // }
+    if (data.file) {
+      formData.append('album', data.file);
+    }
 
-    // for (const f in data) {
-    //   const v = (data as any)[f];
-
-    //   if (f !== 'file' && v) {
-    //     formData.append(f, v);
-    //   }
-    // }
+    for (const f in data) {
+      const v = (data as any)[f];
+      if (f !== 'file' && v) formData.append(f, v);
+    }
 
     return await apiFetch<Album>(() => (
-      api.put(`/albums/${id}`, data, {
+      api.put(`/albums/${id}`, formData, {
         headers: {
-          'Authorization': `Bearer ${tokenService.getToken()}`
+          'Authorization': `Bearer ${tokenService.getToken()}`,
+          'Content-Type': 'multipart/form-data'
         }
       })
     ));
@@ -64,6 +75,16 @@ class AlbumService {
         }
       })
     ));
+  }
+
+  albumCover(id: string, imageUrl = '') {
+    if (!imageUrl || typeof imageUrl !== 'string') {
+      return '';
+    }
+    if (!imageUrl.includes('/api/')) {
+      return imageUrl || '';
+    }
+    return `${envs.API_URL}/albums/cover/${id}`;
   }
 }
 
