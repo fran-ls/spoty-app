@@ -4,7 +4,37 @@ import type { Role } from "../../features/auth/auth.types";
 import useAuth from "../../features/auth/hooks/useAuth";
 import { cn } from "../utils/tailwindCn";
 
-export type MenuItemAction = 'remove' | 'edit-track' | 'share' | 'close' | 'toggle';
+const menuStyleKeys: MenuStylesK[] = ['backdrop', 'btn', 'menu', 'option', 'subtext', 'toggle'];
+
+export type MenuItemAction = 'remove' | 'add-to-queue' | 'view-track' | 'share' | 'close' | 'toggle';
+
+type FmtStyles = Partial<Record<MenuStylesK, ItemStyle>>;
+
+type Style = string | React.CSSProperties;
+
+interface ItemStyle {
+  style: React.CSSProperties | undefined;
+  className: string;
+}
+
+interface MenuStyles extends LiItemStyles {
+  btn?: Style;
+  menu?: Style;
+  backdrop?: Style;
+  option?: Style;
+  subtext?: Style;
+}
+
+interface LiItemStyles {
+  option?: Style;
+  subtext?: Style;
+  toggle?: {
+    slider?: Style;
+    switch?: Style;
+  }
+}
+
+type MenuStylesK = keyof MenuStyles;
 
 interface Item {
   label: string;
@@ -13,22 +43,59 @@ interface Item {
   icon?: React.ReactElement;
   type?: 'toggle' | 'btn';
   isActive?: boolean;
+  styles?: LiItemStyles;
   onAction?: (isActive?: boolean) => any;
 }
 
 type ILiItem = Omit<Item, 'action'>;
 
-const LiItem = ({ item }: { item: ILiItem }) => {
+interface Section {
+  label: string;
+  items: Item[];
+}
+
+function getStyles(style: Style | undefined): ItemStyle {
+  if (!style) return {
+    style: undefined,
+    className: ''
+  }
+
+  const isString = typeof style === 'string';
+
+  return {
+    style: !isString ? style : undefined,
+    className: isString ? style : ''
+  }
+}
+
+interface LiItemProps {
+  item: ILiItem;
+  styles?: LiItemStyles;
+}
+
+const LiItem = ({ item, styles }: LiItemProps) => {
   const [isActive, setIsActive] = useState(item.isActive ?? false);
   const type = item.type || 'btn';
+
+  const li = getStyles(styles?.option);
+  const slider = getStyles(styles?.toggle?.slider);
+  const subtext = getStyles(styles?.subtext);
 
   useEffect(() => { setIsActive(item.isActive ?? false) }, [item.isActive]);
 
   return (
-    <li className="w-full font-medium hover:text-white hover:bg-white/10 rounded-xs">
+    <li
+      style={{
+        ...li.style,
+        padding: 0,
+        margin: 0
+      }}
+      className={cn("w-full font-medium hover:text-white hover:bg-white/10 rounded-xs", li.className)}
+    >
       <button
         onClick={() => type === 'btn' && item.onAction?.()}
-        className="w-full flex items-center gap-2 cursor-pointer px-3 py-2"
+        style={li.style}
+        className={cn("w-full flex items-center gap-2 cursor-pointer px-3 py-2", li.className)}
         type="button"
       >
         {type === 'btn' && (
@@ -57,12 +124,18 @@ const LiItem = ({ item }: { item: ILiItem }) => {
                   type="checkbox"
                   id="toggleSwitch"
                 />
-                <span className="slider bg-primary" />
+                <span
+                  style={slider.style}
+                  className={cn("slider bg-primary", slider.className)}
+                />
               </label>
             </div>
 
             {item.subtext &&
-              <span className="text-xs w-full text-left font-light block mt-1">
+              <span
+                style={subtext.style}
+                className={cn("text-xs w-full text-left font-light block mt-1", subtext.className)}
+              >
                 {item.subtext}
               </span>
             }
@@ -74,18 +147,11 @@ const LiItem = ({ item }: { item: ILiItem }) => {
 }
 
 interface MenuItemProps {
-  sections?: {
-    label: string;
-    items: Item[];
-  }[];
+  sections?: Section[];
   items?: Item[];
   access?: Role[];
   open?: boolean;
-  styles?: {
-    btn?: string | React.CSSProperties;
-    menu?: string | React.CSSProperties;
-    backdrop?: string | React.CSSProperties;
-  };
+  styles?: MenuStyles;
   actions?: (action: MenuItemAction) => void;
   onActive?: () => void;
 }
@@ -101,119 +167,153 @@ const MenuItem = (props: MenuItemProps) => {
     return null;
   }
 
+  const defaults: Section[] = [{
+    label: '',
+    items: [{
+      action: 'remove',
+      label: 'Quitar de la lista',
+      icon: <CircleMinusIcon className="w-5 h-5" />,
+      onAction: () => {
+        actions?.('remove');
+        setIsActive(false);
+      }
+    }, {
+      action: 'add-to-queue',
+      label: 'Añadir a cola',
+      icon: <ListPlusIcon className="w-5 h-5" />,
+      onAction: () => {
+        actions?.('add-to-queue');
+        setIsActive(false);
+      }
+    }, {
+      action: 'view-track',
+      label: 'Ver canción',
+      icon: <Music2Icon className="w-5 h-5" />,
+      onAction: () => {
+        actions?.('view-track');
+        setIsActive(false);
+      }
+    }, {
+      action: 'share',
+      label: 'Compartir',
+      icon: <UploadIcon className="w-5 h-5" />,
+      onAction: () => {
+        actions?.('share');
+        setIsActive(false);
+      }
+    }]
+  }, {
+    label: 'files',
+    items: [{
+      action: 'toggle',
+      label: 'Incluir archivos',
+      isActive: true,
+      onAction: () => actions?.('toggle')
+    }]
+  }];
+
+  const secs = sections || defaults || [];
+
+  const fmtStyles: FmtStyles = {};
+  const exclude: MenuStylesK[] = ['toggle']
+
+  menuStyleKeys.forEach((k) => {
+    const style = (styles as any)[k];
+
+    if (!exclude.includes(k)) {
+      fmtStyles[k] = getStyles(style)
+    }
+    else {
+      fmtStyles['toggle'] = style;
+    }
+  });
+
+  const values = fmtStyles as Record<MenuStylesK, ItemStyle>;
+  const ulClassName = cn("text-[#adaaaa] flex flex-col items-center justify-between", values.menu.className);
+
   return (
     <>
-      {isActive &&
+      {isActive && (
         <div
-          style={styles?.backdrop && typeof styles?.backdrop !== 'string' ? styles?.backdrop : {}}
-          className={cn("bg-black/50 z-100 fixed min-h-screen w-full left-0 top-0", typeof styles?.backdrop === 'string' ? styles?.backdrop : '')}
+          style={values.backdrop.style}
+          className={cn("bg-black/50 z-100 fixed min-h-screen w-full left-0 top-0", values.backdrop.className)}
           onClick={() => setIsActive(false)}
         />
-      }
+      )}
 
       <button
         onClick={(e) => {
           e.stopPropagation();
           setIsActive(!isActive);
-          onActive && onActive();
+          onActive?.();
         }}
-        style={styles?.btn && typeof styles?.btn !== 'string' ? styles?.btn : {}}
-        className={cn(`p-1 text-[#adaaaa] cursor-pointer`, typeof styles?.btn === 'string' ? styles?.btn : '')}
+        style={values.btn.style}
+        className={cn(`p-1 text-[#adaaaa] cursor-pointer`, values.btn.className)}
         type="button"
       >
         <EllipsisVerticalIcon size={18} />
       </button>
 
-      {isActive &&
+      {isActive && (
         <div
-          style={styles?.menu && typeof styles?.menu !== 'string' ? styles?.menu : {}}
-          className={cn("w-45 z-100 bg-[#282828] text-sm p-1 rounded absolute top-0 right-0", typeof styles?.menu === 'string' ? styles?.menu : '')}
+          style={values.menu.style}
+          className={cn("min-w-45 z-100 bg-[#282828] text-sm p-1 rounded absolute top-0 right-0", values.menu.className)}
         >
-          <ul className="text-[#adaaaa] flex flex-col items-center justify-between">
-            {!sections?.length && (
-              items.length ? items.map((it) => (
+          {items?.length ? (
+            <ul className={ulClassName} style={values.menu.style}>
+              {items.map((it) => (
                 <LiItem
+                  key={it.label}
+                  styles={it.styles || styles}
                   item={{
                     label: it.label,
-                    icon: it.icon,
+                    subtext: it.subtext,
                     isActive: it.isActive,
+                    icon: it.icon,
                     onAction: (isActive) => {
                       it.onAction ? it.onAction(isActive) : actions?.(it.action);
                       setIsActive(false);
                     }
                   }}
-                  key={it.label}
                 />
-              )) : (
-                <>
-                  <LiItem item={{
-                    label: 'Quitar de la lista',
-                    icon: <CircleMinusIcon className="w-5 h-5" />,
-                    onAction: () => {
-                      actions?.('remove');
-                      setIsActive(false);
-                    }
-                  }} />
-                  <LiItem item={{
-                    label: 'Añadir a cola',
-                    icon: <ListPlusIcon className="w-5 h-5" />,
-                    onAction: () => {
-                      setIsActive(false);
-                    }
-                  }} />
-                  <LiItem item={{
-                    label: 'Ver canción',
-                    icon: <Music2Icon className="w-5 h-5" />,
-                    onAction: () => {
-                      actions?.('edit-track');
-                      setIsActive(false);
-                    }
-                  }} />
-                  <LiItem item={{
-                    label: 'Compartir',
-                    icon: <UploadIcon className="w-5 h-5" />,
-                    onAction: () => {
-                      actions?.('share');
-                      setIsActive(false);
-                    }
-                  }} />
-                </>
-              )
-            )}
-
-            {sections?.map((sec, i) => (
-              <>
+              ))}
+            </ul>
+          ) : (
+            secs.map((sec, i) => (
+              <ul className={ulClassName} style={values.menu.style} key={sec.label}>
                 {sec.items.map((it) => {
                   const type = it.type ? it.type : it.action === 'toggle' ? it.action : 'btn';
 
                   return (
                     <LiItem
+                      key={it.label}
+                      styles={it.styles || styles}
                       item={{
                         label: it.label,
-                        icon: it.icon,
+                        subtext: it.subtext,
                         isActive: it.isActive,
+                        icon: it.icon,
                         type,
                         onAction: (isActive) => {
                           it.onAction ? it.onAction(isActive) : actions?.(it.action);
                           if (type !== 'toggle') setIsActive(false);
                         }
                       }}
-                      key={it.label}
                     />
                   )
                 })}
 
-                {(sections.length - 1 !== i) &&
+                {(secs.length - 1 !== i) && (
                   <li
                     className="border-b border-[#646464] w-full my-1"
                     key={`divider-${i + 1}`}
                   />
-                }
-              </>
-            ))}
-          </ul>
+                )}
+              </ul>
+            ))
+          )}
         </div>
-      }
+      )}
     </>
   )
 }

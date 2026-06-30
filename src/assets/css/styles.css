@@ -1,12 +1,33 @@
 /* SCROLLBAR SIZE */
-.panel-wrap::-webkit-scrollbar {
+.search-widget-content::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+
+/* UPLOAD PANEL */
+.upload-panel-wrap {
+  position: relative;
+  min-height: calc(100vh - 73px);
+  max-height: calc(100vh - 73px);
+  overflow-y: auto;
+}
+
+.upload-panel-wrap::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
 
-.search-widget-content::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+.upload-panel-main-wrap {
+  position: relative;
+  min-height: calc(100vh - 73px - 56px);
+  max-height: calc(100vh - 73px - 56px);
+  overflow-y: auto;
+}
+
+.upload-panel-main-wrap::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
 }
 
 
