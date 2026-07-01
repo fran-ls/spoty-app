@@ -262,7 +262,7 @@ const TrackForm = (props: TrackFormProps) => {
           )}
         </div>
 
-        <div className="grid grid-cols-1 gap-4">
+        <div className="grid grid-cols-1 gap-4 mb-4">
           <div className="space-y-1.5">
             <label className="text-[10px] uppercase font-mono tracking-wider font-bold text-gray-400">
               Título del Tema

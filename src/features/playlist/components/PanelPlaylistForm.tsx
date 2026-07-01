@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
-import { GlobeIcon, InfoIcon, ListVideoIcon, LockIcon, MusicIcon, PaletteIcon, PenIcon, SearchIcon, UserIcon } from "lucide-react";
-import type { PlaylistDTO } from "../playlist.types";
+import { GlobeIcon, ListVideoIcon, LockIcon, MusicIcon, PaletteIcon, PenIcon, SearchIcon, UserIcon } from "lucide-react";
+import type { Playlist, PlaylistDTO } from "../playlist.types";
 import SmartImage from "../../../shared/components/SmartImage";
 import Toaster from "../../../shared/components/Toaster";
 import useToaster from "../../../shared/hooks/useToaster";
@@ -9,14 +9,15 @@ import GradientEditor from "./PanelGradientEditor";
 import useUser from "../../artist/hooks/useUser";
 import UserSelect from "../../artist/components/UserSelect";
 import SearchWidget from "../../../shared/components/SearchWidget";
+import useApiFetch from "../../../shared/hooks/useApiFetch";
 
 const PanelPlaylistForm = () => {
-  const { isActive, toast, isFirstLoad, showToast, onClose } = useToaster(5000);
   const { users, userMeta, searchUsers } = useUser();
+  const { isActive, toast, isFirstLoad, showToast, onClose } = useToaster(5000);
+  const useApi = useApiFetch(showToast);
 
   const coverInputRef = useRef<HTMLInputElement>(null);
 
-  const [isLoading, setIsLoading] = useState(false);
   const [isBackground, setIsBackground] = useState(false);
   const [isImgHover, setIsImgHover] = useState(false);
   const [isCoverHover, setIsCoverHover] = useState(false);
@@ -53,37 +54,20 @@ const PanelPlaylistForm = () => {
   }
 
   async function onSave() {
-    if (isLoading) return;
-    setIsLoading(true);
-
-    const r = await playlistService.newPlaylist({ ...form, bgColor, gradientColor });
-    const { data, error } = r;
-    setIsLoading(false);
-
-    if (error || !data) {
-      showToast({
-        message: error || 'Ocurrió un error',
-        type: 'error',
-        icon: (
-          <InfoIcon
-            className="min-w-5 stroke-2"
-            size={20}
-          />
-        )
-      });
-      return;
-    }
-
-    showToast({
+    const config = {
       message: 'Lista guardada',
-      type: 'success',
       icon: (
         <ListVideoIcon
           className="min-w-5 stroke-2"
           size={20}
         />
       )
-    });
+    }
+
+    useApi.save<Playlist>(
+      () => playlistService.newPlaylist({
+        ...form, bgColor, gradientColor
+      }), config);
   }
 
   const [isUserSearch, setIsUserSearch] = useState(false);
@@ -290,10 +274,13 @@ const PanelPlaylistForm = () => {
               Limpiar
             </button>
             <button
-              className="cursor-pointer bg-primary text-black font-black uppercase text-[10px] tracking-wider px-5 py-2.5 rounded-xl hover:scale-102 active:scale-95 transition-all shadow-md shadow-primary/10"
+              className={`${useApi.isSaveLoading ? 'cursor-default' : 'cursor-pointer'} min-w-33 bg-primary text-black font-black flex items-center justify-center uppercase text-[10px] tracking-wider px-5 py-2.5 rounded-xl hover:scale-102 active:scale-95 transition-all shadow-md shadow-primary/10`}
               type="submit"
             >
-              Crear Playlist
+              {!useApi.isSaveLoading
+                ? 'Crear Playlist'
+                : <div className="tex-center w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+              }
             </button>
           </div>
         </form>
@@ -320,7 +307,7 @@ const PanelPlaylistForm = () => {
         keys={{
           label: 'username',
           value: 'id',
-          sub: 'id'
+          sub: 'email'
         }}
         label="Buscar usuario"
         open={isUserSearch}

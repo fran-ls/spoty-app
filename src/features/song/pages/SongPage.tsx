@@ -69,7 +69,11 @@ const SongPage: React.FC = () => {
   const coverInputRef = useRef<HTMLInputElement>(null);
 
   async function getSongs(page: number) {
-    const { data } = await songService.searchSongs({ limit: 10, page });
+    const { data } = await songService.searchSongs({
+      orderBy: 'createdAt',
+      limit: 10,
+      page
+    });
     if (!data) return;
 
     setSearchMeta(data.meta);
