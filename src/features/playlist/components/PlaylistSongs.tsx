@@ -4,12 +4,12 @@ import type { Song } from '../../song/song.types';
 import { usePlayer } from '../../../shared/context/PlayerContext';
 import { formatTime } from '../../../shared/utils/formatTime';
 import { getFmtDate } from '../../../shared/utils/getFormatDate';
-import { showMusicIcon } from '../../../shared/utils/showMusicIcon';
 import Loader from '../../../shared/components/Loader';
 import { useInfiniteScroll } from '../../../shared/hooks/useInfiniteScroll';
 import { useState } from 'react';
 import songService from '../../song/services/song.service';
 import { DropdownIcon } from '../../../shared/components/Icons';
+import SmartImage from '../../../shared/components/SmartImage';
 
 interface PlaylistSongsProps {
   songs: Song[];
@@ -74,23 +74,13 @@ const PlaylistSongs: React.FC<PlaylistSongsProps> = (props) => {
               </div>
 
               <div className="flex items-center gap-4 overflow-hidden">
-                <div className="z-5 min-w-10 w-10 h-10 bg-[#262626] text-white rounded overflow-hidden relative">
-                  <MusicIcon
-                    className={`${!cover ? '' : 'hidden opacity-0'} absolute top-1/2 left-1/2 -translate-1/2 music-icon`}
-                    size={20}
-                  />
-
-                  {cover &&
-                    <img
-                      onError={(e) => showMusicIcon(e.currentTarget, '.song-item')}
-                      className="w-full h-full object-cover"
-                      src={cover}
-                      referrerPolicy="no-referrer"
-                      crossOrigin="anonymous"
-                      alt=""
-                    />
-                  }
-                </div>
+                <SmartImage
+                  wrapClassName="min-w-10 w-10 h-10 bg-[#262626] text-white rounded overflow-hidden relative"
+                  url={cover}
+                  icon={(
+                    <MusicIcon className="text-white" size={20} />
+                  )}
+                />
 
                 <div className="flex flex-col min-w-0 select-none">
                   <span

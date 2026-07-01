@@ -6,8 +6,8 @@ import {
 } from 'lucide-react';
 import { usePlayer } from '../../shared/context/PlayerContext';
 import { formatTime } from '../../shared/utils/formatTime';
-import { showMusicIcon } from '../../shared/utils/showMusicIcon';
 import songService from '../song/services/song.service';
+import SmartImage from '../../shared/components/SmartImage';
 
 export const PlayerBar: React.FC = () => {
   const {
@@ -120,22 +120,15 @@ export const PlayerBar: React.FC = () => {
       className="px-4 py-2 fixed bottom-0 left-0 w-full z-50 h-22 bg-black backdrop-blur-3xl flex justify-between items-center select-none playback-bar"
       id="spotify-playback-bar"
     >
-      {/* LEFT: Track Info */}
       <div className="lg:flex hidden items-center gap-4 w-[30%] min-w-50">
-        <div className="w-14 h-14 bg-[#262626] rounded overflow-hidden shadow-2xl shrink-0 group relative cursor-pointer">
-          <MusicIcon className={`${!songCover ? '' : 'hidden opacity-0'} text-white absolute top-1/2 left-1/2 -translate-1/2 music-icon`} />
-
-          {songCover && (
-            <img
-              onError={(e) => showMusicIcon(e.currentTarget, '.playback-bar')}
-              src={songCover}
-              className="w-full h-full object-cover transition-transform duration-300"
-              referrerPolicy="no-referrer"
-              crossOrigin="anonymous"
-              alt=""
-            />
+        <SmartImage
+          wrapClassName="w-14 h-14 bg-[#262626] rounded overflow-hidden shadow-2xl shrink-0 group relative cursor-pointer"
+          className="w-full h-full object-cover transition-transform duration-300"
+          url={songCover}
+          icon={(
+            <MusicIcon className="text-white absolute top-1/2 left-1/2 -translate-1/2 music-icon" />
           )}
-        </div>
+        />
 
         {currentSong &&
           <>
