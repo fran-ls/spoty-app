@@ -8,7 +8,7 @@ export interface Song {
   cover?: string;
   duration: number;
   artistId: string;
-  albumId?: string;
+  albumId?: string | null;
   createdAt: Date;
   artist: Artist;
   // album: Album;
@@ -30,7 +30,7 @@ export interface SongDTO {
   artistId?: string;
   cover?: string | null;
   fileUrl?: string | null;
-  albumId?: string;
+  albumId?: string | null;
   albumName?: string;
   quality: string;
   audio: File | null;
@@ -48,7 +48,7 @@ export interface Track {
   cover?: string;
   duration: number;
   artistId: string;
-  albumId?: string;
+  albumId?: string | null;
   createdAt: Date;
   artist?: Artist;
   album?: Album;
@@ -70,7 +70,7 @@ export interface TrackDTO {
   artistId?: string;
   cover?: string | null;
   fileUrl?: string | null;
-  albumId?: string;
+  albumId?: string | null;
   albumName?: string;
   quality: string;
   audio: File | null;
@@ -85,7 +85,7 @@ export interface TrackFilters {
   id?: string;
   title?: string;
   artistId?: string;
-  albumId?: string;
+  albumId?: string | null;
   artistName?: string;
   page?: number;
   limit?: number;

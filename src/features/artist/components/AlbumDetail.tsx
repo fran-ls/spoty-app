@@ -26,9 +26,10 @@ const AlbumDetail = ({ activeAlbum, onRemove }: AlbumDetailProps) => {
     trackMeta: searchTrackMeta,
     searchTracks: findTracks
   } = useTrack();
-
   const { toast, isActive, isFirstLoad, onClose } = useToaster();
+
   const [isSearchWiget, setIsSearchWiget] = useState(false);
+  const [activeTrackId, setActiveTrackId] = useState('');
 
   const [isAlbumMenu, setIsAlbumMenu] = useState(false);
   const [page, setPage] = useState(0);
@@ -66,7 +67,30 @@ const AlbumDetail = ({ activeAlbum, onRemove }: AlbumDetailProps) => {
     }
   }
 
-  useEffect(() => { activeAlbum && searchTracks({ ...trackFilters, page: 0 }) }, [activeAlbum]);
+  async function trackActions(action: MenuItemAction) {
+    switch (action) {
+      case 'close':
+        setActiveTrackId('');
+        break;
+      case 'remove':
+        const ok = await songService.updateSong(activeTrackId, { albumId: null });
+        if (ok) {
+          setTracks((prev) => prev.filter((t) => t.id !== activeTrackId));
+          setTrackMeta((prev) => ({ ...prev, total: prev.total - 1 }));
+        }
+        setActiveTrackId('');
+        return ok;
+      default:
+        break;
+    }
+  }
+
+  useEffect(() => {
+    activeAlbum && searchTracks({ ...trackFilters, page: 0 });
+    setIsSearchWiget(false);
+    setIsAlbumMenu(false);
+    setActiveTrackId('');
+  }, [activeAlbum]);
 
   return (
     <div className="animate-fade-in relative overflow-hidden">
@@ -91,7 +115,7 @@ const AlbumDetail = ({ activeAlbum, onRemove }: AlbumDetailProps) => {
           </span>
 
           <MenuItem
-            styles={{ btn: "absolute top-0 right-0" }}
+            styles={{ btn: 'absolute top-0 right-0' }}
             onActive={() => setIsAlbumMenu(true)}
             actions={albumActions}
             open={isAlbumMenu}
@@ -145,7 +169,7 @@ const AlbumDetail = ({ activeAlbum, onRemove }: AlbumDetailProps) => {
           ) : (
             <div className="bg-[#1b1b1b] rounded-xl border border-white/5 divide-y divide-white/5">
               {tracks.map((tr, index) => (
-                <div className="p-2.5 flex items-center justify-between gap-3 overflow-hidden" key={tr.id}>
+                <div className="p-2.5 flex items-center justify-between gap-3 relative" key={tr.id}>
                   <div className="flex items-center gap-2.5 overflow-hidden">
                     <span className="text-xs text-gray-500 font-mono w-4 text-center shrink-0">
                       {index + 1}
@@ -153,7 +177,7 @@ const AlbumDetail = ({ activeAlbum, onRemove }: AlbumDetailProps) => {
 
                     <SmartImage
                       wrapClassName="text-gray-400 w-7 h-7 rounded bg-white/5 border border-white/10 overflow-hidden shrink-0"
-                      url={albumService.albumCover(tr.id, tr.cover)}
+                      url={songService.songCoverUrl(tr.id, tr.cover)}
                     />
 
                     <div className="overflow-hidden">
@@ -175,6 +199,15 @@ const AlbumDetail = ({ activeAlbum, onRemove }: AlbumDetailProps) => {
                   <span className="text-[10px] text-gray-400 font-mono shrink-0">
                     {formatTime(tr.duration ?? 0)}
                   </span>
+
+                  <MenuItem
+                    onActive={() => setActiveTrackId(tr.id)}
+                    open={activeTrackId === tr?.id}
+                    actions={trackActions}
+                    styles={{
+                      menu: 'top-0 right-0'
+                    }}
+                  />
                 </div>
               ))}
             </div>
@@ -218,7 +251,7 @@ const AlbumDetail = ({ activeAlbum, onRemove }: AlbumDetailProps) => {
         loadIcon={({ id, cover }) => (
           <SmartImage
             wrapClassName="text-gray-400 min-w-0 w-9 h-9 rounded border border-white/5 overflow-hidden shrink-0"
-            url={id ? albumService.albumCover(id, cover) : null}
+            url={songService.songCoverUrl(id, cover)}
             icon={<MusicIcon size={16} />}
           />
         )}

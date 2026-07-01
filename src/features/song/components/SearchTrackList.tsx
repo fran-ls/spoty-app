@@ -54,7 +54,7 @@ const SearchTrackList = ({ query, filter, triggerViewTrack }: SearchTrackListPro
             >
               <div className="flex items-center gap-3 overflow-hidden">
                 <SmartImage
-                  wrapClassName="text-gray-400 min-w-0 w-9 h-9 max-w-9 rounded-lg bg-white/5 border border-white/10 overflow-hidden shrink-0"
+                  wrapClassName="text-gray-400 min-w-0 w-9 h-9 max-w-9 rounded-md bg-white/5 border border-white/10 overflow-hidden shrink-0"
                   url={songService.songCoverUrl(track.id, track.cover)}
                 />
 

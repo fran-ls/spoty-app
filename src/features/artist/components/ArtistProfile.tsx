@@ -14,6 +14,7 @@ import songService from "../../song/services/song.service";
 import useToaster from "../../../shared/hooks/useToaster";
 import useApiFetch from "../../../shared/hooks/useApiFetch";
 import Toaster from "../../../shared/components/Toaster";
+import albumService from "../services/album.service";
 
 interface ArtistProfileProps {
   artist: Artist | null;
@@ -181,7 +182,7 @@ const ArtistProfile = (props: ArtistProfileProps) => {
                 <div
                   key={al.id}
                   onClick={() => triggerViewAlbum(al)}
-                  className="bg-[#202020] hover:bg-[#252525] p-2 rounded-xl flex items-center justify-between cursor-pointer border border-white/5 group transition-all"
+                  className="bg-[#1b1b1b] hover:bg-[#252525] p-2 rounded-xl flex items-center justify-between cursor-pointer border border-white/5 group transition-all"
                 >
                   <div className="flex items-center gap-2.5 overflow-hidden">
                     <span className="text-xs text-gray-500 font-mono w-4 text-center shrink-0">
@@ -189,8 +190,8 @@ const ArtistProfile = (props: ArtistProfileProps) => {
                     </span>
 
                     <SmartImage
-                      wrapClassName="text-gray-400 w-8 h-8 rounded-md shrink-0 bg-transparent border border-white/20"
-                      url={null}
+                      wrapClassName="text-gray-400 w-7 h-7 rounded shrink-0 bg-transparent border border-white/20"
+                      url={albumService.albumCover(al.id, al.cover)}
                       icon={<DiscIcon size={20} />}
                     />
 

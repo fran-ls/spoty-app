@@ -64,7 +64,7 @@ const SearchAlbumList = (props: SearchAlbumListProps) => {
             >
               <div className="flex items-center gap-3 overflow-hidden">
                 <SmartImage
-                  wrapClassName="text-gray-400 w-9 h-9 rounded-lg bg-white/5 border border-white/10 overflow-hidden shrink-0"
+                  wrapClassName="text-gray-400 w-9 h-9 rounded-md bg-white/5 border border-white/10 overflow-hidden shrink-0"
                   url={albumService.albumCover(album.id, album.cover)}
                   icon={<DiscIcon size={16} />}
                 />

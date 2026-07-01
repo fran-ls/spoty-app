@@ -25,6 +25,7 @@ const PanelPlaylistDetail = ({ activePlaylist, onClose }: PanelPlaylistDetailPro
   const { toast, isActive, isFirstLoad, onClose: onCloseToast } = useToaster();
   const { tracks, trackMeta, searchTracks } = useTrack();
 
+  const [isPlaylistMenu, setIsPlaylistMenu] = useState(false);
   const [activeTrackId, setActiveTrackId] = useState('');
   const [isRemoveFiles, setIsRemoveFiles] = useState(true);
   const [isSearchWiget, setIsSearchWiget] = useState(false);
@@ -87,7 +88,12 @@ const PanelPlaylistDetail = ({ activePlaylist, onClose }: PanelPlaylistDetailPro
     }
   }
 
-  useEffect(() => { playlistId && getPlaylistSongs(playlistId) }, [playlistId]);
+  useEffect(() => {
+    playlistId && getPlaylistSongs(playlistId);
+    setIsPlaylistMenu(false);
+    setIsSearchWiget(false);
+    setActiveTrackId('');
+  }, [playlistId]);
 
   return (
     <div className="overflow-hidden relative">
@@ -117,6 +123,8 @@ const PanelPlaylistDetail = ({ activePlaylist, onClose }: PanelPlaylistDetailPro
           </span>
 
           <MenuItem
+            onActive={() => setIsPlaylistMenu(true)}
+            open={isPlaylistMenu}
             styles={{
               btn: 'absolute top-5 right-5',
               menu: 'top-5 right-5',

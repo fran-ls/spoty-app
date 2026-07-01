@@ -16,6 +16,7 @@ import { images } from "../../../shared/data/images.data";
 import useApiFetch from "../../../shared/hooks/useApiFetch";
 import albumService from "../../artist/services/album.service";
 import useAlbum from "../../artist/hooks/useAlbum";
+import artistService from "../../artist/services/artist.service";
 
 interface TrackFormProps {
   triggerCreateArtist: () => void;
@@ -445,10 +446,10 @@ const TrackForm = (props: TrackFormProps) => {
             artistName: item?.name || ''
           });
         }}
-        loadIcon={({ id, cover }) => (
+        loadIcon={({ id, image }) => (
           <SmartImage
             wrapClassName="bg-white/5 text-gray-400 w-9 h-9 rounded-full border border-white/5 overflow-hidden shrink-0"
-            url={id ? songService.songCoverUrl(id, cover) : null}
+            url={artistService.artistImage(id, image)}
             icon={<UserIcon size={16} />}
           />
         )}
@@ -483,7 +484,7 @@ const TrackForm = (props: TrackFormProps) => {
         }}
         loadIcon={({ id, cover }) => (
           <SmartImage
-            wrapClassName="text-gray-400 min-w-0 w-9 h-9 rounded-lg bg-white/5 border border-white/10 overflow-hidden shrink-0"
+            wrapClassName="text-gray-400 min-w-0 w-9 h-9 rounded-md bg-white/5 border border-white/10 overflow-hidden shrink-0"
             url={albumService.albumCover(id, cover)}
             icon={<DiscIcon size={16} />}
           />
