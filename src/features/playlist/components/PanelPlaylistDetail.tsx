@@ -21,6 +21,8 @@ interface PanelPlaylistDetailProps {
 
 const PanelPlaylistDetail = ({ activePlaylist, onClose }: PanelPlaylistDetailProps) => {
   const playlistId = activePlaylist?.id;
+  const user = activePlaylist?.user;
+
   const { playlistItems, playlistMeta, getPlaylistSongs, addSongToPlaylist, removeSongFromPlaylist } = usePlaylist();
   const { toast, isActive, isFirstLoad, onClose: onCloseToast } = useToaster();
   const { tracks, trackMeta, searchTracks } = useTrack();
@@ -30,8 +32,6 @@ const PanelPlaylistDetail = ({ activePlaylist, onClose }: PanelPlaylistDetailPro
   const [isRemoveFiles, setIsRemoveFiles] = useState(true);
   const [isSearchWiget, setIsSearchWiget] = useState(false);
   const [page, setPage] = useState(0);
-
-  const artist = playlistItems[0]?.song?.artist;
 
   const { loaderRef } = useInfiniteScroll(() => {
     if (!playlistMeta.hasNextPage || !playlistId) return;
@@ -116,7 +116,7 @@ const PanelPlaylistDetail = ({ activePlaylist, onClose }: PanelPlaylistDetailPro
             {activePlaylist?.name || 'Lista'}
           </h3>
           <p className="text-xs text-primary font-bold mt-1">
-            {artist?.name || 'Artista'}
+            {user?.username || 'Usuario'}
           </p>
           <span className="text-[9px] font-mono uppercase tracking-widest text-gray-500 mt-1.5">
             Playlist

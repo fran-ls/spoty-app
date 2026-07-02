@@ -10,6 +10,8 @@ import useUser from "../../artist/hooks/useUser";
 import UserSelect from "../../artist/components/UserSelect";
 import SearchWidget from "../../../shared/components/SearchWidget";
 import useApiFetch from "../../../shared/hooks/useApiFetch";
+import { authService } from "../../auth/services/auth.service";
+import type { User } from "../../auth/auth.types";
 
 const PanelPlaylistForm = () => {
   const { users, userMeta, searchUsers } = useUser();
@@ -77,9 +79,11 @@ const PanelPlaylistForm = () => {
   });
 
   const loadMoreUsers = async (query: string, page: number) => {
+    const q = query.trim();
+
     await searchUsers({
-      username: query.trim(),
-      email: query.trim(),
+      username: q,
+      email: q,
       limit: 10,
       page
     });
@@ -323,11 +327,10 @@ const PanelPlaylistForm = () => {
           });
           setForm({ ...form, userId: p.value });
         }}
-        loadIcon={() => (
+        loadIcon={(user: User) => (
           <SmartImage
             wrapClassName="text-gray-400 min-w-0 w-9 h-9 rounded-full bg-white/5 border border-white/10 overflow-hidden shrink-0"
-            url={null}
-            // url={id ? songService.songCoverUrl(id, cover) : null}
+            url={authService.userImage(user.id, user?.photoURL)}
             icon={<UserIcon size={16} />}
           />
         )}

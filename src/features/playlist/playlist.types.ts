@@ -52,7 +52,6 @@ export interface PlaylistResponse {
   totalDuration: number;
 }
 
-
 export type PlaylistFormState = PlaylistDTO & {
   coverImages: SongCover[];
 }
@@ -60,6 +59,9 @@ export type PlaylistFormState = PlaylistDTO & {
 export type PlaylistFormAction = 'set-state' | 'select-file' | 'save';
 
 export interface PlaylistInclude {
-  is_user?: boolean;
-  is_tracks?: boolean;
+  user?: string | string[] | boolean | {
+    kind?: 'select' | 'omit';
+    fields?: string | string[];
+  };
+  songs?: boolean;
 }

@@ -85,7 +85,7 @@ const SearchPlaylistList = ({ query, filter, triggerViewPlaylist }: SearchPlayli
                     {playlist.name}
                   </h3>
                   <span className="text-[9px] text-gray-400 truncate leading-none mt-0.5 block">
-                    {playlist.id}
+                    {playlist.user?.username || playlist.id}
                   </span>
                 </div>
               </div>

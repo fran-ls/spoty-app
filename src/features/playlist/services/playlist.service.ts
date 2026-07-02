@@ -149,7 +149,7 @@ class PlaylistService {
       api.get(`/playlists/search`, {
         params: !filters ? undefined : {
           ...params,
-          ...include
+          include: JSON.stringify(include)
         },
         headers: {
           'Authorization': `Bearer ${tokenService.getToken()}`

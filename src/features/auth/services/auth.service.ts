@@ -162,8 +162,14 @@ class AuthService {
     return response;
   }
 
-  userImage(userId: string) {
-    return userId ? `${envs.API_URL}/users/image/${userId}` : '';
+  userImage(userId: string, url?: string | null) {
+    if (!userId || !url || typeof url !== 'string') {
+      return '';
+    }
+    if (!url.includes('/api/')) {
+      return url || '';
+    }
+    return `${envs.API_URL}/users/image/${userId}`;
   }
 }
 
