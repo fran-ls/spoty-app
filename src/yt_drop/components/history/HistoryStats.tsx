@@ -6,31 +6,31 @@ const HistoryStats = ({ stats }: { stats: HistoryStat }) => {
     <div className="stats-grid" id="stats-grid">
       <div className="stat-card c-total">
         <div className="stat-val" id="s-total">
-          {stats.total ?? '—'}
+          {stats.total || '—'}
         </div>
         <div className="stat-label">Total</div>
       </div>
       <div className="stat-card c-ok">
         <div className="stat-val" id="s-ok">
-          {stats.success ?? '—'}
+          {stats.success || '—'}
         </div>
         <div className="stat-label">Exitosas</div>
       </div>
       <div className="stat-card c-err">
         <div className="stat-val" id="s-err">
-          {stats.errors ?? '—'}
+          {stats.errors || '—'}
         </div>
         <div className="stat-label">Errores</div>
       </div>
       <div className="stat-card c-video">
         <div className="stat-val" id="s-video">
-          {stats.videos ?? '—'}
+          {stats.videos || '—'}
         </div>
         <div className="stat-label">Videos</div>
       </div>
       <div className="stat-card c-audio">
         <div className="stat-val" id="s-audio">
-          {stats.audios ?? '—'}
+          {stats.audios || '—'}
         </div>
         <div className="stat-label">Audios</div>
       </div>

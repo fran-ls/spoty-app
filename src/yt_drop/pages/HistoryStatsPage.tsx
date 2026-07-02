@@ -134,7 +134,7 @@ const HistoryStatsPage = () => {
     format,
     status,
     endDate,
-    startDate,
+    startDate
   ]);
 
   return (

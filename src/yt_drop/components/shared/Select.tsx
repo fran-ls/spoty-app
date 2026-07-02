@@ -124,6 +124,7 @@ const Select = (props: SelectOption) => {
         ref={wrapRef}
       >
         <ul
+          style={{ gap: 0 }}
           className="select-ul"
           ref={ulRef}
         >
@@ -133,6 +134,7 @@ const Select = (props: SelectOption) => {
                 setOption(item);
                 onOption && onOption(item);
               }}
+              style={{ borderRadius: 0, padding: '4px 8px' }}
               className="select-option"
               data-value={item.value}
               key={`idx-${i + 1}`}

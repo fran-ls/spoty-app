@@ -29,7 +29,6 @@ const HistoryFilters = (props: HistoryFiltersProps) => {
           className="filter-input"
           type="search"
           id="f-search"
-        // oninput="debounceLoad()"
         />
       </div>
       <div className="filter-group">
@@ -39,7 +38,6 @@ const HistoryFilters = (props: HistoryFiltersProps) => {
           onChange={(e) => onFormatChange(e.target.value)}
           className="filter-select"
           id="f-format"
-        // onchange="loadPage(1)"
         >
           <option value="">Todos</option>
           <option value="video">Video</option>
@@ -53,7 +51,6 @@ const HistoryFilters = (props: HistoryFiltersProps) => {
           onChange={(e) => onStatusChange(e.target.value)}
           className="filter-select"
           id="f-status"
-        // onchange="loadPage(1)"
         >
           <option value="">Todos</option>
           <option value="success">Exitoso</option>
@@ -68,7 +65,6 @@ const HistoryFilters = (props: HistoryFiltersProps) => {
           className="filter-input filter-date"
           type="date"
           id="f-from"
-        // onchange="loadPage(1)"
         />
       </div>
       <div className="filter-sep">→</div>
@@ -80,7 +76,6 @@ const HistoryFilters = (props: HistoryFiltersProps) => {
           className="filter-input filter-date"
           type="date"
           id="f-to"
-        // onchange="loadPage(1)"
         />
       </div>
       <button
@@ -107,7 +102,7 @@ const HistoryFilters = (props: HistoryFiltersProps) => {
           }}
           className="results-count" id="results-count"
         >
-          {meta.items} - {meta.total}
+          {meta.items} / {meta.total}
         </span>
       </div>
     </div>

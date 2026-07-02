@@ -45,17 +45,32 @@ const Header = () => {
           <div className="nav-logo-icon">
             <AppIcon />
           </div>
-          <span>YTDrop</span>
+          <span style={{
+            display: 'block',
+            marginTop: '3px'
+          }}>
+            YTDrop
+          </span>
         </Link>
         <div className="nav-links">
           {links.map((l) => (
             <Link
+              style={{
+                height: 28,
+                display: 'flex',
+                alignItems: 'center'
+              }}
               className={`nav-link ${activePath === l.to ? 'active' : ''}`}
               to={l.to}
               key={l.label}
             >
               {l.icon}
-              {l.label}
+              <span style={{
+                display: 'block',
+                marginTop: '1px'
+              }}>
+                {l.label}
+              </span>
             </Link>
           ))}
         </div>
@@ -66,7 +81,7 @@ const Header = () => {
           </div>
           <div style={{ marginRight: '10px' }}>
             <span
-              className="nav-username block text-nowrap overflow-hidden max-w-50" id="nav-username"
+              className="nav-username h-4 block text-nowrap overflow-hidden max-w-50" id="nav-username"
               title={user?.username}
             >
               {user?.username}

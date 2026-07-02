@@ -1,13 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Syne:wght@40 0;600;700;800&family=DM+Mono:wght@400;500&display=swap");
-
-.yt-drop *,
-.yt-drop *::before,
-.yt-drop *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  outline: 0;
-}
+@import url("https://fonts.googleapis.com/css2?family=Syne:wght@400..800&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&display=swap");
 
 :root {
   --bg: #0a0a0f;
@@ -27,6 +18,22 @@
   --bg-logo: linear-gradient(135deg, var(--accent), var(--accent2));
 
   --max-width-wrap: 1400px;
+}
+
+.syne-family {
+  font-family: "Syne", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.yt-drop *,
+.yt-drop *::before,
+.yt-drop *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  outline: 0;
 }
 
 .yt-drop,
