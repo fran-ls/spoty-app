@@ -1,0 +1,145 @@
+.yt-drop .truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-line-clamp: 1;
+}
+
+.yt-drop .options {
+  display: grid;
+  grid-template-columns: 1fr 1fr 48px;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.yt-drop .select-wrap .opt-label {
+  font-size: .65rem;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--muted)
+}
+
+.yt-drop .select-wrap>.select-ul {
+  list-style: none;
+}
+
+.yt-drop .select-wrap>label>input[type="checkbox"] {
+  display: none;
+}
+
+.yt-drop .select-icon-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.yt-drop .select-wrap {
+  --border-radius: 5px;
+  --font-size: 15px;
+  --padding: 9px;
+
+  position: relative;
+  border-top-left-radius: var(--border-radius);
+  border-top-right-radius: var(--border-radius);
+  width: 100%;
+  transition: 300ms;
+  color: white;
+}
+
+.yt-drop .select-wrap .select-ul,
+.yt-drop .select-wrap>label {
+  max-width: 672px;
+  min-width: 100%;
+}
+
+.yt-drop .select-wrap .opt-label {
+  margin-bottom: 5px;
+}
+
+.yt-drop .select-wrap>label {
+  background-color: var(--bg3);
+  padding: var(--padding);
+  padding-inline: calc(var(--padding) + 3px);
+  border-radius: var(--border-radius);
+  position: relative;
+  font-size: var(--font-size);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 5;
+  height: 39px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.yt-drop .select-wrap>label:focus,
+.yt-drop .select-wrap:hover>label {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(78, 154, 255, .1)
+}
+
+.yt-drop .select-wrap>label>span {
+  width: 95%;
+}
+
+.yt-drop .select-wrap>label .arrow {
+  position: relative;
+  width: 12px;
+  height: 12px;
+  min-width: 12px;
+  min-height: 12px;
+  fill: white;
+  transition: 300ms;
+}
+
+.yt-drop .select-wrap:hover>label>.arrow {
+  transform: rotate(-180deg);
+}
+
+.yt-drop .select-wrap:hover .select-ul {
+  opacity: 1;
+  top: 0;
+}
+
+.yt-drop .select-wrap .select-ul-wrap {
+  position: absolute;
+  top: calc(100% - 4px);
+  /* padding-top: 8px; */
+  overflow: hidden;
+  height: 0;
+  transition: 300ms;
+  width: 99.8%;
+}
+
+.yt-drop .select-wrap .select-ul {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border);
+  padding: var(--padding);
+  background-color: var(--bg3);
+  position: relative;
+  top: -100px;
+  opacity: 0;
+  transition: 300ms;
+  width: fit-content;
+  z-index: 4;
+}
+
+.yt-drop .select-wrap .select-ul>* {
+  font-size: var(--font-size);
+  border-radius: 5px;
+  padding: var(--padding);
+  transition: 300ms;
+  background-color: var(--bg3);
+}
+
+.yt-drop .select-wrap .select-ul .select-option:hover {
+  background-color: #323741;
+}
+
+.yt-drop .select-wrap .select-ul .select-option:hover {
+  cursor: default;
+}

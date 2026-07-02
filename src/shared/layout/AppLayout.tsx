@@ -12,6 +12,7 @@ import { UploadPanel } from "../../features/song/components/UploadPanel";
 import useAuth from "../../features/auth/hooks/useAuth";
 import AdminLayout from "./AdminLayout";
 import { routes } from "../utils/routes";
+import YTDropAppLayout from "../../yt_drop/components/layout/YTDropAppLayout";
 
 const AppLayout = ({ children }: { children: React.ReactNode }) => {
   const { isAdmin, isUploadModal } = useAuth();
@@ -20,10 +21,25 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
   const currentPath = window.location.pathname;
   const paths: string[] = [routes.upload];
 
+  const YTDropPaths: string[] = [
+    routes.YTDrop.auth,
+    routes.YTDrop.download,
+    routes.YTDrop.history,
+    routes.YTDrop.historyStats,
+  ];
+
   useEffect(() => {
     const timeout = 14 * 60 * 1000 + 500; // 14:30 minutes
     setInterval(() => tokenService.refreshAccessToken(), timeout);
   }, []);
+
+  if (isAdmin && YTDropPaths.includes(currentPath)) {
+    return (
+      <YTDropAppLayout>
+        {children}
+      </YTDropAppLayout>
+    )
+  }
 
   if (isAdmin && paths.includes(currentPath)) {
     return (

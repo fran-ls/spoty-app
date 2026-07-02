@@ -1,0 +1,559 @@
+/* ICONS */
+.yt-drop .select-wrap .select-label,
+.yt-drop .select-wrap .select-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.yt-drop .select-wrap .select-icon {
+  width: 17px;
+  height: 17px;
+}
+
+.yt-drop .select-wrap .video-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.yt-drop .cinema-icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.yt-drop .cinema-icon-wrap .cinema-play-icon {
+  width: 3px;
+  height: 3px;
+  position: absolute;
+  left: 55%;
+  transform: translateX(-55%);
+  bottom: 14%;
+}
+
+.yt-drop .paste-icon {
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+/* HOME */
+.yt-drop .btn-paste {
+  width: 15px;
+  height: 15px;
+  background-color: transparent;
+  border: 0;
+  border-radius: 4px;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.yt-drop .download-wrap .card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 32px;
+  margin: 32px 0 0;
+  position: relative;
+}
+
+.yt-drop .download-wrap .card-before-wrap {
+  position: absolute;
+  width: 100%;
+  top: 0px;
+  left: 0;
+  height: 2px;
+  background: transparent;
+  border-radius: var(--r);
+  height: 27px;
+  overflow: hidden;
+}
+
+.yt-drop .download-wrap .card-before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  top: 0px;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2), var(--blue));
+  border-top-left-radius: 2px;
+  border-top-right-radius: 2px;
+}
+
+
+/* ── URL INPUT ──────────────────────────────────────────────────── */
+.yt-drop .section-title {
+  font-size: .7rem;
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.yt-drop .url-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.yt-drop .url-row {
+  position: relative;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  animation: slideIn .25s ease both;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.yt-drop .url-input {
+  flex: 1;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: .85rem;
+  padding: 12px 16px;
+  min-height: 77px;
+  border-radius: var(--r-sm);
+  outline: none;
+  resize: vertical;
+  transition: .2s;
+  overflow: hidden;
+}
+
+.yt-drop .url-input::placeholder {
+  color: var(--muted);
+}
+
+.yt-drop .url-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(255, 59, 107, .1);
+}
+
+.yt-drop .btn-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+  background: var(--bg3);
+  color: var(--muted);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: .2s;
+  flex-shrink: 0;
+}
+
+.yt-drop .btn-icon:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.yt-drop .btn-icon svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+/* ── Action buttons ──────────────────────────────────────────────────── */
+.yt-drop .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: var(--r-sm);
+  border: none;
+  cursor: pointer;
+  font-family: var(--ff);
+  font-size: .9rem;
+  font-weight: 700;
+  letter-spacing: .01em;
+  transition: .2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.yt-drop .btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  opacity: 0;
+  transition: .15s;
+}
+
+.yt-drop .btn:hover::after {
+  opacity: .06;
+}
+
+.yt-drop .btn:active::after {
+  opacity: .12;
+}
+
+.yt-drop .btn-primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff;
+}
+
+.yt-drop .btn-primary:not(#spinner-btn):hover {
+  box-shadow: 0 8px 24px rgba(255, 59, 107, .3);
+}
+
+.yt-drop .btn-secondary {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+.yt-drop .btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.yt-drop .btn:disabled {
+  opacity: .4;
+  pointer-events: none;
+}
+
+.yt-drop #dl-all-btn {
+  text-decoration: none;
+}
+
+.yt-drop .btn-clear {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  border: 0;
+  background: var(--bg3);
+  color: var(--muted);
+  font-size: 14px;
+  width: 22px;
+  height: 22px;
+  cursor: pointer;
+  opacity: 0;
+  transition: all .2s ease;
+}
+
+.yt-drop .url-row:hover>.url-input:not(:placeholder-shown)+.btn-clear {
+  opacity: 1;
+}
+
+/* ── Progress panel ──────────────────────────────────────────────────── */
+.yt-drop #progress-panel {
+  display: none;
+}
+
+.yt-drop .progress-wrap {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 28px;
+  margin-top: 20px;
+}
+
+.yt-drop .progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.yt-drop .progress-status {
+  font-size: .85rem;
+  color: var(--muted);
+}
+
+.yt-drop .progress-pct {
+  font-size: 1.4rem;
+  font-weight: 800;
+  font-family: var(--mono);
+}
+
+.yt-drop .progress-bar-bg {
+  height: 6px;
+  background: var(--bg3);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.yt-drop .progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  border-radius: 99px;
+  transition: width .4s ease;
+  width: 0%;
+}
+
+.yt-drop .files-list {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.yt-drop .file-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 14px;
+  animation: slideIn .3s ease both;
+}
+
+.yt-drop .file-item .dl-btn {
+  right: 14px;
+}
+
+.yt-drop .file-thumb {
+  width: 64px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 6px;
+  flex-shrink: 0;
+  background: var(--border);
+}
+
+.yt-drop .file-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.yt-drop .file-title {
+  font-size: .88rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.yt-drop .file-meta {
+  font-size: .72rem;
+  color: var(--muted);
+  margin-top: 3px;
+  font-family: var(--mono);
+}
+
+.yt-drop .dl-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  right: 0;
+  padding: 5px;
+  border-radius: 5px;
+  background: var(--bg2);
+  color: #fff;
+  font-family: var(--ff);
+  font-size: .78rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: .2s all ease;
+  white-space: nowrap;
+}
+
+.yt-drop .dl-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.yt-drop .dl-btn:hover {
+  transition: .2s all ease;
+  background: linear-gradient(135deg, var(--green), #16a05a);
+  box-shadow: 0 6px 16px rgba(34, 216, 122, .25);
+}
+
+
+/* BTN DOWNLOAD ALL */
+.yt-drop #dl-all-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+  background: rgba(34, 216, 122, .07);
+  border: 1px solid rgba(34, 216, 122, .2);
+  border-radius: var(--r-sm);
+  padding: 14px 18px;
+
+  #dl-all-label {
+    text-align: center;
+  }
+
+  .download-icon {
+    width: 22px;
+    height: 22px;
+    min-width: 22px;
+  }
+
+  @media (width>=550px) {
+    justify-content: space-between;
+  }
+}
+
+.yt-drop #dl-all-bar span {
+  font-size: .85rem;
+  color: var(--green)
+}
+
+.yt-drop .btn-green {
+  background: linear-gradient(135deg, var(--green), #16a05a);
+  color: #fff
+}
+
+.yt-drop .btn-green:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(34, 216, 122, .25)
+}
+
+
+/* ── Preview strip (video info) ──────────────────────────────────────── */
+.yt-drop #preview-strip {
+  display: none;
+  margin-top: 12px;
+}
+
+.yt-drop .preview-card {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 12px;
+  animation: slideIn .2s ease both;
+}
+
+.yt-drop .preview-card img {
+  width: 80px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.yt-drop .preview-info {
+  flex: 1;
+}
+
+.yt-drop .preview-title {
+  font-size: .85rem;
+  font-weight: 600;
+}
+
+.yt-drop .preview-meta {
+  font-size: .72rem;
+  color: var(--muted);
+  margin-top: 3px;
+  font-family: var(--mono);
+}
+
+.yt-drop #download-btn,
+.yt-drop #spinner-btn {
+  width: 48px;
+  height: 40px;
+  min-width: 48px;
+  min-height: 40px;
+  max-width: 48px;
+  max-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: auto;
+}
+
+.yt-drop #spinner-btn {
+  cursor: default;
+}
+
+.yt-drop #download-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.yt-drop #download-btn svg {
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+  max-width: 22px;
+  min-height: 22px;
+  max-height: 22px;
+}
+
+.yt-drop #download-btn>span,
+.yt-drop #spinner-btn>span {
+  display: none;
+}
+
+.yt-drop .download-title {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  .dropdown-arrow {
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+  }
+}
+
+.yt-drop .history-header>a {
+  color: var(--text);
+  text-decoration: none;
+}
+
+.yt-drop .history-header>a:hover {
+  text-decoration: underline;
+}
+
+.yt-drop .history-section-home .loader {
+  display: none !important;
+}
+
+@media(width<=480px) {
+  .yt-drop .download-wrap .options {
+    grid-template-columns: 1fr;
+  }
+
+  .yt-drop #format-wrap:first-child {
+    z-index: 6;
+  }
+
+  .yt-drop #download-btn,
+  .yt-drop #spinner-btn {
+    margin-top: 8px;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .yt-drop #download-btn>span,
+  .yt-drop #spinner-btn>span {
+    display: block;
+  }
+}

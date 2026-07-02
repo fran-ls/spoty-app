@@ -6,5 +6,11 @@ export const routes = {
   playlists: '/playlists',
   newPlaylist: '/playlists/new',
   songs: '/songs',
-  upload: '/upload'
+  upload: '/upload',
+  YTDrop: {
+    download: '/download',
+    history: '/history',
+    historyStats: '/history-stats',
+    auth: '/auth-2'
+  }
 }

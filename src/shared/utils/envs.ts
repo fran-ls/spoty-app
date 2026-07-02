@@ -6,6 +6,8 @@ interface Envs {
   SUPABASE_URL: string;
   SUPABASE_PUBLISHABLE_KEY: string;
   IS_PROD: boolean;
+  YTDROP_API_URL: string;
+  YTDROP_STORAGE_KEY: string;
 }
 
 const vars = [
@@ -14,7 +16,9 @@ const vars = [
   'VITE_PROD_API_URL',
   'VITE_API_URL',
   'VITE_SUPABASE_URL',
-  'VITE_SUPABASE_PUBLISHABLE_KEY'
+  'VITE_SUPABASE_PUBLISHABLE_KEY',
+  'VITE_YTDROP_API_URL',
+  'VITE_YTDROP_STORAGE_KEY'
 ];
 
 const metaEnv = { ...import.meta.env }

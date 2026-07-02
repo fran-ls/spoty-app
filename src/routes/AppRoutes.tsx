@@ -7,6 +7,10 @@ import PlaylistPage from "../features/playlist/pages/PlaylistPage";
 import SongPage from "../features/song/pages/SongPage";
 import { routes } from "../shared/utils/routes";
 import SearchPlaylists from "../features/playlist/pages/SearchPlaylists";
+import DownloadPage from "../yt_drop/pages/DownloadPage";
+import HistoryPage from "../yt_drop/pages/HistoryPage";
+import HistoryStatsPage from "../yt_drop/pages/HistoryStatsPage";
+import YTDropAuthPage from "../yt_drop/pages/AuthPage";
 
 const AppRoutes = () => {
   return (
@@ -19,6 +23,11 @@ const AppRoutes = () => {
         <Route path={`${routes.playlists}/:playlistId`} element={<PlaylistPage />} />
         <Route path={routes.songs} element={<SongPage />} />
         <Route path="/*" element={<Navigate to={routes.home} />} />
+
+        <Route path={routes.YTDrop.download} element={<DownloadPage />} />
+        <Route path={routes.YTDrop.auth} element={<YTDropAuthPage />} />
+        <Route path={routes.YTDrop.history} element={<HistoryPage />} />
+        <Route path={routes.YTDrop.historyStats} element={<HistoryStatsPage />} />
       </Routes>
     </AppLayout>
   )

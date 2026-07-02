@@ -1,0 +1,623 @@
+.yt-drop .nav-right {
+  position: relative;
+}
+
+.yt-drop .nav-right .btn-settings {
+  background: transparent;
+  border: 0;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.yt-drop .settings-dropdown {
+  position: absolute;
+  top: calc(100% + 14px);
+  right: 0;
+  width: 260px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  transform: translateY(-6px) scale(0.97);
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 300;
+  overflow: hidden;
+}
+
+.yt-drop .settings-dropdown.open {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.yt-drop .nav-right .sd-header {
+  padding: 12px 16px 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.yt-drop .nav-right .sd-title {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.yt-drop .nav-right .sd-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  column-gap: 12px;
+  padding: 13px 16px;
+  transition: 0.15s;
+  cursor: pointer;
+}
+
+.yt-drop .nav-right .sd-item:hover {
+  background: var(--bg3);
+}
+
+.yt-drop .nav-right .sd-item:not(:last-child) {
+  border-bottom: 1px solid rgba(42, 42, 56, 0.6);
+}
+
+.yt-drop .nav-right .sd-item-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.yt-drop .nav-right .sd-item-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.yt-drop .nav-right .sd-item-icon.groovix {
+  background: rgba(78, 154, 255, 0.12);
+}
+
+.yt-drop .nav-right .sd-item-icon.config {
+  background: rgba(255, 59, 107, 0.12);
+}
+
+.yt-drop .nav-right .sd-item-icon svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.yt-drop .nav-right .sd-item-icon.groovix svg {
+  stroke: var(--blue);
+}
+
+.yt-drop .nav-right .sd-item-icon.config svg {
+  stroke: var(--accent);
+}
+
+.yt-drop .nav-right .sd-item-label {
+  font-size: 0.83rem;
+  font-weight: 600;
+}
+
+.yt-drop .nav-right .sd-item-sub {
+  font-size: 0.68rem;
+  color: var(--muted);
+  margin-top: 1px;
+}
+
+.yt-drop .modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(3px);
+  z-index: 400;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  min-width: 100%;
+  min-height: 100vh;
+}
+
+.yt-drop .modal-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.yt-drop .config-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 440px;
+  max-width: 100vw;
+  background: var(--bg2);
+  border-left: 1px solid var(--border);
+  z-index: 401;
+  transform: translateX(100%);
+  transition: transform 0.38s cubic-bezier(0.32, 0.72, 0, 1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.yt-drop .config-panel.open {
+  transform: translateX(0);
+}
+
+.yt-drop .config-panel .cp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 18px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg2);
+  flex-shrink: 0;
+  position: relative;
+}
+
+.yt-drop .config-panel .cp-header::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg,
+      var(--accent),
+      var(--accent2),
+      var(--blue));
+}
+
+.yt-drop .config-panel .cp-title {
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.yt-drop .config-panel .cp-subtitle {
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.yt-drop .config-panel .btn-close {
+  width: 32px;
+  height: 32px;
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  background: var(--bg3);
+  color: var(--muted);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: 0.2s;
+  flex-shrink: 0;
+}
+
+.yt-drop .config-panel .btn-close:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.yt-drop .config-panel .btn-close svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.yt-drop .config-panel .cp-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.yt-drop .config-panel .cp-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.yt-drop .config-panel .cp-body::-webkit-scrollbar-thumb {
+  background: var(--border);
+}
+
+/* ── Config sections ─────────────────────────────────────────────────── */
+.yt-drop .config-panel .cp-section {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+}
+
+.yt-drop .config-panel .cp-section-header {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.yt-drop .config-panel .cp-section-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.yt-drop .config-panel .cp-section-dot.artist {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+}
+
+.yt-drop .config-panel .cp-section-dot.playlist {
+  background: linear-gradient(135deg, var(--blue), #7c3aed);
+}
+
+.yt-drop .config-panel .cp-section-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.yt-drop .config-panel .cp-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px;
+}
+
+.yt-drop .config-panel .field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.yt-drop .config-panel .field-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.yt-drop .config-panel .field-input,
+.yt-drop .config-panel .field-textarea {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 0.83rem;
+  padding: 10px 14px;
+  border-radius: var(--r-sm);
+  outline: none;
+  transition: 0.2s;
+  width: 100%;
+}
+
+.yt-drop .config-panel .field-input::placeholder,
+.yt-drop .config-panel .field-textarea::placeholder {
+  color: var(--muted);
+}
+
+.yt-drop .config-panel .field-input:focus,
+.yt-drop .config-panel .field-textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(255, 59, 107, 0.1);
+}
+
+.yt-drop .config-panel .field-textarea {
+  resize: vertical;
+  min-height: 72px;
+  line-height: 1.5;
+}
+
+/* image upload */
+.yt-drop .config-panel .img-upload-wrap {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.yt-drop .config-panel .img-drop {
+  width: 65px;
+  height: 65px;
+  border-radius: 10px;
+  border: 1.5px dashed var(--border);
+  background: var(--bg2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: 0.2s;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.yt-drop .config-panel .img-drop:hover {
+  border-color: var(--accent);
+  background: rgba(255, 59, 107, 0.05);
+}
+
+.yt-drop .config-panel .img-drop svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+
+.yt-drop .config-panel .img-drop span {
+  font-size: 0.6rem;
+  color: var(--muted);
+  margin-top: 4px;
+  text-align: center;
+  line-height: 1.3;
+  padding: 0 4px;
+}
+
+.yt-drop .config-panel .img-drop input[type="file"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.yt-drop .config-panel .img-preview {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  display: none;
+  flex-shrink: 0;
+}
+
+.yt-drop .config-panel .img-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  justify-content: center;
+}
+
+.yt-drop .config-panel .img-info-name {
+  font-size: 0.75rem;
+  color: var(--text);
+  font-family: var(--mono);
+  word-break: break-all;
+}
+
+.yt-drop .config-panel .img-info-size {
+  font-size: 0.68rem;
+  color: var(--muted);
+  font-family: var(--mono);
+}
+
+.yt-drop .config-panel .img-clear {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: 0.2s;
+  text-decoration: underline;
+  padding: 0;
+  width: fit-content;
+}
+
+.yt-drop .config-panel .btn-img-clear {
+  position: absolute;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  top: 0;
+  right: 0;
+  color: red;
+  background-color: rgba(0, 0, 0, 0.5);
+  width: 100%;
+  height: 100%;
+  padding: 8px;
+  border: 0;
+
+  span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: var(--accent);
+  }
+
+  svg {
+    width: 20px;
+    height: 20px;
+    border: 0;
+    stroke: black;
+  }
+}
+
+.yt-drop .config-panel .img-clear:hover {
+  color: var(--accent);
+}
+
+/* color pair */
+.yt-drop .config-panel .color-row {
+  display: flex;
+  gap: 10px;
+}
+
+.yt-drop .config-panel .color-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.yt-drop .config-panel .color-pick-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 8px 12px;
+  transition: 0.2s;
+  cursor: pointer;
+}
+
+.yt-drop .config-panel .color-pick-wrap:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(255, 59, 107, 0.1);
+}
+
+.yt-drop .config-panel .color-swatch {
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  flex-shrink: 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: 0.2s;
+}
+
+.yt-drop .config-panel .color-val {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  color: var(--text);
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  cursor: pointer;
+}
+
+.yt-drop .config-panel input[type="color"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* playlist gradient preview */
+.yt-drop .config-panel .gradient-preview {
+  height: 50px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+  /* background: linear-gradient(135deg, #ff3b6b, #4e9aff); */
+  transition: 0.4s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.yt-drop .config-panel .gradient-label {
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* ── Panel footer ────────────────────────────────────────────────────── */
+.yt-drop .config-panel .cp-footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+  background: var(--bg2);
+}
+
+.yt-drop .config-panel .btn-save {
+  flex: 1;
+  padding: 11px;
+  border-radius: var(--r-sm);
+  border: none;
+  cursor: pointer;
+  font-family: var(--ff);
+  font-size: 0.88rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff;
+  transition: 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.yt-drop .config-panel .btn-save::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  opacity: 0;
+  transition: 0.15s;
+}
+
+.yt-drop .config-panel .btn-save:hover::after {
+  opacity: 0.07;
+}
+
+.yt-drop .config-panel .btn-save:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(255, 59, 107, 0.3);
+}
+
+.yt-drop .config-panel .btn-cancel {
+  padding: 11px 20px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+  background: var(--bg3);
+  color: var(--muted);
+  font-family: var(--ff);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.yt-drop .config-panel .btn-cancel:hover {
+  color: var(--text);
+}
+
+.yt-drop .config-panel .artist-group,
+.yt-drop .config-panel .playlist-group {
+  display: flex;
+  gap: 12px;
+
+  .artist-name,
+  .playlist-name {
+    width: 100%;
+
+    label {
+      margin-top: 5px;
+    }
+  }
+}
+
+.yt-drop .config-panel .playlist-group .img-drop:hover .btn-img-clear,
+.yt-drop .config-panel .artist-group .img-drop:hover .btn-img-clear {
+  display: flex;
+}

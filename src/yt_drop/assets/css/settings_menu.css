@@ -1,0 +1,96 @@
+.yt-drop .settings-menu-wrap .btn-settings,
+.yt-drop .settings-wrap .btn-settings {
+  background: transparent;
+  border: 0;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.yt-drop .settings-menu-wrap {
+  --shadow-color: var(--border);
+  --shadow-size: 2px;
+  --triangle-size: 12px;
+
+  position: relative;
+
+  .triangle {
+    position: absolute;
+    top: -3px;
+    right: 8px;
+    background: var(--bg);
+    width: var(--triangle-size);
+    height: var(--triangle-size);
+    transform: rotate(45deg);
+    box-shadow: 0px 0px var(--shadow-size) var(--shadow-color);
+    z-index: 5;
+  }
+}
+
+.yt-drop .settings-menu-wrap .settings-menu {
+  position: absolute;
+  top: calc(100% + 5px);
+  right: -4px;
+  width: fit-content;
+  height: 0;
+  overflow: hidden;
+  transition: all 200ms;
+  opacity: 0;
+
+  * {
+    font-size: 14px !important;
+    color: var(--muted);
+  }
+}
+
+.yt-drop .settings-menu-wrap .settings-menu-content {
+  position: relative;
+  width: 100%;
+  height: 100%;
+
+  ul {
+    list-style: none;
+  }
+}
+
+.yt-drop .settings-menu-wrap .settings-ul-wrap {
+  position: absolute;
+  top: 6px;
+  right: 2px;
+  background: var(--bg);
+  border-radius: 4px;
+  width: calc(100% - var(--shadow-size) * 2);
+  height: calc(100% - var(--shadow-size) * 2 - var(--triangle-size) / 2);
+  box-shadow: 0px 0px var(--shadow-size) var(--shadow-color);
+}
+
+.yt-drop .settings-menu-wrap .settings-menu-ul {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: var(--bg);
+  border-radius: 4px;
+  min-width: 160px;
+  z-index: 10;
+  padding: 4px;
+
+  .opt-text {
+    text-wrap: nowrap;
+    font-weight: 700;
+  }
+
+  .description {
+    font-weight: 600;
+    padding: 8px 12px;
+
+    span {
+      color: var(--accent);
+    }
+  }
+
+  .settings-menu-option>div {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+  }
+}
