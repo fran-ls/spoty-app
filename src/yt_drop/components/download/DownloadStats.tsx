@@ -1,7 +1,7 @@
-import type { HistoryStat } from "../../types/history.type";
+import type { DownloadStat } from "../../types/download.types";
 import { fmtSize } from "../../helpers/formats";
 
-const HistoryStats = ({ stats }: { stats: HistoryStat }) => {
+const DownloadStats = ({ stats }: { stats: DownloadStat }) => {
   return (
     <div className="stats-grid" id="stats-grid">
       <div className="stat-card c-total">
@@ -44,4 +44,4 @@ const HistoryStats = ({ stats }: { stats: HistoryStat }) => {
   )
 }
 
-export default HistoryStats;
+export default DownloadStats;

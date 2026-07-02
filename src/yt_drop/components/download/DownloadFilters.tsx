@@ -1,7 +1,7 @@
 import { XIcon } from "lucide-react";
-import type { PaginationMeta } from "../../types/history.type";
+import type { PaginationMeta } from "../../types/download.types";
 
-interface HistoryFiltersProps {
+interface DownloadFiltersProps {
   meta: PaginationMeta & { items: number };
   filters: any;
   onQueryChange: (value: string) => void;
@@ -12,7 +12,7 @@ interface HistoryFiltersProps {
   onClearFilters: () => void;
 }
 
-const HistoryFilters = (props: HistoryFiltersProps) => {
+const DownloadFilters = (props: DownloadFiltersProps) => {
   const {
     meta, filters, onQueryChange, onFormatChange,
     onStatusChange, onClearFilters, onStartDate, onEndDate
@@ -109,4 +109,4 @@ const HistoryFilters = (props: HistoryFiltersProps) => {
   )
 }
 
-export default HistoryFilters;
+export default DownloadFilters;

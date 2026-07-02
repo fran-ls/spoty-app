@@ -1,4 +1,4 @@
-import { AudioQuality, VideoQuality } from "../types/common.type"
+import { AudioQuality, VideoQuality } from "../types/common.types"
 
 export type SrcType = typeof QUALITIES;
 

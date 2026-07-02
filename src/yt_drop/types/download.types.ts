@@ -1,6 +1,6 @@
-import type { FormatType, SrcQuality } from "./common.type";
+import type { FormatType, SrcQuality } from "./common.types";
 
-export interface HistoryItem {
+export interface Download {
   id: string;
   duration: number;
   filename: string;
@@ -16,14 +16,9 @@ export interface HistoryItem {
   createdAt: any;
 }
 
-export interface HistoryResponse {
-  items: HistoryItem[];
-  meta: {
-    limit: number;
-    page: number;
-    total: number;
-    totalPages?: number;
-  }
+export interface DownloadResponse {
+  items: Download[];
+  meta: PaginationMeta;
 }
 
 export interface DownloadPayload {
@@ -39,7 +34,7 @@ export interface PaginationMeta {
   totalPages: number;
 }
 
-export interface HistoryStat {
+export interface DownloadStat {
   audios: number;
   errors: number;
   success: number;

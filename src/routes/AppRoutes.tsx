@@ -7,9 +7,9 @@ import PlaylistPage from "../features/playlist/pages/PlaylistPage";
 import SongPage from "../features/song/pages/SongPage";
 import { routes } from "../shared/utils/routes";
 import SearchPlaylists from "../features/playlist/pages/SearchPlaylists";
+import YTDropHomePage from "../yt_drop/pages/HomePage";
 import DownloadPage from "../yt_drop/pages/DownloadPage";
-import HistoryPage from "../yt_drop/pages/HistoryPage";
-import HistoryStatsPage from "../yt_drop/pages/HistoryStatsPage";
+import DownloadStatPage from "../yt_drop/pages/DownloadStatPage";
 
 const AppRoutes = () => {
   return (
@@ -23,9 +23,9 @@ const AppRoutes = () => {
         <Route path={routes.songs} element={<SongPage />} />
         <Route path="/*" element={<Navigate to={routes.home} />} />
 
-        <Route path={routes.YTDrop.download} element={<DownloadPage />} />
-        <Route path={routes.YTDrop.history} element={<HistoryPage />} />
-        <Route path={routes.YTDrop.historyStats} element={<HistoryStatsPage />} />
+        <Route path={routes.YTDrop.download} element={<YTDropHomePage />} />
+        <Route path={routes.YTDrop.history} element={<DownloadPage />} />
+        <Route path={routes.YTDrop.historyStats} element={<DownloadStatPage />} />
       </Routes>
     </AppLayout>
   )

@@ -1,20 +1,21 @@
 import { useEffect, useRef, useState } from "react";
 import { InfoIcon, XIcon } from "lucide-react";
-import type { HistoryItem, PaginationMeta } from "../../types/history.type";
+import type { Download, PaginationMeta } from "../../types/download.types";
 import { truncateTitleAll, setAllItems } from "../../helpers/truncateText";
 import { useInfiniteScroll } from "../../hooks/useInfiniteScroll";
-import { fmtDate, fmtDuration } from "../../helpers/formats";
+import { fmtDuration } from "../../helpers/formats";
 import { QUALITIES } from "../../data/qualities.data";
-import { apiService } from "../../api/api.service";
+import downloadService from "../../services/download.service";
 import { DownloadIcon } from "../shared/Icons";
+import { getFmtDate } from "../../../shared/utils/getFormatDate";
 
-interface HistoryListProps {
-  items: HistoryItem[];
+interface DownloadListProps {
+  items: Download[];
   meta?: PaginationMeta;
   loadMore?: () => void;
 }
 
-const HistoryList = ({ items, meta, loadMore }: HistoryListProps) => {
+const DownloadList = ({ items, meta, loadMore }: DownloadListProps) => {
   const wrapRef = useRef<HTMLDivElement>(null);
 
   const [isOpen, setIsOpen] = useState(false);
@@ -24,20 +25,21 @@ const HistoryList = ({ items, meta, loadMore }: HistoryListProps) => {
     loadMore && loadMore();
   });
 
-  async function getInfo(item: HistoryItem) {
+  async function getInfo(item: Download) {
     if (infoPayload) return setIsOpen(true);
-    const r = await apiService.info(item.url);
+    const r = await downloadService.info(item.url);
     setInfoPayload(r.data);
     setIsOpen(true);
   }
 
-  function getMeta(item: HistoryItem) {
+  function getMeta(item: Download) {
     const q = item.quality;
     const fmt = item.format;
+    const date = getFmtDate(item.createdAt, 'dd MMM yyyy').replaceAll(' ', '/');
+    const duration = fmtDuration(item.duration);
     const quality = (QUALITIES as any)[fmt]?.[q];
     const qlity = quality ? `${item.quality} ${quality}` : 'No calidad';
-    const meta = `${fmtDate(item.createdAt)} · ${fmtDuration
-      (item.duration)} ${quality ? ` · ${qlity}` : ''}`;
+    const meta = `${date} · ${duration} ${quality ? ` · ${qlity}` : ''}`;
     return meta;
   }
 
@@ -122,7 +124,7 @@ const HistoryList = ({ items, meta, loadMore }: HistoryListProps) => {
                 {meta}
               </div>
               <button
-                onClick={() => apiService.download(item)}
+                onClick={() => downloadService.download(item)}
                 className="dl-btn"
               >
                 <DownloadIcon />
@@ -158,4 +160,4 @@ const HistoryList = ({ items, meta, loadMore }: HistoryListProps) => {
   )
 }
 
-export default HistoryList;
+export default DownloadList;

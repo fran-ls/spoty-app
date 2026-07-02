@@ -1,17 +1,17 @@
 import { useEffect, useState } from "react";
 import { CheckIcon, XIcon } from "lucide-react";
-import "../assets/css/history_stats.css";
-import type { HistoryItem, HistoryStat, PaginationMeta } from "../types/history.type";
-import HistoryStats from "../components/history/HistoryStats";
-import HistoryFilters from "../components/history/HistoryFilters";
-import HistoryTable from "../components/history/HistoryTable";
-import { apiService } from "../api/api.service";
+import "../assets/css/download_stats.css";
+import type { Download, DownloadStat, PaginationMeta } from "../types/download.types";
+import DownloadStats from "../components/download/DownloadStats";
+import DownloadFilters from "../components/download/DownloadFilters";
+import DownloadTable from "../components/download/DownloadTable";
+import downloadService from "../services/download.service";
 import useToast from "../hooks/useToast";
 import Toast from "../components/shared/Toast";
 import ConfirmToast from "../components/shared/ConfirmToast";
 import { TrashIcon } from "../components/shared/Icons";
 
-const HistoryStatsPage = () => {
+const DownloadStatPage = () => {
   const {
     toast,
     isActiveToast, setIsActiveToast,
@@ -31,8 +31,8 @@ const HistoryStatsPage = () => {
     total: 0,
     totalPages: 0
   });
-  const [items, setItems] = useState<HistoryItem[]>([]);
-  const [stats, setStats] = useState<HistoryStat>({
+  const [items, setItems] = useState<Download[]>([]);
+  const [stats, setStats] = useState<DownloadStat>({
     audios: 0,
     videos: 0,
     total: 0,
@@ -56,18 +56,18 @@ const HistoryStatsPage = () => {
     setStatus('');
     setEndDate('');
     setStartDate('');
-    getHistory(1);
+    getDownloads(1);
   }
 
   const onQueryChange = (value: string) => {
     setQuery(value);
-    setTimeout(() => { getHistory(1) }, 300);
+    setTimeout(() => { getDownloads(1) }, 300);
   }
 
-  async function clearHistory() {
+  async function clearDownloads() {
     setIsActiveConfirmToast(false);
 
-    const data = await apiService.clearHistory();
+    const data = await downloadService.clearDownloads();
 
     if (data.error) return showToast({
       title: 'Error',
@@ -76,7 +76,7 @@ const HistoryStatsPage = () => {
       icon: <XIcon className="toast-icon" />
     });
 
-    getHistory(1);
+    getDownloads(1);
 
     showToast({
       title: 'Historial eliminado',
@@ -87,11 +87,11 @@ const HistoryStatsPage = () => {
   }
 
   async function getStats() {
-    const r = await apiService.getHistoryStats();
-    if (r.status === 200) setStats(r.data);
+    const r = await downloadService.getDownloadStats();
+    if (r.data) setStats(r.data);
   }
 
-  async function getHistory(page: number, isPaginated = false) {
+  async function getDownloads(page: number, isPaginated = false) {
     const skip = (page - 1) * pageSize;
 
     const params = {
@@ -107,30 +107,28 @@ const HistoryStatsPage = () => {
     }
 
     setIsLoading(true);
+    const { error, data } = await downloadService.getDownloads(params);
+    setIsLoading(false);
 
-    const r = await apiService.getHistory(params);
-
-    if (r.data) {
-      setMeta(r.data.meta);
-
-      if (isPaginated) {
-        setItems((prev) => [...prev, ...r.data.items]);
-      }
-      else {
-        setItems(r.data.items);
-      }
-    }
-
-    if (r.error) {
+    if (error) {
       setError(true);
     }
 
-    setIsLoading(false);
+    if (!data) return;
+
+    setMeta(data.meta);
+
+    if (isPaginated) {
+      setItems((prev) => [...prev, ...data.items]);
+    }
+    else {
+      setItems(data.items);
+    }
   }
 
   useEffect(() => { getStats() }, []);
 
-  useEffect(() => { getHistory(1) }, [
+  useEffect(() => { getDownloads(1) }, [
     format,
     status,
     endDate,
@@ -160,9 +158,9 @@ const HistoryStatsPage = () => {
         </div>
       </div>
 
-      <HistoryStats stats={stats} />
+      <DownloadStats stats={stats} />
 
-      <HistoryFilters
+      <DownloadFilters
         filters={{
           query,
           format,
@@ -179,17 +177,17 @@ const HistoryStatsPage = () => {
         onClearFilters={onClearFilters}
       />
 
-      <HistoryTable
+      <DownloadTable
         meta={meta}
         items={items}
         loadMore={() => {
           if (meta.page < meta.totalPages) {
             const nextPage = meta.page + 1;
-            getHistory(nextPage, true);
+            getDownloads(nextPage, true);
           }
         }}
-        onDeleteItem={async (id: string) => {
-          const r = await apiService.deleteOneHistory(id);
+        onDelete={async (id: string) => {
+          const r = await downloadService.deleteDownload(id);
           if (r.status === 200) setItems(
             (prev) => prev.filter((item) => item.id !== id)
           );
@@ -210,10 +208,10 @@ const HistoryStatsPage = () => {
         isActive={isActiveConfirmToast}
         isFirstLoad={isFirstLoadConfirmToast}
         onClose={() => setIsActiveConfirmToast(false)}
-        onConfirm={clearHistory}
+        onConfirm={clearDownloads}
       />
     </div>
   )
 }
 
-export default HistoryStatsPage;
+export default DownloadStatPage;

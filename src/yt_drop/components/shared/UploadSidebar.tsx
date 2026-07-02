@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { XIcon } from "lucide-react";
-import type { Artist, Playlist } from "../../types/upload.type";
+import type { Artist, Playlist } from "../../types/upload.types";
 import { useAppCtx } from "../../../shared/context/AppContext";
 import { config } from "../../../shared/data/config.data";
 

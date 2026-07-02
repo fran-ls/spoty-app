@@ -1,10 +1,10 @@
 import YTDropAppLayout from "./components/layout/YTDropAppLayout";
-import DownloadPage from "./pages/DownloadPage";
+import HomePage from "./pages/HomePage";
 
 const YTDropApp = () => {
   return (
     <YTDropAppLayout>
-      <DownloadPage />
+      <HomePage />
     </YTDropAppLayout>
   )
 }

@@ -290,6 +290,11 @@
 
 .yt-drop .filter-date {
   min-width: 130px;
+
+  &::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    filter: invert(1);
+  }
 }
 
 .yt-drop .filter-sep {

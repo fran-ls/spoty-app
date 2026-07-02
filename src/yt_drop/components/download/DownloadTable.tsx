@@ -1,20 +1,21 @@
 import { useState } from "react";
-import type { HistoryItem, PaginationMeta } from "../../types/history.type";
+import type { Download, PaginationMeta } from "../../types/download.types";
 import { DownloadIcon, EllipsisVerticalIcon, TrashIcon } from "lucide-react";
-import { fmtDate, fmtDuration, fmtSize } from "../../helpers/formats";
-import { apiService } from "../../api/api.service";
+import { fmtDuration, fmtSize } from "../../helpers/formats";
+import downloadService from "../../services/download.service";
 import { useInfiniteScroll } from "../../hooks/useInfiniteScroll";
+import { getFmtDate } from "../../../shared/utils/getFormatDate";
 
-interface HistoryTableProps {
-  items: HistoryItem[];
+interface DownloadTableProps {
+  items: Download[];
   isLoading: boolean;
   meta: PaginationMeta;
   error: any;
   loadMore: () => void;
-  onDeleteItem: (id: string) => Promise<void>;
+  onDelete: (id: string) => Promise<void>;
 }
 
-const HistoryTable = ({ items, meta, isLoading, error, loadMore, onDeleteItem }: HistoryTableProps) => {
+const DownloadTable = ({ items, meta, isLoading, error, loadMore, onDelete }: DownloadTableProps) => {
   const [activeId, setActiveId] = useState('');
 
   const { loaderRef } = useInfiniteScroll(() => {
@@ -58,7 +59,8 @@ const HistoryTable = ({ items, meta, isLoading, error, loadMore, onDeleteItem }:
               const isOk = item.status === "success";
               const isMp3 = item.format === "audio";
               const canDl = isOk && item.filename;
-              const date = fmtDate(item.createdAt);
+              const [date, time] = getFmtDate(item.createdAt, '').split(' ')
+              const dateTime = `${date} ${time.replace('/', ' ')}`;
 
               return (
                 <tr key={item.id}>
@@ -104,8 +106,8 @@ const HistoryTable = ({ items, meta, isLoading, error, loadMore, onDeleteItem }:
                   <td className="td-user" title={item.uploader}>
                     <div>{item.uploader || '-'}</div>
                   </td>
-                  <td className="td-date" title={date}>
-                    {date}
+                  <td className="td-date" title={dateTime}>
+                    {dateTime}
                   </td>
                   <td className="td-status">
                     <span className={`badge ${isOk ? "badge-ok" : "badge-error"}`}>
@@ -124,7 +126,7 @@ const HistoryTable = ({ items, meta, isLoading, error, loadMore, onDeleteItem }:
                     {activeId === item.id &&
                       <div className="history-stat-table-menu">
                         <button
-                          onClick={() => canDl && apiService.download(item)}
+                          onClick={() => canDl && downloadService.download(item)}
                           className="act-btn transparent"
                           type="button"
                         >
@@ -132,7 +134,7 @@ const HistoryTable = ({ items, meta, isLoading, error, loadMore, onDeleteItem }:
                           Guardar
                         </button>
                         <button
-                          onClick={() => onDeleteItem(item.id)}
+                          onClick={() => onDelete(item.id)}
                           className="act-btn delete transparent"
                           type="button"
                         >
@@ -204,4 +206,4 @@ const HistoryTable = ({ items, meta, isLoading, error, loadMore, onDeleteItem }:
   )
 }
 
-export default HistoryTable;
+export default DownloadTable;
