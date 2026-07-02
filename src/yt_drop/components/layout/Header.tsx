@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { ChartNoAxesColumnIcon, DownloadIcon, HistoryIcon, HomeIcon, ShieldIcon } from "lucide-react";
-import { apiService } from "../../api/api.service";
+import { Link, useLocation } from "react-router-dom";
+import { ChartNoAxesColumnIcon, DownloadIcon, HistoryIcon, HomeIcon } from "lucide-react";
 import { AppIcon } from "../shared/Icons";
 import UploadMenu from "../shared/UploadMenu";
 import { routes } from "../../../shared/utils/routes";
@@ -10,26 +9,10 @@ import useAuth from "../../../features/auth/hooks/useAuth";
 const Header = () => {
   const { user } = useAuth();
   const location = useLocation();
-  const navigate = useNavigate();
 
   const [activePath, setActivePath] = useState('/');
 
-  const logout = async () => {
-    const r = await apiService.logout();
-
-    if (r.data?.ok) {
-      navigate(routes.auth);
-    }
-  }
-
   const links = [
-    {
-      label: 'Auth',
-      to: routes.YTDrop.auth,
-      icon: (
-        <ShieldIcon />
-      )
-    },
     {
       label: 'Descargar',
       to: routes.YTDrop.download,
@@ -81,19 +64,20 @@ const Header = () => {
           <div className="nav-avatar" id="nav-avatar">
             {user?.username ? user?.username[0].toUpperCase() : '?'}
           </div>
-          <span
-            style={{ marginRight: '10px' }}
-            className="nav-username mr-10" id="nav-username"
-          >
-            {user?.username}
-          </span>
-          <button
-            onClick={logout}
-            className="hidden btn-logout"
-            type="button"
-          >
-            Salir
-          </button>
+          <div style={{ marginRight: '10px' }}>
+            <span
+              className="nav-username block text-nowrap overflow-hidden max-w-50" id="nav-username"
+              title={user?.username}
+            >
+              {user?.username}
+            </span>
+            <span
+              className="block text-xs text-nowrap overflow-hidden max-w-45"
+              title={user?.email}
+            >
+              {user?.email}
+            </span>
+          </div>
 
           <Link
             to={routes.home}

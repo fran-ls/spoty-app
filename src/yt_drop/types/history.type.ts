@@ -5,15 +5,15 @@ export interface HistoryItem {
   duration: number;
   filename: string;
   format: FormatType;
-  job_id: string;
+  jobId: string;
   quality: SrcQuality;
-  size_bytes: number;
+  sizeBytes: number;
   status: DownloadStatus;
   thumbnail: string;
   title: string;
   url: string;
-  username?: string;
-  created_at: any;
+  uploader?: string;
+  createdAt: any;
 }
 
 export interface HistoryResponse {
@@ -22,7 +22,6 @@ export interface HistoryResponse {
     limit: number;
     page: number;
     total: number;
-    total_pages?: number;
     totalPages?: number;
   }
 }

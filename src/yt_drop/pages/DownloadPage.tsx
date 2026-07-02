@@ -484,9 +484,9 @@ const DownloadPage = () => {
                     <div
                       className="file-meta truncate"
                       onLoad={(e) => truncateText(e.currentTarget, '56px')}
-                      title={`${f.filename} · ${fmtSize(f.size_bytes)}`}
+                      title={`${f.filename} · ${fmtSize(f.sizeBytes)}`}
                     >
-                      {f.filename} · {fmtSize(f.size_bytes)}
+                      {f.filename} · {fmtSize(f.sizeBytes)}
                     </div>
                   </div>
 

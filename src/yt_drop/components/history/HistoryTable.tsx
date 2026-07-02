@@ -44,7 +44,7 @@ const HistoryTable = ({ items, meta, isLoading, error, loadMore, onDeleteItem }:
                 Duración <span className="sort-arrow" id="arr-duration">↕</span>
               </th>
               <th className="td-user">
-                Usuario <span className="sort-arrow" id="arr-username">↕</span>
+                Propietario <span className="sort-arrow" id="arr-username">↕</span>
               </th>
               <th className="td-date sorted">
                 Fecha <span className="sort-arrow" id="arr-created_at">↓</span>
@@ -58,10 +58,13 @@ const HistoryTable = ({ items, meta, isLoading, error, loadMore, onDeleteItem }:
               const isOk = item.status === "success";
               const isMp3 = item.format === "audio";
               const canDl = isOk && item.filename;
+              const date = fmtDate(item.createdAt);
 
               return (
                 <tr key={item.id}>
-                  <td className="td-thumb">
+                  <td className="td-thumb aspect-video min-w-25" style={{
+                    minWidth: 100
+                  }}>
                     {
                       item.thumbnail
                         ?
@@ -93,16 +96,16 @@ const HistoryTable = ({ items, meta, isLoading, error, loadMore, onDeleteItem }:
                     {item.quality ? (isMp3 ? item.quality + " kbps" : item.quality + "p") : "—"}
                   </td>
                   <td className="td-size">
-                    {fmtSize(item.size_bytes) || "—"}
+                    {fmtSize(item.sizeBytes) || "—"}
                   </td>
                   <td className="td-duration">
                     {fmtDuration(item.duration) || "—"}
                   </td>
-                  <td className="td-user">
-                    <div>{item.username || '-'}</div>
+                  <td className="td-user" title={item.uploader}>
+                    <div>{item.uploader || '-'}</div>
                   </td>
-                  <td className="td-date">
-                    {fmtDate(item.created_at)}
+                  <td className="td-date" title={date}>
+                    {date}
                   </td>
                   <td className="td-status">
                     <span className={`badge ${isOk ? "badge-ok" : "badge-error"}`}>

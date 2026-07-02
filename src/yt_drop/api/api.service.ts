@@ -1,5 +1,4 @@
 import axios from "axios";
-import type { UserDTO } from "../types/auth.type";
 import type { Artist, Playlist } from "../types/upload.type";
 import { type PaginationMeta, type DownloadPayload, type HistoryItem, type HistoryResponse } from "../types/history.type";
 import { FormatType, VideoQuality } from "../types/common.type";
@@ -16,48 +15,6 @@ const api = axios.create({
 
 class ApiService {
   private YT_URL = 'https://www.youtube.com/watch?v=';
-
-  async register(user: UserDTO) {
-    try {
-      const r = await api.post('/auth/register', user);
-      return this.ApiResponse('ok', r);
-    } catch (e) {
-      return this.ApiResponse('error', e);
-    }
-  }
-
-  async login(user: UserDTO) {
-    try {
-      const r = await api.post('/auth/login', user);
-      return await this.ApiResponse('ok', r);
-    } catch (e) {
-      return await this.ApiResponse('error', e);
-    }
-  }
-
-  async auth(isRegister: boolean, user: UserDTO) {
-    return await isRegister ? this.register(user) : this.login(user);
-  }
-
-  async logout() {
-    try {
-      const r = await api.post('/auth/logout');
-      return await this.ApiResponse('ok', r);
-    } catch (e) {
-      return await this.ApiResponse('error', e);
-    }
-  }
-
-  async getProfile() {
-    try {
-      const r = await api.get('/auth/me', {
-        withCredentials: true
-      });
-      return await this.ApiResponse('ok', r);
-    } catch (e) {
-      return await this.ApiResponse('error', e);
-    }
-  }
 
   async getHistoryStats() {
     const isUpload = getIsUploadToSpotify();
@@ -99,7 +56,7 @@ class ApiService {
     try {
       const r = await api.get<HistoryResponse>('/history', { params })
       const data = r.data;
-      const meta = data.meta;
+      const meta = data.meta as any;
 
       return await this.ApiResponse<PaginationMeta & { items: HistoryItem[] }>('ok', {
         ...r, data: {
@@ -108,7 +65,7 @@ class ApiService {
             limit: meta.limit,
             page: meta.page,
             total: meta.total,
-            totalPages: meta.total_pages
+            totalPages: meta.total_pages || meta.totalPages
           } as PaginationMeta
         }
       });

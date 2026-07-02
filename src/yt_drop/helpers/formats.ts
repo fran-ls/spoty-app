@@ -31,10 +31,10 @@ export function fmtDate(iso: Date) {
     const parts = date.split(', ');
     const times = parts[1].split(' ');
 
-    const fmtDate = parts[0].replaceAll(' ', '/');
+    const fmtDate = parts[0].split(' ');
     const p = times[1].includes('p') ? 'PM' : times[1].includes('a') ? 'AM' : ''
 
-    return `${fmtDate} ${times[0]} ${p}`;
+    return `${fmtDate[0].padStart(2, '0')}/${fmtDate[1]}/${fmtDate[2]} ${times[0]} ${p}`;
   }
   catch (e) {
     return iso.toDateString();

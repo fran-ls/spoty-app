@@ -36,7 +36,7 @@ const HistoryList = ({ items, meta, loadMore }: HistoryListProps) => {
     const fmt = item.format;
     const quality = (QUALITIES as any)[fmt]?.[q];
     const qlity = quality ? `${item.quality} ${quality}` : 'No calidad';
-    const meta = `${fmtDate(item.created_at)} · ${fmtDuration
+    const meta = `${fmtDate(item.createdAt)} · ${fmtDuration
       (item.duration)} ${quality ? ` · ${qlity}` : ''}`;
     return meta;
   }
