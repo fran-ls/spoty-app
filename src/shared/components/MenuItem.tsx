@@ -4,11 +4,11 @@ import type { Role } from "../../features/auth/auth.types";
 import useAuth from "../../features/auth/hooks/useAuth";
 import { cn } from "../utils/tailwindCn";
 
-const menuStyleKeys: MenuStylesK[] = ['backdrop', 'btn', 'menu', 'option', 'subtext', 'toggle'];
+const menuStyleKeys: MenuStyleK[] = ['wrap', 'backdrop', 'btn', 'menu', 'option', 'subtext', 'toggle'];
 
 export type MenuItemAction = 'remove' | 'add-to-queue' | 'view-track' | 'share' | 'close' | 'toggle';
 
-type FmtStyles = Partial<Record<MenuStylesK, ItemStyle>>;
+type FmtStyles = Partial<Record<MenuStyleK, ItemStyle>>;
 
 type Style = string | React.CSSProperties;
 
@@ -21,6 +21,7 @@ interface MenuStyles extends LiItemStyles {
   btn?: Style;
   menu?: Style;
   backdrop?: Style;
+  wrap?: Style;
   option?: Style;
   subtext?: Style;
 }
@@ -34,7 +35,7 @@ interface LiItemStyles {
   }
 }
 
-type MenuStylesK = keyof MenuStyles;
+type MenuStyleK = keyof MenuStyles;
 
 interface Item {
   label: string;
@@ -147,6 +148,8 @@ const LiItem = ({ item, styles }: LiItemProps) => {
 }
 
 interface MenuItemProps {
+  isBackdrop?: boolean;
+  isBtn?: boolean;
   sections?: Section[];
   items?: Item[];
   access?: Role[];
@@ -154,16 +157,20 @@ interface MenuItemProps {
   styles?: MenuStyles;
   actions?: (action: MenuItemAction) => void;
   onActive?: () => void;
+  onClose?: () => void;
 }
 
 const MenuItem = (props: MenuItemProps) => {
-  const { open = false, access = ['ADMIN'], items = [], styles, sections, actions, onActive } = props;
+  const {
+    open = false, access = [], items = [], styles, sections,
+    isBtn = true, isBackdrop = true, actions, onActive, onClose
+  } = props;
   const { user } = useAuth();
   const [isActive, setIsActive] = useState(false);
 
   useEffect(() => { setIsActive(open) }, [open]);
 
-  if (access && !access.includes(user?.role || 'USER')) {
+  if (access.length && !access.includes(user?.role || 'USER')) {
     return null;
   }
 
@@ -215,7 +222,7 @@ const MenuItem = (props: MenuItemProps) => {
   const secs = sections || defaults || [];
 
   const fmtStyles: FmtStyles = {};
-  const exclude: MenuStylesK[] = ['toggle']
+  const exclude: MenuStyleK[] = ['toggle']
 
   menuStyleKeys.forEach((k) => {
     const style = (styles as any)?.[k];
@@ -228,36 +235,42 @@ const MenuItem = (props: MenuItemProps) => {
     }
   });
 
-  const values = fmtStyles as Record<MenuStylesK, ItemStyle>;
+  const values = fmtStyles as Record<MenuStyleK, ItemStyle>;
   const ulClassName = cn("text-[#adaaaa] flex flex-col items-center justify-between", values.menu.className);
+  const show = (isBtn || !open) ? isActive : open;
 
   return (
     <>
-      {isActive && (
+      {(show && isBackdrop) && (
         <div
           style={values.backdrop.style}
           className={cn("bg-black/50 z-100 fixed min-h-screen w-full left-0 top-0", values.backdrop.className)}
-          onClick={() => setIsActive(false)}
+          onClick={() => {
+            setIsActive(false);
+            onClose?.();
+          }}
         />
       )}
 
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          setIsActive(!isActive);
-          onActive?.();
-        }}
-        style={values.btn.style}
-        className={cn(`p-1 text-[#adaaaa] cursor-pointer`, values.btn.className)}
-        type="button"
-      >
-        <EllipsisVerticalIcon size={18} />
-      </button>
+      {isBtn && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsActive(!isActive);
+            onActive?.();
+          }}
+          style={values.btn.style}
+          className={cn(`p-1 text-[#adaaaa] cursor-pointer`, values.btn.className)}
+          type="button"
+        >
+          <EllipsisVerticalIcon size={18} />
+        </button>
+      )}
 
-      {isActive && (
+      {show && (
         <div
-          style={values.menu.style}
-          className={cn("min-w-45 z-100 bg-[#282828] text-sm p-1 rounded absolute top-0 right-0", values.menu.className)}
+          style={values.wrap.style}
+          className={cn("min-w-45 z-100 bg-[#282828] text-sm p-1 rounded absolute top-0 right-0", values.wrap.className)}
         >
           {items?.length ? (
             <ul className={ulClassName} style={values.menu.style}>
@@ -273,6 +286,7 @@ const MenuItem = (props: MenuItemProps) => {
                     onAction: (isActive) => {
                       it.onAction ? it.onAction(isActive) : actions?.(it.action);
                       setIsActive(false);
+                      onClose?.();
                     }
                   }}
                 />
@@ -296,7 +310,10 @@ const MenuItem = (props: MenuItemProps) => {
                         type,
                         onAction: (isActive) => {
                           it.onAction ? it.onAction(isActive) : actions?.(it.action);
-                          if (type !== 'toggle') setIsActive(false);
+                          if (type !== 'toggle') {
+                            setIsActive(false);
+                            onClose?.();
+                          }
                         }
                       }}
                     />

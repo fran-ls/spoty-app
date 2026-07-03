@@ -1,5 +1,5 @@
 import { api, apiFetch } from "../../../shared/utils/api";
-import type { Playlist, PlaylistDTO, PlaylistInclude, PlaylistResponse, PlaylistSong, PlaylistSongDTO } from "../playlist.types";
+import type { Playlist, PlaylistDTO, PlaylistFilters, PlaylistInclude, PlaylistResponse, PlaylistSong, PlaylistSongDTO } from "../playlist.types";
 import type { SearchResponse } from "../../../shared/types/common.types";
 import { envs } from "../../../shared/utils/envs";
 import { tokenService } from "../../auth/services/token.service";
@@ -105,9 +105,13 @@ class PlaylistService {
     });
   }
 
-  async getUserPlaylists(userId: string) {
-    return await apiFetch<Playlist[]>(() => (
+  async getUserPlaylists(userId: string, filters?: PlaylistFilters, include?: PlaylistInclude) {
+    return await apiFetch<SearchResponse<Playlist[]>>(() => (
       api.get(`/playlists/u/${userId}`, {
+        params: {
+          ...filters,
+          include: include ? JSON.stringify(include) : undefined
+        },
         headers: {
           'Authorization': `Bearer ${tokenService.getToken()}`
         }
@@ -135,21 +139,12 @@ class PlaylistService {
     });
   }
 
-  async searchPlaylists(filters?: Record<string, any>, include?: PlaylistInclude) {
-    const params: Record<string, any> = {}
-
-    if (filters) {
-      for (const f in filters) {
-        const v = filters[f];
-        if (v) params[f] = v;
-      }
-    }
-
+  async searchPlaylists(filters?: PlaylistFilters, include?: PlaylistInclude) {
     return await apiFetch<SearchResponse<Playlist[]>>(() => (
       api.get(`/playlists/search`, {
-        params: !filters ? undefined : {
-          ...params,
-          include: JSON.stringify(include)
+        params: {
+          ...filters,
+          include: include ? JSON.stringify(include) : undefined
         },
         headers: {
           'Authorization': `Bearer ${tokenService.getToken()}`

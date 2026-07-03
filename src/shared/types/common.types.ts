@@ -27,3 +27,11 @@ export interface IToast {
   title: string;
   message: string;
 }
+
+export interface PaginationQuery {
+  id?: string;
+  page?: number;
+  limit?: number;
+  orderBy?: string;
+  order?: 'asc' | 'desc'
+}

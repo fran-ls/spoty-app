@@ -2,7 +2,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import AppLayout from "../shared/layout/AppLayout";
 import HomePage from "../features/home/HomePage";
 // import SearchPage from "../features/search/SearchPage";
-import LibraryPage from "../features/library/LibraryPage";
+import LibraryPage from "../features/library/pages/LibraryPage";
 import PlaylistPage from "../features/playlist/pages/PlaylistPage";
 import SongPage from "../features/song/pages/SongPage";
 import { routes } from "../shared/utils/routes";

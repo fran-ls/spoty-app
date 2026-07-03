@@ -1,23 +1,30 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PlusIcon, SearchIcon, ListIcon, XIcon, PauseIcon, PlayIcon, PanelTopCloseIcon, PanelTopOpenIcon, LayoutGridIcon, TextAlignJustify, Minimize2Icon } from 'lucide-react';
-import type { PlaylistLayout } from '../playlist/playlist.types';
-import { usePlayer } from '../../shared/context/PlayerContext';
-import { routes } from '../../shared/utils/routes';
+import { PlusIcon, SearchIcon, ListIcon, XIcon, PauseIcon, PlayIcon, PanelTopCloseIcon, PanelTopOpenIcon, LayoutGridIcon, TextAlignJustify, Minimize2Icon, GlobeIcon, LockIcon, GlobeLockIcon } from 'lucide-react';
+import type { PlaylistFilters, PlaylistLayout, PlaylistVisibility } from '../../playlist/playlist.types';
+import { usePlayer } from '../../../shared/context/PlayerContext';
+import { routes } from '../../../shared/utils/routes';
 import CustomMenu, { type OrderItem } from './CustomMenu';
-import playlistService from '../playlist/services/playlist.service';
-import useAuth from '../auth/hooks/useAuth';
-import usePlaylist from '../playlist/hooks/usePlaylist';
-import SmartImage from '../../shared/components/SmartImage';
-import PlaylistItem from '../playlist/components/PlaylistItem';
-import PlaylistSongItem from '../playlist/components/PlaylistSongItem';
+import playlistService from '../../playlist/services/playlist.service';
+import useAuth from '../../auth/hooks/useAuth';
+import usePlaylist from '../../playlist/hooks/usePlaylist';
+import SmartImage from '../../../shared/components/SmartImage';
+import PlaylistSongItem from './PlaylistSongItem';
+import MenuItem from '../../../shared/components/MenuItem';
+import PlaylistItem from './PlaylistItem';
+import Loader from '../../../shared/components/Loader';
+import { useInfiniteScroll } from '../../../shared/hooks/useInfiniteScroll';
 
 export const Library: React.FC = () => {
-  const [isCollapsed, setIsCollapsed] = useState<boolean>(true);
-  const [isExpanded, setIsExpanded] = useState<boolean>(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
 
-  const [isSearch, setIsSearch] = useState<boolean>(false);
-  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [isVisibilityMenu, setIsVisibilityMenu] = useState(false);
+  const [visibility, setVisibility] = useState<PlaylistVisibility | ''>('');
+
+  const [page, setPage] = useState(0);
+  const [isSearch, setIsSearch] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
 
   const [query, setQuery] = useState('');
@@ -28,8 +35,23 @@ export const Library: React.FC = () => {
   const [layout, setLayout] = useState<PlaylistLayout>('list');
 
   const { isAdmin, user } = useAuth();
-  const { playlists, getUserPlaylists } = usePlaylist();
+  const { playlists, playlistMeta, getUserPlaylists } = usePlaylist();
   const { isPlaying, queueMeta, togglePlay } = usePlayer();
+
+  const filters: PlaylistFilters = {
+    page: 0,
+    name: query.trim(),
+    orderBy: order.value === 'recent' ? 'createdAt' : order.value,
+    order: order.value === 'recent' ? 'desc' : 'asc',
+    ...(visibility && { isPublic: visibility === 'public' })
+  }
+
+  const { loaderRef } = useInfiniteScroll(async () => {
+    if (playlistMeta.hasNextPage) {
+      await getUserPlaylists(user!.id, { ...filters, page: page + 1 }, { user: false });
+      setPage(page + 1);
+    }
+  });
 
   const navigate = useNavigate();
 
@@ -51,12 +73,9 @@ export const Library: React.FC = () => {
   }
 
   useEffect(() => {
-    setTimeout(() => getUserPlaylists(user!.id, {
-      name: query.trim(),
-      orderBy: order.value === 'recent' ? 'createdAt' : order,
-      order: order.value === 'recent' ? 'desc' : 'asc',
-    }), 300);
-  }, [query, order]);
+    setTimeout(() => getUserPlaylists(user!.id, { ...filters, page: 0 }, { user: false }), 300);
+    setPage(0);
+  }, [query, order, visibility]);
 
   return (
     <aside
@@ -119,10 +138,7 @@ export const Library: React.FC = () => {
                   className="p-2 rounded-full text-[#adaaaa] hover:bg-white/10 hover:text-white cursor-pointer transition-colors duration-100"
                   title="Contraer Tu biblioteca"
                 >
-                  <Minimize2Icon
-                    className=""
-                    size={20}
-                  />
+                  <Minimize2Icon size={20} />
                 </button>
               )}
             </div>
@@ -157,6 +173,59 @@ export const Library: React.FC = () => {
                 }
               </div>
 
+              {isExpanded && (
+                <div className="relative ml-auto">
+                  <button
+                    onClick={() => setIsVisibilityMenu(!isVisibilityMenu)}
+                    className="z-5 cursor-pointer hover:text-white text-sm flex items-center gap-2"
+                    type="button"
+                  >
+                    {(!isSearch || isExpanded) &&
+                      <span className="font-semibold">
+                        {visibility === '' && 'Visibilidad'}
+                        {visibility === 'public' && 'Pública'}
+                        {visibility === 'private' && 'Privada'}
+                      </span>
+                    }
+
+                    {visibility === 'public' && <GlobeIcon size={18} />}
+                    {visibility === 'private' && <LockIcon size={18} />}
+                    {visibility === '' && <GlobeLockIcon size={18} />}
+                  </button>
+
+                  <MenuItem
+                    isBtn={false}
+                    open={isVisibilityMenu}
+                    onClose={() => setIsVisibilityMenu(false)}
+                    styles={{
+                      backdrop: 'z-14 bg-transparent',
+                      wrap: 'z-14 absolute top-full right-0 mt-3.5 min-w-0',
+                      menu: 'w-30'
+                    }}
+                    items={[
+                      {
+                        label: 'Todo',
+                        action: 'close',
+                        icon: <GlobeLockIcon size={20} />,
+                        onAction: () => setVisibility('')
+                      },
+                      {
+                        label: 'Privada',
+                        action: 'close',
+                        icon: <LockIcon size={20} />,
+                        onAction: () => setVisibility('private')
+                      },
+                      {
+                        label: 'Pública',
+                        action: 'close',
+                        icon: <GlobeIcon size={20} />,
+                        onAction: () => setVisibility('public')
+                      }
+                    ]}
+                  />
+                </div>
+              )}
+
               <button
                 onClick={() => setIsOpen(!isOpen)}
                 className="z-5 cursor-pointer hover:text-white text-sm flex items-center gap-2"
@@ -186,15 +255,23 @@ export const Library: React.FC = () => {
           }
         </header>
 
-
         <nav className={`${isCollapsed ? 'h-[calc(100vh-64px-88px-100px)]' : 'h-[calc(100vh-64px-88px-116px)]'} overflow-y-auto overflow-x-hidden relative`}>
           {(isExpanded && layout !== 'grid') && (
-            <ul className={`bg-[#131313] text-sm text-[#adaaaa] border-b border-[#1f1f1f] px-4 flex sticky top-0 z-10`}>
-              <li className="p-2 line-clamp-1 w-full font-semibold max-w-lg">
+            <ul className={`bg-[#131313] text-[13px] text-[#adaaaa] border-b border-white/10 px-4 sticky top-0 z-10 grid grid-cols-5 gap-3`}>
+              <li className="py-2 line-clamp-1 w-full font-semibold max-w-lg col-span-2">
                 Título
               </li>
-              <li className="p-2 line-clamp-1 font-semibold">
+              <li className="py-2 line-clamp-1 font-semibold">
+                Visibilidad
+              </li>
+              <li
+                className="py-2 line-clamp-1 font-semibold text-nowrap"
+                title="Fecha en que se añadió"
+              >
                 Fecha en que se añadió
+              </li>
+              <li className="py-2 line-clamp-1 font-semibold">
+                Canciones
               </li>
             </ul>
           )}
@@ -206,19 +283,12 @@ export const Library: React.FC = () => {
                   setIsExpanded(false);
                   navigate(routes.songs);
                 }}
-                className={`${isCollapsed ? 'justify-center' : 'justify-start'} ${layout === 'grid' ? 'max-w-34' : ''} p-2 cursor-pointer text-[#adaaaa] hover:bg-[#1f1f1f] rounded-md gap-3 flex items-center playlist-item`}
+                className={`${isCollapsed ? 'justify-center' : 'justify-start'} ${layout === 'grid' ? 'max-w-34' : ''} p-2 cursor-pointer text-[#adaaaa] hover:bg-[#1f1f1f] rounded-md gap-3 grid grid-cols-5 playlist-item`}
               >
-                {(layout === 'list' || isCollapsed) && (
-                  <SmartImage
-                    wrapClassName="rounded"
-                    iconClassName="text-primary"
-                    url={null}
-                  />
-                )}
-
                 {!isCollapsed && (
                   <PlaylistSongItem
                     isExpanded={isExpanded}
+                    isCollapsed={isCollapsed}
                     layout={layout}
                     queueMeta={queueMeta}
                     user={user!}
@@ -236,12 +306,12 @@ export const Library: React.FC = () => {
                     setIsExpanded(false);
                     navigate(`${routes.playlists}/${playlist.id}`);
                   }}
-                  className={`${isCollapsed ? 'justify-center' : 'justify-start'} ${layout === 'grid' ? 'max-w-34' : ''} p-2 cursor-pointer text-[#adaaaa] hover:bg-[#1f1f1f] rounded-md gap-3 flex items-center playlist-item`}
+                  className={`${isCollapsed ? 'justify-center' : 'justify-start'} flex items-center p-2 cursor-pointer text-[#adaaaa] hover:bg-[#1f1f1f] rounded-md gap-3 playlist-item ${(layout !== 'grid' && isExpanded) ? 'grid grid-cols-5' : ''} ${layout === 'grid' ? 'max-w--34 bg-red-500' : ''}`}
                   onPointerEnter={() => setHoverIndex(i)}
                   onPointerLeave={() => setHoverIndex(null)}
                   key={playlist.id}
                 >
-                  {(layout === 'list' || isCollapsed) && (
+                  {isCollapsed && (
                     <div className="min-w-12 w-12 h-12 bg-[#262626] rounded relative overflow-hidden hover:badge:bg-blue-500">
                       <SmartImage url={cover} />
 
@@ -272,16 +342,32 @@ export const Library: React.FC = () => {
 
                   {!isCollapsed &&
                     <PlaylistItem
-                      isExpanded={isExpanded}
-                      layout={layout}
+                      isPlaying={isPlaying && queueMeta.playlistId === playlist.id}
+                      isHover={hoverIndex !== null && hoverIndex === i}
                       playlist={{ ...playlist, cover }}
+                      isExpanded={isExpanded}
                       queueMeta={queueMeta}
+                      layout={layout}
                       user={user!}
+                      togglePlay={togglePlay}
                     />
                   }
                 </li>
               )
             })}
+
+            {playlistMeta.hasNextPage &&
+              <li
+                className="flex items-center justify-center overflow-hidden py-1"
+                ref={loaderRef}
+              >
+                <Loader
+                  className="border-transparent border-t-slate-200"
+                  size={20}
+                  stroke={2}
+                />
+              </li>
+            }
           </ul>
         </nav>
       </div>

@@ -1,14 +1,10 @@
-import type { PaginationMeta } from "../../shared/types/common.types";
+import type { PaginationMeta, PaginationQuery } from "../../shared/types/common.types";
 import type { User } from "../auth/auth.types";
 import type { Song, SongCover } from "../song/song.types";
 
 export type PlaylistLayout = 'compact-list' | 'list' | 'grid';
 export type PlaylistOrder = 'recent' | 'name';
-
-export type PlaylistLayoutV = {
-  icon: React.ReactElement;
-  value: PlaylistLayout;
-}
+export type PlaylistVisibility = 'private' | 'public';
 
 export interface Playlist {
   id: string;
@@ -21,6 +17,7 @@ export interface Playlist {
   userId: string;
   createdAt: any;
   user?: User | null;
+  trackCount?: number;
 }
 
 export interface PlaylistDTO {
@@ -74,3 +71,5 @@ export interface PlaylistInclude {
   };
   songs?: boolean;
 }
+
+export type PlaylistFilters = Partial<Playlist> & PaginationQuery;

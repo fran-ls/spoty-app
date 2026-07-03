@@ -196,7 +196,7 @@ const AlbumDetail = ({ activeAlbum, onRemove }: AlbumDetailProps) => {
                     </div>
                   </div>
 
-                  <span className="text-[10px] text-gray-400 font-mono shrink-0">
+                  <span className="ml-auto text-[10px] text-gray-400 font-mono shrink-0">
                     {formatTime(tr.duration ?? 0)}
                   </span>
 

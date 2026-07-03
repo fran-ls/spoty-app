@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence } from "motion/react";
-import { Library } from "../../features/sidebar/Library";
-import { QueueList } from "../../features/sidebar/QueueList";
+import { Library } from "../../features/library/components/Library";
+import { QueueList } from "../../features/player/QueueList";
 import { Header } from "../components/Header";
 import { PlayerBar } from "../../features/player/PlayerBar";
 import { PremiumModal } from "../components/PremiumModal";

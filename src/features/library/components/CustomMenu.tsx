@@ -1,5 +1,5 @@
 import { CheckIcon, LayoutGridIcon, ListIcon, TextAlignJustify } from "lucide-react";
-import type { PlaylistLayout, PlaylistOrder } from "../playlist/playlist.types";
+import type { PlaylistLayout, PlaylistOrder } from "../../playlist/playlist.types";
 
 export type OrderItem = {
   label: string;
@@ -72,6 +72,7 @@ const CustomMenu = (props: CustomMenuProps) => {
             <li
               onClick={() => onSort(it)}
               className={`${order.value === it.value ? 'text-primary' : ''} font-medium hover:bg-white/10 px-4 py-2 rounded-xs flex items-center gap-2`}
+              key={it.value}
             >
               <span>{it.label}</span>
               {order.value === it.value && (
@@ -89,6 +90,7 @@ const CustomMenu = (props: CustomMenuProps) => {
             <li
               onClick={() => onLayout(it.value)}
               className="font-medium hover:text-white hover:bg-white/10 rounded-xs"
+              key={it.value}
             >
               <button
                 className={`${it.value === layout ? 'text-primary' : ''} cursor-pointer px-3 py-2`}

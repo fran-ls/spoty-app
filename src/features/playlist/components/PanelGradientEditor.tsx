@@ -51,7 +51,7 @@ const PanelGradientEditor = (props: PanelGradientEditorProps) => {
   }, [stops, direction]);
 
   return (
-    <div className={`${isActive ? 'translate-y-0' : 'translate-y-[100vh]'} absolute left-0 bottom-0 z-50 transition duration-150 bg-[#282828] min-w-full flex flex-col gap-4 border-white/5 p-6 rounded`}>
+    <div className={`${isActive ? 'translate-y-0' : 'translate-y-[100vh]'} absolute right-0 bottom-0 z-50 transition duration-150 bg-[#282828] w-full max-w-115 flex flex-col gap-4 border-white/5 p-6 rounded`}>
       {/* HEADER */}
       <div className="flex justify-between items-center rounded-lg">
         <span className="text-[#adaaaa] text-sm font-black block">
@@ -71,7 +71,7 @@ const PanelGradientEditor = (props: PanelGradientEditorProps) => {
       </div>
 
       {/* DESKTOP */}
-      <div className="md:grid hidden grid-cols-2 gap-4 animate-scale-up">
+      <div className="grid grid-cols-2 gap-4 animate-scale-up">
         <div className="flex flex-col gap-2">
           <label className="text-xs font-semibold text-[#adaaaa]">
             Sólido
@@ -118,7 +118,7 @@ const PanelGradientEditor = (props: PanelGradientEditorProps) => {
         className="lg:overflow-hidden overflow-y-auto overflow-x-hidden"
         id="playlist-background-presets"
       >
-        <div className="md:grid-cols-3 grid grid-cols-2 max-h-50 animate-fade-in">
+        <div className="min-[420px]:grid-cols-3 grid grid-cols-2 max-h-50 animate-fade-in place-items-center">
           {STYLE_PRESETS.map((preset) => {
             const isSelected = bgColor === preset.bgColor && gradientColor === preset.gradientColor;
 

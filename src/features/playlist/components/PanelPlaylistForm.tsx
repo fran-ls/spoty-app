@@ -22,7 +22,7 @@ const PanelPlaylistForm = () => {
 
   const [isBackground, setIsBackground] = useState(false);
   const [isImgHover, setIsImgHover] = useState(false);
-  const [isCoverHover, setIsCoverHover] = useState(false);
+  const [isBgHover, setIsBgHover] = useState(false);
 
   const [bgColor, setBgColor] = useState('#3a3a3a');
   const [gradientColor, setGradientColor] = useState('#121212');
@@ -103,8 +103,8 @@ const PanelPlaylistForm = () => {
             background: gradientCSS
           }}
           className="px-5 py-7 flex flex-col items-center justify-center relative"
-          onPointerEnter={() => setIsCoverHover(true)}
-          onPointerLeave={() => setIsCoverHover(false)}
+          onPointerEnter={() => setIsBgHover(true)}
+          onMouseLeave={() => setIsBgHover(false)}
         >
           <div
             onPointerEnter={() => setIsImgHover(true)}
@@ -157,7 +157,7 @@ const PanelPlaylistForm = () => {
             </div>
           </div>
 
-          {isCoverHover &&
+          {isBgHover &&
             <button
               onClick={() => setIsBackground(true)}
               className="absolute top-3 right-3 cursor-pointer p-2 rounded text-[10px] uppercase tracking-wider font-bold text-gray-400 hover:text-white transition-all outline-none"
@@ -264,7 +264,7 @@ const PanelPlaylistForm = () => {
 
                 setForm({
                   ...form,
-                  userId: option.value,
+                  userId: option.value
                 });
               }}
             />

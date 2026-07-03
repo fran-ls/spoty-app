@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Search, ListFilter, Play, Heart, LayoutGrid, List, Rows3 } from 'lucide-react';
-import { mockArtists, mockPodcasts, mockAlbums } from '../../shared/data/music.data';
+import { mockArtists, mockPodcasts, mockAlbums } from '../../../shared/data/music.data';
 
 type FilterType = 'All' | 'Playlists' | 'Podcasts' | 'Artists' | 'Albums';
 type LayoutMode = 'grid' | 'list' | 'compact';
