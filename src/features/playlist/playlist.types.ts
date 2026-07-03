@@ -2,6 +2,14 @@ import type { PaginationMeta } from "../../shared/types/common.types";
 import type { User } from "../auth/auth.types";
 import type { Song, SongCover } from "../song/song.types";
 
+export type PlaylistLayout = 'compact-list' | 'list' | 'grid';
+export type PlaylistOrder = 'recent' | 'name';
+
+export type PlaylistLayoutV = {
+  icon: React.ReactElement;
+  value: PlaylistLayout;
+}
+
 export interface Playlist {
   id: string;
   name: string;
@@ -11,6 +19,7 @@ export interface Playlist {
   gradientColor: string;
   isPublic: boolean;
   userId: string;
+  createdAt: any;
   user?: User | null;
 }
 

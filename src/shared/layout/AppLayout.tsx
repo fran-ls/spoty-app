@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence } from "motion/react";
-import { Playlists } from "../../features/sidebar/Playlists";
+import { Library } from "../../features/sidebar/Library";
 import { QueueList } from "../../features/sidebar/QueueList";
 import { Header } from "../components/Header";
 import { PlayerBar } from "../../features/player/PlayerBar";
@@ -54,7 +54,7 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
       <Header onExplorePremiumClick={() => setIsPremiumOpen(true)} />
 
       <div className="px-2 flex gap-2 select-none rounded-lg">
-        <Playlists />
+        <Library />
 
         <main className="w-full rounded-lg bg-[#131313] overflow-hidden">
           <div className={`${STYLES.maxHeightMain} ${STYLES.minHeightMain} flex-1 overflow-y-auto`}>

@@ -151,12 +151,14 @@ const SongPage: React.FC = () => {
     const songId = activeTrack?.id;
     if (!songId) return;
 
-    const r = await songService.updateSong(songId, song);
-    const data = r.data;
+    const { data } = await songService.updateSong(songId, song);
 
     if (data && data.id && activeTrackIndex !== null) {
+      const trackToUpdate = songs[activeTrackIndex];
       songs[activeTrackIndex] = {
-        ...data, cover: songService.songCoverUrl(songId, data.cover)
+        ...trackToUpdate,
+        ...data,
+        cover: songService.songCoverUrl(songId, data.cover)
       }
 
       setActiveTrackIndex(null);

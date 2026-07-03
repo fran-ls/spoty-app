@@ -133,10 +133,16 @@ export const PlayerBar: React.FC = () => {
         {currentSong &&
           <>
             <div className="flex flex-col truncate min-w-0 pr-2 max-w-64">
-              <span className="text-sm font-bold text-white hover:underline cursor-pointer truncate">
+              <span
+                className="text-sm font-bold text-white hover:underline cursor-pointer truncate"
+                title={currentSong?.title}
+              >
                 {currentSong?.title}
               </span>
-              <span className="text-xs text-[#adaaaa] hover:text-white hover:underline cursor-pointer truncate mt-0.5">
+              <span
+                className="text-xs text-[#adaaaa] hover:text-white hover:underline cursor-pointer truncate mt-0.5"
+                title={currentSong?.artist?.name}
+              >
                 {currentSong?.artist?.name}
               </span>
             </div>

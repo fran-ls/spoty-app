@@ -89,15 +89,17 @@ const usePlaylist = () => {
     setIsPublic(data.isPublic);
   }
 
-  const getUserPlaylists = async () => {
-    const userId = user?.id;
-    if (!userId) return [];
+  const getUserPlaylists = async (userId: string, filters?: Record<string, any>) => {
+    const id = userId || user?.id;
+    if (!id) return [];
 
-    const { data } = await playlistService.getUserPlaylists(userId);
+    const { data } = await playlistService.searchPlaylists({ ...filters, userId: id });
 
     if (data) {
-      setPlaylists(data);
+      setPlaylists(data.items);
     }
+
+    return data?.items || [];
   }
 
   const getPlaylist = async (playlistId: string, include?: PlaylistInclude) => {
