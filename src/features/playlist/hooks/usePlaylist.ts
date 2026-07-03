@@ -100,7 +100,7 @@ const usePlaylist = () => {
     const { data } = await playlistService.getUserPlaylists(userId, filters, include);
     if (!data) return data;
 
-    setPlaylistMeta(data.meta as any);
+    setPlaylistMeta({ ...playlistMeta, ...data.meta, totalDuration: 0 });
 
     if (filters?.page > 1) {
       setPlaylists((prev) => [...prev, ...data.items]);

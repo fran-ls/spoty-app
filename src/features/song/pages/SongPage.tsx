@@ -17,6 +17,7 @@ import PlaylistMenu from '../../playlist/components/PlaylistMenu';
 import TrackModal from '../components/TrackModal';
 import SongDeleteConfirm from '../components/SongDeleteConfirm';
 import PlaylistForm from '../../playlist/components/PlaylistForm';
+import SmartImage from '../../../shared/components/SmartImage';
 
 const SongPage: React.FC = () => {
   const { user } = useAuth();
@@ -249,15 +250,11 @@ const SongPage: React.FC = () => {
               onMouseLeave={() => setIsHover(false)}
               className="min-[925px]:max-w-58 min-[925px]:max-h-58 min-[925px]:min-w-58 min-[925px]:min-h-58 w-[25vw] h-[25vw] min-w-[25vw] min-h-[25vw] rounded bg-[#262626] relative overflow-hidden"
             >
-              {form.cover ? (
-                <img
-                  className="object-cover w-full h-full"
-                  src={form.cover}
-                  alt=""
-                />
-              ) : (
-                <MusicIcon className="w-1/4 h-1/4 absolute top-1/2 left-1/2 -translate-1/2" />
-              )}
+              <SmartImage
+                wrapClassName="w-full h-full"
+                icon={<MusicIcon className="w-1/4 h-1/4" />}
+                url={form.cover}
+              />
 
               {!form.cover && coverImages.length > 3 && coverImages.map((d, i) => {
                 const className = i === 0
