@@ -1,21 +1,17 @@
 import type { SearchResponse } from "../../../shared/types/common.types";
-import type { Artist, ArtistDTO } from "../../artist/artist.types";
+import type { Artist, ArtistDTO, ArtistFilters, ArtistInclude } from "../../artist/artist.types";
 import { api, apiFetch } from "../../../shared/utils/api";
 import { tokenService } from "../../auth/services/token.service";
 import { envs } from "../../../shared/utils/envs";
 
 class ArtistService {
-  async searchArtists(filters?: Record<string, any>) {
-    const params: Record<string, any> = {}
-
-    for (const f in filters) {
-      const v = filters[f];
-      if (v) params[f] = v;
-    }
-
+  async searchArtists(filters?: ArtistFilters, include?: ArtistInclude) {
     return await apiFetch<SearchResponse<Artist[]>>(() => (
       api.get(`/artists/search`, {
-        params: filters ? params : undefined,
+        params: {
+          ...filters,
+          include: include ? JSON.stringify(include) : undefined
+        },
         headers: {
           'Authorization': `Bearer ${tokenService.getToken()}`
         }
@@ -86,7 +82,7 @@ class ArtistService {
     ));
   }
 
-  artistImage(id: string, imageUrl = '') {
+  artistImage(id: string, imageUrl: string | null = '') {
     if (!imageUrl || typeof imageUrl !== 'string') {
       return '';
     }

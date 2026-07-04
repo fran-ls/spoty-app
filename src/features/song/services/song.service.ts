@@ -1,24 +1,18 @@
 import type { SearchResponse } from "../../../shared/types/common.types";
-import type { Song, SongDTO, TrackFilters } from "../song.types";
+import type { Song, SongDTO, TrackFilters, TrackInclude } from "../song.types";
 import { api, apiFetch, ApiResponse } from "../../../shared/utils/api";
 import { envs } from "../../../shared/utils/envs";
 import { tokenService } from "../../auth/services/token.service";
 import { uploadToSupabase } from "../../../shared/utils/uploadToSupabase";
 
 class SongService {
-  async searchSongs(filters?: TrackFilters) {
-    const params: Record<string, any> = {}
-
-    if (filters) {
-      for (const f in filters) {
-        const v = (filters as any)[f];
-        if (v) params[f] = v;
-      }
-    }
-
+  async searchSongs(filters?: TrackFilters, include?: TrackInclude) {
     return await apiFetch<SearchResponse<Song[]>>(() => (
       api.get(`/songs/search`, {
-        params: filters ? params : filters,
+        params: {
+          ...filters,
+          include: include ? JSON.stringify(include) : undefined
+        },
         headers: {
           'Authorization': `Bearer ${tokenService.getToken()}`
         }
@@ -58,7 +52,7 @@ class SongService {
     return `${envs.API_URL}/songs/cover/${songId}`;
   }
 
-  async uploadSong(data: SongDTO) {
+  async uploadSong(data: SongDTO, include?: TrackInclude) {
     const formData = new FormData();
 
     const files = [
@@ -112,7 +106,8 @@ class SongService {
     return await apiFetch<Song>(() => (
       api.post('/songs/upload', formData, {
         params: {
-          audio_quality: data.quality
+          audio_quality: data.quality,
+          include: include ? JSON.stringify(include) : undefined
         },
         headers: {
           'Authorization': `Bearer ${tokenService.getToken()}`,
@@ -122,7 +117,7 @@ class SongService {
     ));
   }
 
-  async updateSong(id: string, data: Partial<SongDTO>) {
+  async updateSong(id: string, data: Partial<SongDTO>, include?: TrackInclude) {
     const formData = new FormData();
 
     const files = [
@@ -156,7 +151,8 @@ class SongService {
     return await apiFetch<Song>(() => (
       api.put(`/songs/${id}`, formData, {
         params: {
-          audio_quality: data.quality
+          audio_quality: data.quality,
+          include: include ? JSON.stringify(include) : undefined
         },
         headers: {
           'Authorization': `Bearer ${tokenService.getToken()}`,

@@ -25,7 +25,7 @@ interface TrackFormProps {
 
 const TrackForm = (props: TrackFormProps) => {
   const { triggerCreateArtist, triggerCreateAlbum } = props;
-  const { artists, artistMeta, searchArtists, setArtists } = useArtist();
+  const { artists, artistMeta, searchArtists } = useArtist();
   const { albums, albumMeta, searchAlbums } = useAlbum();
   const { isActive, toast, isFirstLoad, showToast, onClose } = useToaster(5000);
   const useApi = useApiFetch(showToast);
@@ -130,8 +130,7 @@ const TrackForm = (props: TrackFormProps) => {
       icon: <Music2Icon size={16} />
     }
 
-    useApi.save<Song>(() => songService.uploadSong({ ...form, includeArtist: true }), config)
-      .then((data) => data && setArtists((prev) => [data.artist, ...prev]));
+    useApi.save<Song>(() => songService.uploadSong(form, { artist: true }), config);
   }
 
   return (

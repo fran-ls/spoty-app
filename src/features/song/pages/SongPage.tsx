@@ -3,7 +3,6 @@ import { MusicIcon, PenIcon, PlusIcon, SearchIcon, XIcon } from 'lucide-react';
 import { Toaster as SonnerToaster, toast } from 'sonner';
 import type { PlaylistDTO, PlaylistFormAction, PlaylistFormState } from '../../playlist/playlist.types';
 import type { Song, SongCover, SongDTO } from '../song.types';
-import type { SearchMeta } from '../../../shared/types/common.types';
 import GradientEditor from '../../playlist/components/GradientEditor';
 import Footer from '../../playlist/components/Footer';
 import { getTimeParts } from '../../../shared/utils/formatTime';
@@ -18,10 +17,12 @@ import TrackModal from '../components/TrackModal';
 import SongDeleteConfirm from '../components/SongDeleteConfirm';
 import PlaylistForm from '../../playlist/components/PlaylistForm';
 import SmartImage from '../../../shared/components/SmartImage';
+import useTrack from '../hooks/useTrack';
 
 const SongPage: React.FC = () => {
   const { user } = useAuth();
   const { setQueueMeta } = usePlayer();
+  const { tracks, trackMeta, searchTracks, setTracks, setTrackMeta } = useTrack()
 
   const [gradientCSS, setGradientCSS] = useState<string>(GRADIENT_CSS);
   const [bgColor, setBgColor] = useState(GRADIENT_COLORS[0].color || '#3b3b3b');
@@ -44,52 +45,38 @@ const SongPage: React.FC = () => {
   const [isSearch, _setIsSearch] = useState(false);
   const [isHover, setIsHover] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
+
   const [query, setQuery] = useState('');
+  const [page, setPage] = useState(0);
 
   const [activeTrackIndex, setActiveTrackIndex] = useState<number | null>(null);
   const [isPlaylistMenu, setIsPlaylistMenu] = useState(false);
   const [isRemoveSong, setIsRemoveSong] = useState(false);
   const [isEditTrack, setIsEditTrack] = useState(false);
 
-  const [page, setPage] = useState(0);
-  const [songs, setSongs] = useState<Song[]>([]);
-  const [searchMeta, setSearchMeta] = useState<SearchMeta>({
-    page: 0,
-    limit: 10,
-    total: 0,
-    totalPages: 0,
-    totalDuration: 0,
-    hasNextPage: false,
-    hasPrevPage: false
-  });
   const [coverImages, setCoverImages] = useState<SongCover[]>([]);
   const [activeTrack, setActiveTrack] = useState<Song | null>(null);
   const [toasterTime, setToasterTime] = useState(2500);
 
-  const duration = getTimeParts(searchMeta?.totalDuration ?? 0);
+  const duration = getTimeParts(trackMeta?.totalDuration ?? 0);
   const coverInputRef = useRef<HTMLInputElement>(null);
 
-  async function getSongs(page: number) {
-    const { data } = await songService.searchSongs({
+  async function getTracks(page: number) {
+    const data = await searchTracks({
+      title: query,
       orderBy: 'createdAt',
       limit: 10,
       page
+    }, {
+      album: 'id title',
+      artist: 'id name'
     });
-    if (!data) return;
 
-    setSearchMeta(data.meta);
-
-    if (page > 1) {
-      setSongs((prev) => [...prev, ...data.items])
-      return;
-    }
-
-    setQueueMeta({
+    if (data) setQueueMeta({
       ...data.meta,
       playlistId: '',
       totalDuration: 0
     });
-    setSongs(data.items);
   }
 
   async function onRemoveSong(isRemoveFiles = false) {
@@ -99,8 +86,8 @@ const SongPage: React.FC = () => {
     const r = await songService.removeSong(songId, isRemoveFiles);
     if (r.error || !r.data || !r.data?.id) return false;
 
-    setSongs((prev) => prev.filter((t) => t.id !== songId));
-    setSearchMeta({ ...searchMeta, total: searchMeta.total - 1 });
+    setTracks((prev) => prev.filter((t) => t.id !== songId));
+    setTrackMeta({ ...trackMeta, total: trackMeta.total - 1 });
 
     setIsRemoveSong(false);
     setActiveTrack(null);
@@ -134,7 +121,7 @@ const SongPage: React.FC = () => {
   async function getPlaylistCover() {
     const images: SongCover[] = [];
 
-    for (const song of songs) {
+    for (const song of tracks) {
       if (song.cover) {
         const coverUrl = songService.songCoverUrl(song.id, song.cover);
         images.push({ id: song.id, url: coverUrl });
@@ -155,8 +142,8 @@ const SongPage: React.FC = () => {
     const { data } = await songService.updateSong(songId, song);
 
     if (data && data.id && activeTrackIndex !== null) {
-      const trackToUpdate = songs[activeTrackIndex];
-      songs[activeTrackIndex] = {
+      const trackToUpdate = tracks[activeTrackIndex];
+      tracks[activeTrackIndex] = {
         ...trackToUpdate,
         ...data,
         cover: songService.songCoverUrl(songId, data.cover)
@@ -232,8 +219,8 @@ const SongPage: React.FC = () => {
     }
   }
 
-  useEffect(() => { getSongs(1) }, []);
-  useEffect(() => { getPlaylistCover() }, [songs]);
+  useEffect(() => { getPlaylistCover() }, [tracks]);
+  useEffect(() => { setTimeout(() => { getTracks(page) }, 300) }, [query]);
 
   return (
     <>
@@ -324,7 +311,7 @@ const SongPage: React.FC = () => {
                     •
                   </span>
                   <span className="text-sm ml-2 text-nowrap">
-                    {searchMeta.total || 0} canciones, {duration.min} min {duration.stringSecs}s
+                    {trackMeta.total || 0} canciones, {duration.min} min {duration.stringSecs}s
                   </span>
                 </a>
               </div>
@@ -339,13 +326,17 @@ const SongPage: React.FC = () => {
           >
             <div className="p-6 space-y-6">
               <Footer
-                songs={songs}
-                songMeta={searchMeta}
-                isPlay={songs.length > 0}
+                songs={tracks}
+                songMeta={trackMeta}
+                isPlay={tracks.length > 0}
                 isPublic={isPublic}
                 isBackground={isBackground}
                 setIsEdit={setIsEdit}
                 setIsBackground={setIsBackground}
+                searchTracks={(query) => {
+                  setPage(0);
+                  setQuery(query);
+                }}
                 onChangeVisibility={() => { }}
                 setIsRemove={() => { }}
               />
@@ -383,21 +374,21 @@ const SongPage: React.FC = () => {
             </div>
 
             <div className="text-white select-none scroll-smooth animate-fade-in">
-              {songs.length === 0 ? (
+              {tracks.length === 0 ? (
                 <SongListEmpty />
               ) : (
                 <SongList
-                  songs={songs}
-                  searchMeta={searchMeta}
+                  songs={tracks}
+                  searchMeta={trackMeta}
                   onOpenPlaylistMenu={(track, index) => {
                     onOpenPlaylistMenu('open');
                     setActiveTrackIndex(index);
                     setActiveTrack(track);
                   }}
                   loadMore={() => {
-                    if (page < searchMeta.totalPages) {
+                    if (page < trackMeta.totalPages) {
                       const nextPage = page + 1;
-                      getSongs(nextPage);
+                      getTracks(nextPage);
                       setPage(nextPage);
                     }
                   }}

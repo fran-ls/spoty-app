@@ -1,5 +1,5 @@
 import { api, apiFetch } from "../../../shared/utils/api";
-import type { Playlist, PlaylistDTO, PlaylistFilters, PlaylistInclude, PlaylistResponse, PlaylistSong, PlaylistSongDTO } from "../playlist.types";
+import type { Playlist, PlaylistDTO, PlaylistFilters, PlaylistInclude, PlaylistResponse, PlaylistSong, PlaylistSongDTO, PlaylistSongInclude } from "../playlist.types";
 import type { SearchResponse } from "../../../shared/types/common.types";
 import { envs } from "../../../shared/utils/envs";
 import { tokenService } from "../../auth/services/token.service";
@@ -46,11 +46,11 @@ class PlaylistService {
     ));
   }
 
-  async addSongToPlaylist(data: PlaylistSongDTO) {
+  async addSongToPlaylist(data: PlaylistSongDTO, include?: PlaylistSongInclude) {
     return await apiFetch<PlaylistSong>(() => (
       api.post(`/playlists/new-track`, data, {
         params: {
-          is_track: true,
+          include: include ? JSON.stringify(include) : undefined
         },
         headers: {
           'Authorization': `Bearer ${tokenService.getToken()}`

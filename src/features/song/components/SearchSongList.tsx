@@ -55,7 +55,7 @@ const SearchSongList: React.FC<SearchSongListProps> = (props) => {
             </div>
 
             <div className="text-[#adaaaa] text-sm truncate hover:text-white transition-colors select-none">
-              {track.albumId ?? 'Sin albúm'}
+              {track?.album?.title || 'Sin albúm'}
             </div>
 
             <div className="text-xs text-white flex items-center justify-end gap-3">

@@ -92,7 +92,7 @@ const SongList: React.FC<SongListProps> = (props) => {
               </div>
 
               <div className="text-[#adaaaa] text-sm truncate hover:text-white transition-colors select-none">
-                {track.albumId ?? 'Sin albúm'}
+                {track?.album?.title || 'Sin albúm'}
               </div>
 
               <div className="text-[#adaaaa] text-sm truncate select-none">

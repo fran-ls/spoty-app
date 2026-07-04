@@ -62,7 +62,7 @@ const SearchTrackList = ({ query, filter, triggerViewTrack }: SearchTrackListPro
                   <p className="text-xs font-bold text-white group-hover:text-primary transition-colors truncate">
                     {track.title}
                   </p>
-                  <span className="text-[9px] text-gray-400 truncate leading-none mt-0.5 block">
+                  <span className="mt-1 text-[9px] text-gray-400 truncate leading-none block">
                     {track.artist?.name}
                   </span>
                 </div>

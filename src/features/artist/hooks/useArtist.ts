@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Artist } from "../artist.types";
+import type { Artist, ArtistFilters, ArtistInclude } from "../artist.types";
 import type { SearchMeta } from "../../../shared/types/common.types";
 import artistService from "../services/artist.service";
 
@@ -14,10 +14,9 @@ const useArtist = () => {
     hasPrevPage: false
   });
 
-  async function searchArtists(filters?: Record<string, any>) {
+  async function searchArtists(filters?: ArtistFilters, include?: ArtistInclude) {
     const page = filters?.page ?? 0;
-
-    const { data } = await artistService.searchArtists(filters);
+    const { data } = await artistService.searchArtists(filters, include);
     if (!data) return;
 
     setArtistMeta(data.meta);
@@ -28,6 +27,7 @@ const useArtist = () => {
     }
 
     setArtists(data.items);
+    return data;
   }
 
   return {

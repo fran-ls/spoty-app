@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Play, Pause, Heart, EllipsisIcon, ListIcon } from 'lucide-react';
+import { Play, Pause, Heart, EllipsisIcon, ListIcon, SearchIcon, XIcon } from 'lucide-react';
 import type { SearchMeta } from '../../../shared/types/common.types';
 import type { Song } from '../../song/song.types';
 import { usePlayer } from '../../../shared/context/PlayerContext';
@@ -15,12 +15,13 @@ interface FooterProps {
   setIsEdit: React.Dispatch<React.SetStateAction<boolean>>;
   setIsRemove: React.Dispatch<React.SetStateAction<boolean>>;
   setIsBackground: React.Dispatch<React.SetStateAction<boolean>>;
+  searchTracks: (query: string) => void;
   onChangeVisibility: () => void;
 }
 
 const Footer: React.FC<FooterProps> = (props) => {
   const {
-    isBackground, isPublic, isPlay, songs, songMeta,
+    isBackground, isPublic, isPlay, songs, songMeta, searchTracks,
     setIsEdit, setIsBackground, onChangeVisibility, setIsRemove
   } = props;
 
@@ -28,7 +29,10 @@ const Footer: React.FC<FooterProps> = (props) => {
 
   const [isOpen, setIsOpen] = useState(false);
   const [isOpenAction, setIsOpenAction] = useState(false);
-  const [playlistLiked, setPlaylistLiked] = useState<boolean>(false);
+  const [playlistLiked, setPlaylistLiked] = useState(false);
+
+  const [isSearch, setIsSearch] = useState(false);
+  const [query, setQuery] = useState('');
 
   const playlistId = 'song-list';
 
@@ -94,6 +98,49 @@ const Footer: React.FC<FooterProps> = (props) => {
             }}
           />
         }
+      </div>
+
+      <div className="relative hidden">
+        <button
+          onClick={() => setIsSearch(!isSearch)}
+          className="font-semibold hover:text-white cursor-pointer h-8 px-2 flex items-center gap-2"
+          type="button"
+        >
+          <SearchIcon className="inline-flex" size={18} strokeWidth={2.5} />
+        </button>
+      </div>
+
+      <div className="text-[#adaaaa] flex items-center justify-between gap-5 relative">
+        <div
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsSearch(true);
+          }}
+          onBlur={() => !query && setIsSearch(false)}
+          className={`${isSearch ? 'w-full bg-[#1f1f1f] rounded' : 'w-8 h-8 rounded-full'} md:max-w-100 z-5 transition-all duration-100 hover:bg-[#1f1f1f] px-2 py-1.5 text-sm cursor-pointer flex items-center`}
+        >
+          <SearchIcon className="min-w-4" size={18} strokeWidth={2.5} />
+
+          <input
+            onChange={(e) => {
+              const value = e.target.value;
+              setQuery(value);
+              searchTracks(value);
+            }}
+            value={query}
+            autoFocus={isSearch}
+            className="w-full ml-2"
+            placeholder="Buscar canción"
+            type="text"
+          />
+
+          {isSearch && query &&
+            <XIcon
+              className="min-w-4 w-5 h-5"
+              onClick={() => setQuery('')}
+            />
+          }
+        </div>
       </div>
 
       <div className="relative">

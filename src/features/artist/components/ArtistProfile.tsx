@@ -42,7 +42,6 @@ const ArtistProfile = (props: ArtistProfileProps) => {
   const trackFilters: TrackFilters = {
     page: 0,
     limit: 10,
-    include: { album: true },
     ...(artist?.id && { artistId: artist.id })
   }
 
@@ -57,7 +56,7 @@ const ArtistProfile = (props: ArtistProfileProps) => {
       title: query,
       limit: 10,
       page
-    });
+    }, { album: true });
   }
 
   function uploadSong(item: any) {
@@ -83,7 +82,7 @@ const ArtistProfile = (props: ArtistProfileProps) => {
   }
 
   useEffect(() => {
-    searchTracks(trackFilters);
+    searchTracks(trackFilters, { album: true });
     searchAlbums(albumFilters);
   }, [artist]);
 
@@ -258,7 +257,7 @@ const ArtistProfile = (props: ArtistProfileProps) => {
           loadIcon={({ id, cover }) => (
             <SmartImage
               wrapClassName="text-gray-400 min-w-0 w-9 h-9 rounded border border-white/5 overflow-hidden shrink-0"
-              url={id ? artistService.artistImage(id, cover) : null}
+              url={artistService.artistImage(id, cover)}
               icon={<MusicIcon size={16} />}
             />
           )}

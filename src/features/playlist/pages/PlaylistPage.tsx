@@ -364,7 +364,7 @@ const PlaylistPage: React.FC = () => {
                     <SmartImage
                       url={cover}
                       wrapClassName="w-full h-full"
-                      icon={<MusicIcon className="w-1/4 h-1/4" />}
+                      icon={<MusicIcon size={16} />}
                     />
                   </div>
                   <span>

@@ -1,3 +1,4 @@
+import type { PaginationQuery } from "../../shared/types/common.types";
 import type { Album } from "../artist/album.types";
 import type { Artist } from "../artist/artist.types";
 
@@ -5,13 +6,13 @@ export interface Song {
   id: string;
   title: string;
   fileUrl: string;
-  cover?: string;
+  cover?: string | null;
   duration: number;
   artistId: string;
   albumId?: string | null;
   createdAt: Date;
-  artist: Artist;
-  // album: Album;
+  artist?: Artist | null;
+  album?: Album | null;
 }
 
 export type SongCover = {
@@ -45,13 +46,13 @@ export interface Track {
   id: string;
   title: string;
   fileUrl: string;
-  cover?: string;
+  cover?: string | null;
   duration: number;
   artistId: string;
   albumId?: string | null;
   createdAt: Date;
-  artist?: Artist;
-  album?: Album;
+  artist?: Artist | null;
+  album?: Album | null;
 }
 
 export type TrackCover = {
@@ -81,18 +82,17 @@ export interface TrackDTO {
   }
 }
 
-export interface TrackFilters {
-  id?: string;
-  title?: string;
-  artistId?: string;
-  albumId?: string | null;
+export type TrackFilters = Partial<Track> & PaginationQuery & {
   artistName?: string;
-  page?: number;
-  limit?: number;
-  order?: 'asc' | 'desc';
-  orderBy?: 'title' | 'createdAt';
-  include?: {
-    artist?: boolean;
-    album?: boolean;
-  }
+}
+
+export interface TrackInclude {
+  artist?: string | string[] | boolean | {
+    kind?: 'select' | 'omit';
+    fields?: string | string[];
+  };
+  album?: string | string[] | boolean | {
+    kind?: 'select' | 'omit';
+    fields?: string | string[];
+  };
 }

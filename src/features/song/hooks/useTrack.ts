@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Track, TrackFilters } from "../song.types";
+import type { Track, TrackFilters, TrackInclude } from "../song.types";
 import type { SearchMeta } from "../../../shared/types/common.types";
 import songService from "../services/song.service";
 
@@ -15,22 +15,18 @@ const useTrack = () => {
     hasPrevPage: false
   });
 
-  async function searchTracks(filters?: TrackFilters) {
+  async function searchTracks(filters?: TrackFilters, include?: TrackInclude) {
     const page = filters?.page ?? 0;
-
-    const { data } = await songService.searchSongs(
-      filters ? filters : { limit: 10, page }
-    );
-    if (!data) return;
+    const { data } = await songService.searchSongs(filters, include);
+    if (!data) return data;
 
     setTrackMeta(data.meta);
 
-    if (page > 1) {
-      setTracks((prev) => [...prev, ...data.items]);
-      return;
-    }
+    (page > 1)
+      ? setTracks((prev) => [...prev, ...data.items])
+      : setTracks(data.items);
 
-    setTracks(data.items);
+    return data;
   }
 
   const deleteTrack = async (id: string) => {

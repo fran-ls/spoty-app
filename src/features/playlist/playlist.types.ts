@@ -9,7 +9,7 @@ export type PlaylistVisibility = 'private' | 'public';
 export interface Playlist {
   id: string;
   name: string;
-  description: null;
+  description: string | null;
   cover: string | null;
   bgColor: string;
   gradientColor: string;
@@ -64,6 +64,8 @@ export type PlaylistFormState = PlaylistDTO & {
 
 export type PlaylistFormAction = 'set-state' | 'select-file' | 'save';
 
+export type PlaylistFilters = Partial<Playlist> & PaginationQuery;
+
 export interface PlaylistInclude {
   user?: string | string[] | boolean | {
     kind?: 'select' | 'omit';
@@ -72,4 +74,21 @@ export interface PlaylistInclude {
   songs?: boolean;
 }
 
-export type PlaylistFilters = Partial<Playlist> & PaginationQuery;
+export interface PlaylistInclude {
+  user?: string | string[] | boolean | {
+    kind?: 'select' | 'omit';
+    fields?: string | string[];
+  };
+  songs?: boolean;
+}
+
+export interface PlaylistSongInclude {
+  playlist?: string | string[] | boolean | {
+    kind?: 'select' | 'omit';
+    fields?: string | string[];
+  };
+  song?: string | string[] | boolean | {
+    kind?: 'select' | 'omit';
+    fields?: string | string[];
+  };
+}

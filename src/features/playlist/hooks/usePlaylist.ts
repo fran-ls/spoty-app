@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import type { Playlist, PlaylistDTO, PlaylistInclude, PlaylistMeta, PlaylistSong, PlaylistSongDTO } from "../playlist.types";
+import type { Playlist, PlaylistDTO, PlaylistInclude, PlaylistMeta, PlaylistSong, PlaylistSongDTO, PlaylistSongInclude } from "../playlist.types";
 import type { SearchMeta } from "../../../shared/types/common.types";
 import type { Song, SongCover } from "../../song/song.types";
 import playlistService from "../services/playlist.service";
@@ -102,11 +102,9 @@ const usePlaylist = () => {
 
     setPlaylistMeta({ ...playlistMeta, ...data.meta, totalDuration: 0 });
 
-    if (filters?.page > 1) {
-      setPlaylists((prev) => [...prev, ...data.items]);
-      return;
-    }
-    setPlaylists(data.items);
+    (filters?.page > 1)
+      ? setPlaylists((prev) => [...prev, ...data.items])
+      : setPlaylists(data.items);
 
     return data;
   }
@@ -124,6 +122,8 @@ const usePlaylist = () => {
     if (r.data) {
       onSetForm(r.data);
     }
+
+    return r.data;
   }
 
   const updatePlaylist = async (playlistId: string, values: PlaylistDTO) => {
@@ -177,10 +177,10 @@ const usePlaylist = () => {
   }
 
   const getPlaylistSongs = async (playlistId: string, filters?: Record<string, any>) => {
-    if (!playlistId) return;
+    if (!playlistId) return null;
 
     const { data } = await playlistService.getPlaylistSongs(playlistId, filters);
-    if (!data) return;
+    if (!data) return data;
 
     setIsSearch(data.items.length === 0);
 
@@ -192,11 +192,12 @@ const usePlaylist = () => {
     if (filters?.page > 1) {
       setPlaylistItems((prev) => [...prev, ...data.items]);
       setPlaylistSongs((prev) => [...prev, ...data.songs]);
-      return;
+      return null;
     }
 
     setPlaylistItems(data.items);
     setPlaylistSongs(data.songs);
+    return data;
   }
 
   const getPlaylistCover = () => {
@@ -214,6 +215,7 @@ const usePlaylist = () => {
     }
 
     setCoverImages(images);
+    return images;
   }
 
   const findSongs = async () => {
@@ -225,12 +227,13 @@ const usePlaylist = () => {
       setSearchMeta({ ...data.meta, totalPages: 1 })
       setSearchSongs(data.items);
     }
+
+    return data;
   }
 
-  const addSongToPlaylist = async (dto: PlaylistSongDTO) => {
-    if (!dto.playlistId) return;
-
-    const { data } = await playlistService.addSongToPlaylist(dto);
+  const addSongToPlaylist = async (dto: PlaylistSongDTO, include?: PlaylistSongInclude) => {
+    if (!dto.playlistId) return null;
+    const { data } = await playlistService.addSongToPlaylist(dto, include);
     if (!data || !data.id) return data;
 
     setPlaylistItems((prev) => [...prev, data]);
@@ -241,7 +244,6 @@ const usePlaylist = () => {
 
   const removeSongFromPlaylist = async (id: string) => {
     if (!id) return false;
-
     const { error, data } = await playlistService.removeSongFromPlaylist(id);
     if (error || !data || !data.id) return false;
 

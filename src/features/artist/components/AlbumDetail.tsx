@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { CircleMinus, DiscIcon, MusicIcon, PlusCircleIcon, UploadIcon } from "lucide-react";
 import type { Album } from "../album.types";
-import type { TrackFilters } from "../../song/song.types";
+import type { Track, TrackFilters } from "../../song/song.types";
 import SmartImage from "../../../shared/components/SmartImage";
 import useTrack from "../../song/hooks/useTrack";
 import Loader from "../../../shared/components/Loader";
@@ -83,6 +83,18 @@ const AlbumDetail = ({ activeAlbum, onRemove }: AlbumDetailProps) => {
       default:
         break;
     }
+  }
+
+  async function addSongToAlbum(item: Track) {
+    if (!item || !activeAlbum?.id) return;
+    const { data } = await songService.updateSong(
+      item.id,
+      { albumId: activeAlbum.id },
+      { artist: 'id name' }
+    );
+    if (!data) return;
+    setTrackMeta((prev) => ({ ...prev, total: prev.total + 1 }));
+    setTracks((prev) => [data, ...prev]);
   }
 
   useEffect(() => {
@@ -241,13 +253,7 @@ const AlbumDetail = ({ activeAlbum, onRemove }: AlbumDetailProps) => {
         isLoadMore={searchTrackMeta.hasNextPage}
         loadMore={loadMoreSearchTracks}
         onClose={() => setIsSearchWiget(false)}
-        payload={async ({ item }) => {
-          if (!item || !activeAlbum?.id) return;
-          const { data } = await songService.updateSong(item.id, { albumId: activeAlbum.id });
-          if (!data) return;
-          setTrackMeta((prev) => ({ ...prev, total: prev.total + 1 }));
-          setTracks((prev) => [data, ...prev]);
-        }}
+        payload={({ item }) => addSongToAlbum(item)}
         loadIcon={({ id, cover }) => (
           <SmartImage
             wrapClassName="text-gray-400 min-w-0 w-9 h-9 rounded border border-white/5 overflow-hidden shrink-0"

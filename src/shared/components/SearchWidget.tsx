@@ -75,7 +75,7 @@ const SearchWidget = (props: SearchWidgetProps) => {
 
             {query &&
               <span className="ml-3">
-                {items.length > 0 ? `${items.length} - ${meta.total}` : '0'}
+                {items.length > 0 ? `${items.length} / ${meta.total}` : '0'}
               </span>
             }
           </div>
