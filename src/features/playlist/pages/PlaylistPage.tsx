@@ -27,10 +27,12 @@ const PlaylistPage: React.FC = () => {
     form, isBackground, isRemove, isHover, isOpen, isEdit, isOpenAction, query, isSearch,
     searchSongs, duration, playlistMeta, playlistItems, activeItem, coverImages, setGradientColor,
     setBgColor, setForm, setIsHover, setIsEdit, setIsOpenAction, setQuery, setIsSearch, setSearchSongs,
-    onFileChange, getPlaylist, onSavePlaylist, onRemovePlaylist, getPlaylistSongs, findSongs,
+    onFileChange, getPlaylist, onSavePlaylist, onRemovePlaylist, getPlaylistTracks, searchTracks,
     addSongToPlaylist, onChangeVisibility, setIsOpen, setIsRemove, setIsBackground,
     removeSongFromPlaylist, setActiveItem, getPlaylistCover
   } = usePlaylist();
+
+  const [page, setPage] = useState(0);
 
   const cover = form.fileUrl || form.cover;
 
@@ -69,12 +71,12 @@ const PlaylistPage: React.FC = () => {
   useEffect(() => {
     if (playlistId) {
       getPlaylist(playlistId);
-      getPlaylistSongs(playlistId);
+      getPlaylistTracks(playlistId);
     }
   }, [playlistId]);
 
   useEffect(() => { getPlaylistCover() }, [playlistSongs]);
-  useEffect(() => { if (query) setTimeout(() => findSongs(), 300) }, [query]);
+  useEffect(() => { if (query) setTimeout(() => searchTracks({ page: 0 }), 300) }, [query]);
 
   return (
     <div className="min-h-full text-white select-none relative">
@@ -198,8 +200,8 @@ const PlaylistPage: React.FC = () => {
           </div>
         </section>
 
-        <div className="p-6 text-sm bg-[#131313] text-[#adaaaa] flex items-center justify-between relative">
-          <div className="flex items-center gap-5">
+        <div className="p-5 mb-2 text-sm bg-[#131313] text-[#adaaaa] flex items-center justify-between relative">
+          <div className="md:gap-5 gap-3 flex items-center">
             <button
               onClick={() => {
                 if (queueMeta.playlistId === playlistId) {
@@ -209,22 +211,19 @@ const PlaylistPage: React.FC = () => {
                 play(playlistSongs, 0, { ...playlistMeta, playlistId: playlistId! });
               }}
               disabled={!isPlay}
-              className={`w-14 h-14 rounded-full flex items-center justify-center scale-100 hover:scale-105 active:scale-95 transition-all shadow-lg text-black ${!isPlay ? 'bg-[#adaaaa]/40 opacity-50 cursor-not-allowed' : 'bg-primary hover:bg-[#63ef82] cursor-pointer'
-                }`}
+              className={`md:max-w-14 md:max-h-14 w-[10vw] h-[10vw] max-w-10 max-h-10 rounded-full flex items-center justify-center scale-100 hover:scale-105 active:scale-95 transition-all shadow-lg text-black ${!isPlay ? 'bg-[#adaaaa]/40 opacity-50 cursor-not-allowed' : 'bg-primary hover:bg-[#63ef82] cursor-pointer'}`}
               title="Reproducir lista"
             >
               {(isPlaying && isPlay && playlistId === queueMeta.playlistId) ?
                 <PauseIcon
-                  size={24}
+                  className="w-1/2 h-1/2 max-w-6 max-h-6 translate-x-0"
                   fill="currentColor"
                   stroke="none"
-                  className="translate-x-0"
                 /> :
                 <PlayIcon
-                  size={24}
+                  className="w-1/2 h-1/2 max-w-6 max-h-6 translate-x-px"
                   fill="currentColor"
                   stroke="none"
-                  className="translate-x-px"
                 />
               }
             </button>
@@ -232,7 +231,7 @@ const PlaylistPage: React.FC = () => {
             <div className="relative">
               <button
                 onClick={() => setIsOpenAction(!isOpenAction)}
-                className="h-8 px-2 hover:text-white cursor-pointer"
+                className="flex items-center justify-center h-8 px-2 hover:text-white cursor-pointer"
                 type="button"
               >
                 <EllipsisIcon className="w-8 h-8" />
@@ -264,11 +263,11 @@ const PlaylistPage: React.FC = () => {
           <div className="relative">
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="font-semibold hover:text-white cursor-pointer h-8 px-2 flex items-center gap-2"
+              className="font-semibold hover:text-white cursor-pointer h-8 flex items-center gap-2"
               type="button"
             >
               <span>Lista</span>
-              <ListIcon className="inline-flex w-5 h-5" />
+              <ListIcon className="inline-flex" size={20} />
             </button>
 
             {isOpen && <LayoutMenu onClose={() => setIsOpen(!isOpen)} />}
@@ -287,13 +286,19 @@ const PlaylistPage: React.FC = () => {
           </div>
         }
 
-        <section className={`${(playlistSongs.length > 0 && !isSearch) ? 'block' : 'hidden'}  px-8`}>
+        <section className={`${(playlistSongs.length > 0 && !isSearch) ? 'block' : 'hidden'} px-5 animate-fade-in`}>
           <PlaylistSongs
             songs={playlistSongs}
             items={playlistItems}
             playlistMeta={{ ...playlistMeta, playlistId: playlistId! }}
             setActiveItem={setActiveItem}
-            loadMore={() => { }}
+            loadMore={() => {
+              if (page < playlistMeta.totalPages) {
+                const nextPage = page + 1;
+                getPlaylistTracks(playlistId!, { page: nextPage });
+                setPage(nextPage);
+              }
+            }}
           />
 
           <div className="text-white ml-auto flex-1 flex">

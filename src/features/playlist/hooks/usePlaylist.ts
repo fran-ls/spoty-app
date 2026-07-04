@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { Playlist, PlaylistDTO, PlaylistInclude, PlaylistMeta, PlaylistSong, PlaylistSongDTO, PlaylistSongInclude } from "../playlist.types";
 import type { SearchMeta } from "../../../shared/types/common.types";
-import type { Song, SongCover } from "../../song/song.types";
+import type { Song, SongCover, TrackFilters, TrackInclude } from "../../song/song.types";
 import playlistService from "../services/playlist.service";
 import songService from "../../song/services/song.service";
 import { routes } from "../../../shared/utils/routes";
@@ -176,7 +176,7 @@ const usePlaylist = () => {
     if (data?.id) navigate(routes.home);
   }
 
-  const getPlaylistSongs = async (playlistId: string, filters?: Record<string, any>) => {
+  const getPlaylistTracks = async (playlistId: string, filters?: Record<string, any>) => {
     if (!playlistId) return null;
 
     const { data } = await playlistService.getPlaylistSongs(playlistId, filters);
@@ -218,13 +218,14 @@ const usePlaylist = () => {
     return images;
   }
 
-  const findSongs = async () => {
+  const searchTracks = async (filters?: TrackFilters | undefined, include?: TrackInclude) => {
     const { data } = await songService.searchSongs({
-      title: query
-    });
+      title: query,
+      ...filters
+    }, include);
 
     if (data) {
-      setSearchMeta({ ...data.meta, totalPages: 1 })
+      setSearchMeta(data.meta);
       setSearchSongs(data.items);
     }
 
@@ -283,8 +284,8 @@ const usePlaylist = () => {
     onSavePlaylist,
     onChangeVisibility,
     onRemovePlaylist,
-    getPlaylistSongs,
-    findSongs,
+    getPlaylistTracks,
+    searchTracks,
     addSongToPlaylist,
     removeSongFromPlaylist
   }

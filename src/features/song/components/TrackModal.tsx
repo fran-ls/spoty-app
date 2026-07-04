@@ -5,6 +5,7 @@ import songService from "../services/song.service";
 import { getFmtDate } from "../../../shared/utils/getFormatDate";
 import { formatTime } from "../../../shared/utils/formatTime";
 import SmartImage from "../../../shared/components/SmartImage";
+import useAuth from "../../auth/hooks/useAuth";
 
 interface TrackModalProps {
   activeTrack: Song | null;
@@ -13,6 +14,7 @@ interface TrackModalProps {
 }
 
 const TrackModal = (props: TrackModalProps) => {
+  const { isAdmin } = useAuth();
   const { activeTrack, onClose, onUpdateSong } = props;
 
   const [isImgHover, setIsImgHover] = useState(false);
@@ -36,16 +38,18 @@ const TrackModal = (props: TrackModalProps) => {
       <div className="text-[#adaaaa] py-3 bg-[#212121] w-full max-w-105 rounded-2xl">
         <header className="px-6 py-3 flex items-center gap-3 justify-between">
           <h1 className="text-xl font-bold">
-            Información de la canción
+            {window.innerWidth >= 500 ? 'Información de la canción' : 'Canción'}
           </h1>
-          <button
-            onClick={() => onUpdateSong(form)}
-            className="hover:bg-[#3e3e3e] ml-auto rounded-full p-1.5"
-            title="Guardar cambios"
-            type="button"
-          >
-            <CloudUpload size={20} />
-          </button>
+          {isAdmin &&
+            <button
+              onClick={() => onUpdateSong(form)}
+              className="hover:bg-[#3e3e3e] ml-auto rounded-full p-1.5"
+              title="Guardar cambios"
+              type="button"
+            >
+              <CloudUpload size={20} />
+            </button>
+          }
           <button
             onClick={onClose}
             className="hover:bg-[#3e3e3e] rounded-full p-1"
@@ -56,35 +60,24 @@ const TrackModal = (props: TrackModalProps) => {
           </button>
         </header>
 
-        <SmartImage
-          url={cover}
-          wrapClassName="bg-[#3e3e3e] mx-auto my-2 w-50 h-50 rounded"
-        />
-
         <div
-          className="hidden bg-[#3e3e3e] mx-auto my-2 w-50 h-50 rounded overflow-hidden relative"
+          className="bg-[#3e3e3e] mx-auto my-2 w-50 h-50 rounded overflow-hidden relative"
           onPointerEnter={() => setIsImgHover(true)}
           onMouseLeave={() => {
             setIsImgHover(false);
             setIsActions(false);
           }}
         >
-          {cover
-            ?
-            <img
-              className="w-full h-full object-cover"
-              src={cover}
-              crossOrigin="anonymous"
-              alt=""
-            />
-            :
-            <MusicIcon
-              className="absolute top-1/2 left-1/2 -translate-1/2"
-              size={50}
-            />
-          }
+          <SmartImage
+            wrapClassName="bg-[#3e3e3e] w-50 h-50 rounded overflow-hidden relative"
+            url={cover}
+            iconClassName="w-full h-full bg-red-500"
+            icon={(
+              <MusicIcon className="text-white" size={50} />
+            )}
+          />
 
-          {isImgHover &&
+          {(isImgHover && isAdmin) &&
             <button
               onClick={() => setIsActions(!isActions)}
               className="bg-black text-white hover:bg-[#3e3e3e] ml-auto rounded-full p-1.5 absolute top-2 right-2"
@@ -94,7 +87,7 @@ const TrackModal = (props: TrackModalProps) => {
             </button>
           }
 
-          {isActions && isImgHover &&
+          {(isActions && isImgHover && isAdmin) &&
             <div className="bg-black w-40 p-2 absolute top-12 right-2 rounded">
               <button
                 onClick={() => {
@@ -119,6 +112,7 @@ const TrackModal = (props: TrackModalProps) => {
                 onChange={(e) => {
                   const f = e.target.files?.[0];
                   if (f) {
+                    fileUrl && URL.revokeObjectURL(fileUrl)
                     setForm({ ...form, coverFile: f });
                     setFileUrl(URL.createObjectURL(f));
                   }
@@ -154,13 +148,15 @@ const TrackModal = (props: TrackModalProps) => {
               }
             </div>
 
-            <button
-              onClick={() => setIsEdit(!isEdit)}
-              className={`${isEdit ? 'text-primary' : ''} p-1`}
-              type="button"
-            >
-              <PenIcon size={20} />
-            </button>
+            {isAdmin &&
+              <button
+                onClick={() => setIsEdit(!isEdit)}
+                className={`${isEdit ? 'text-primary' : ''} p-1`}
+                type="button"
+              >
+                <PenIcon size={20} />
+              </button>
+            }
           </div>
 
           <div className="mt-4 w-full flex items-center justify-between gap-2">
@@ -191,7 +187,7 @@ const TrackModal = (props: TrackModalProps) => {
             Álbum
           </span>
           <span className="text-sm ml-auto">
-            The Fame
+            {activeTrack?.album?.title || ''}
           </span>
         </div>
 

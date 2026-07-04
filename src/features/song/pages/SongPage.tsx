@@ -20,7 +20,7 @@ import SmartImage from '../../../shared/components/SmartImage';
 import useTrack from '../hooks/useTrack';
 
 const SongPage: React.FC = () => {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const { setQueueMeta } = usePlayer();
   const { tracks, trackMeta, searchTracks, setTracks, setTrackMeta } = useTrack()
 
@@ -137,9 +137,12 @@ const SongPage: React.FC = () => {
 
   async function onUpdateSong(song: SongDTO) {
     const songId = activeTrack?.id;
-    if (!songId) return;
+    if (!songId || !isAdmin) return;
 
-    const { data } = await songService.updateSong(songId, song);
+    const { data } = await songService.updateSong(songId, {
+      ...song,
+      albumId: activeTrack?.album?.id
+    });
 
     if (data && data.id && activeTrackIndex !== null) {
       const trackToUpdate = tracks[activeTrackIndex];

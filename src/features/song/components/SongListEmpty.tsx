@@ -9,7 +9,7 @@ const SongListEmpty: React.FC = () => {
     >
       <div className="max-w-2xl m-auto flex flex-col items-center justify-center p-20 rounded-xl select-none animate-fade-in text-center">
         <p className="text-[#adaaaa] font-bold text-sm">
-          Aún no hay pistas dentro de este diseño personalizado
+          Ninguna pista coincide para esta busqueda
         </p>
         <p className="hidden text-xs text-[#adaaaa]/60 mt-1 max-w-md">
           Navegue a la pestaña <strong>Buscar</strong> o a las colecciones de inicio, haga clic en los menús contextuales o marque como favorito cualquier pista específica para listarlas aquí en tiempo real

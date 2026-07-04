@@ -23,7 +23,7 @@ const PanelPlaylistDetail = ({ activePlaylist, onClose }: PanelPlaylistDetailPro
   const playlistId = activePlaylist?.id;
   const user = activePlaylist?.user;
 
-  const { playlistItems, playlistMeta, getPlaylistSongs, addSongToPlaylist, removeSongFromPlaylist } = usePlaylist();
+  const { playlistItems, playlistMeta, getPlaylistTracks, addSongToPlaylist, removeSongFromPlaylist } = usePlaylist();
   const { toast, isActive, isFirstLoad, onClose: onCloseToast } = useToaster();
   const { tracks, trackMeta, searchTracks } = useTrack();
 
@@ -35,7 +35,7 @@ const PanelPlaylistDetail = ({ activePlaylist, onClose }: PanelPlaylistDetailPro
 
   const { loaderRef } = useInfiniteScroll(() => {
     if (!playlistMeta.hasNextPage || !playlistId) return;
-    getPlaylistSongs(playlistId, {
+    getPlaylistTracks(playlistId, {
       limit: 10,
       page: page + 1
     });
@@ -89,7 +89,7 @@ const PanelPlaylistDetail = ({ activePlaylist, onClose }: PanelPlaylistDetailPro
   }
 
   useEffect(() => {
-    playlistId && getPlaylistSongs(playlistId);
+    playlistId && getPlaylistTracks(playlistId);
     setIsPlaylistMenu(false);
     setIsSearchWiget(false);
     setActiveTrackId('');
