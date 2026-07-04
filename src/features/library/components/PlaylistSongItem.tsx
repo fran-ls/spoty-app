@@ -52,16 +52,22 @@ const PlaylistSongItem = ({ layout, user, queueMeta, isExpanded }: PlaylistItemP
       )}
 
       {(layout === 'compact-list') && (
-        <div className="text-[13px] font-semibold flex items-center gap-1 text-[#adaaaa]">
-          <h4
-            className={`${queueMeta.playlistId === playlist.id ? 'text-primary' : 'text-white'} line-clamp-1 text-[15px] font-semibold`}
-            title={playlist.name}
-          >
-            {playlist.name}
-          </h4>
-          <span>•</span>
-          <span>Lista</span>
-        </div>
+        <>
+          <div className="text-[13px] font-semibold flex items-center gap-1 w-full text-[#adaaaa] col-span-2">
+            <h4
+              className={`${queueMeta.playlistId === playlist.id ? 'text-primary' : 'text-white'} w--full line-clamp-1 text-[15px] font-semibold`}
+              title={playlist.name}
+            >
+              {playlist.name}
+            </h4>
+            <span>•</span>
+            <span>Lista</span>
+          </div>
+
+          {isExpanded && (
+            <TrItem playlist={playlist} />
+          )}
+        </>
       )}
 
       {(layout === 'grid') && (
@@ -83,7 +89,7 @@ const PlaylistSongItem = ({ layout, user, queueMeta, isExpanded }: PlaylistItemP
             <span>Lista</span>
             <span className="mx-1">•</span>
             <span className="line-clamp-1">
-              6 canciones
+              0 canciones
             </span>
           </div>
         </div>
@@ -98,7 +104,7 @@ const TrItem = ({ playlist }: { playlist: Partial<Playlist> }) => {
   return (
     <>
       <div className="text-sm font-medium flex items-center">
-        {/* {playlist.isPublic ? 'Pública' : 'Privada'} */}
+        {playlist.isPublic ? 'Pública' : 'Privada'}
       </div>
       <div className="text-sm font-medium flex items-center">
         {playlist.createdAt}
