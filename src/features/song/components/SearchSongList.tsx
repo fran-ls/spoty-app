@@ -73,7 +73,11 @@ const SearchSongList: React.FC<SearchSongListProps> = (props) => {
                 className=" hover:bg-[#0e0e0e] font-semibold sm:px-4 sm:py-1.5 p-1 sm:w-fit sm:h-fit w-5 h-5 sm:border border-2 sm:border-white/40 border-white rounded-full duration-200 cursor-pointer hover:border-white hover:text-white relative"
               >
                 <span className="sm:block hidden">Añadir</span>
-                <PlusIcon className="sm:fill-current fill-white sm:hidden block absolute top-1/2 left-1/2 -translate-1/2" size={16} />
+                <PlusIcon
+                  className="sm:fill-current fill-white sm:hidden block absolute top-1/2 left-1/2 -translate-1/2"
+                  strokeWidth={3}
+                  size={16}
+                />
               </button>
             </div>
           </div>

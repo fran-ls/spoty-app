@@ -8,8 +8,8 @@
 /* UPLOAD PANEL */
 .upload-panel-wrap {
   position: relative;
-  min-height: calc(100vh - 73px);
-  max-height: calc(100vh - 73px);
+  min-height: calc(100dvh - 73px);
+  max-height: calc(100dvh - 73px);
   overflow-y: auto;
 }
 
@@ -20,8 +20,8 @@
 
 .upload-panel-main-wrap {
   position: relative;
-  min-height: calc(100vh - 73px - 56px);
-  max-height: calc(100vh - 73px - 56px);
+  min-height: calc(100dvh - 73px - 56px);
+  max-height: calc(100dvh - 73px - 56px);
   overflow-y: auto;
 }
 

@@ -38,7 +38,7 @@ const SearchPanel = (props: SearchPanelProps) => {
         />
       </div>
 
-      <div className="flex gap-1.5 shrink-0">
+      <div className="flex gap-1.5 shrink-0 overflow-x-auto hide-scrollbar">
         {(['all', 'tracks', 'artists', 'playlists', 'albums'] as const).map(f => (
           <button
             key={f}
@@ -49,7 +49,7 @@ const SearchPanel = (props: SearchPanelProps) => {
               : 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10'
               }`}
           >
-            {f === 'all' ? 'Todo' : f === 'artists' ? 'Artistas' : f === 'albums' ? 'Álbumes' : f === 'tracks' ? 'Canciones' : 'Listas'}
+            {f === 'all' ? 'Todo' : f === 'artists' ? 'Artistas' : f === 'albums' ? 'Álbums' : f === 'tracks' ? 'Canciones' : 'Listas'}
           </button>
         ))}
       </div>

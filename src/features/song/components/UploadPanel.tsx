@@ -27,6 +27,7 @@ export const UploadPanel: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState<'track' | 'playlist' | 'search'>('track');
   const [panel2Mode, setPanel2Mode] = useState<PanelMode>('create-artist');
+  const [isPanel1Open, setIsPanel1Open] = useState(true);
   const [isPanel2Open, setIsPanel2Open] = useState(false);
 
   const [activeArtist, setActiveArtist] = useState<Artist | null>(null);
@@ -51,7 +52,7 @@ export const UploadPanel: React.FC = () => {
 
     setPanel2Mode('view-album');
     setActiveAlbum(album);
-    setIsPanel2Open(true);
+    onOpenPanel2();
   }
 
   const triggerViewArtist = (artist: Artist) => {
@@ -62,7 +63,7 @@ export const UploadPanel: React.FC = () => {
 
     setPanel2Mode('view-artist');
     setActiveArtist(artist);
-    setIsPanel2Open(true);
+    onOpenPanel2();
   }
 
   const triggerViewPlaylist = (playlist: Playlist) => {
@@ -73,10 +74,21 @@ export const UploadPanel: React.FC = () => {
 
     setPanel2Mode('view-playlist');
     setActivePlaylist(playlist);
-    setIsPanel2Open(true);
+    onOpenPanel2();
   }
 
-  const onClosePanel2 = () => setIsPanel2Open(false);
+  const onClosePanel2 = () => {
+    setIsPanel1Open(true);
+    setIsPanel2Open(false);
+  }
+
+  const onOpenPanel2 = () => {
+    setIsPanel2Open(true);
+
+    if (window.innerWidth <= 920) {
+      setIsPanel1Open(false);
+    }
+  }
 
   async function onRemoveArtist(id?: string, isRemoveFiles?: boolean) {
     const artistId = id ?? activeArtist?.id;
@@ -133,7 +145,7 @@ export const UploadPanel: React.FC = () => {
           animate={{ x: 0 }}
           exit={{ x: '100%' }}
           transition={{ type: 'spring', damping: 28, stiffness: 220 }}
-          className="w-screen sm:w-115 h-full bg-[#121212] border-l border-white/5 flex flex-col shadow-2xl pointer-events-auto relative z-10"
+          className={`${isPanel1Open ? 'flex' : 'hidden'} w-screen sm:w-115 h-full bg-[#121212] border-l border-white/5 flex-col shadow-2xl pointer-events-auto relative z-10`}
           id="creator-panel-1"
         >
           <div className="p-5 border-b border-white/5 flex items-center justify-between bg-[#151515]">
@@ -232,81 +244,84 @@ export const UploadPanel: React.FC = () => {
 
         {/* PANEL 2: AUXILIARY FORM & DETAIL PANELS (SLIDES IN TO THE RIGHT OF PANEL 1) */}
         <AnimatePresence>
-          {isPanel2Open && (
-            <motion.div
-              initial={{ x: '100%', opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: '100%', opacity: 0 }}
-              transition={{ type: 'spring', damping: 28, stiffness: 220 }}
-              className="w-screen sm:w-115 h-full bg-[#181818] border-l border-white/10 flex flex-col shadow-2xl pointer-events-auto relative z-20"
-              id="creator-panel-2"
-            >
-              <div className="relative p-5 border-b border-white/5 flex items-center justify-between bg-[#1b1b1b] max-w-115">
-                <div className="flex items-center gap-2">
+          <div
+            style={{
+              width: isPanel2Open ? window.innerWidth >= 640 ? '460px' : '100%' : '0'
+            }}
+            className="transition-all duration-200"
+          >
+            {isPanel2Open && (
+              <div
+                className={`w-screen sm:w-115 h-full bg-[#181818] border-l border-white/10 flex flex-col shadow-2xl pointer-events-auto relative z-20`}
+                id="creator-panel-2"
+              >
+                <div className="relative p-5 border-b border-white/5 flex items-center justify-between bg-[#1b1b1b] sm:max-w-115">
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={onClosePanel2}
+                      className="text-gray-400 hover:text-white hover:bg-white/5 w-8 h-8 flex items-center justify-center rounded-full transition-all cursor-pointer"
+                      title="Volver"
+                    >
+                      <ChevronLeftIcon size={20} />
+                    </button>
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                    <span className="text-xs uppercase font-mono font-bold text-gray-400">
+                      {panel2Mode === 'create-artist' && 'Nuevo Artista'}
+                      {panel2Mode === 'create-album' && 'Nuevo Álbum'}
+                      {panel2Mode === 'view-artist' && 'Artista'}
+                      {panel2Mode === 'view-album' && 'Álbum'}
+                      {panel2Mode === 'view-playlist' && 'Playlist'}
+                    </span>
+                  </div>
                   <button
-                    onClick={() => setIsPanel2Open(false)}
-                    className="text-gray-400 hover:text-white hover:bg-white/5 w-8 h-8 flex items-center justify-center rounded-full transition-all cursor-pointer"
-                    title="Volver"
+                    onClick={onClosePanel2}
+                    className="p-1.5 rounded-lg hover:bg-white/5 text-gray-400 hover:text-white transition-all cursor-pointer"
                   >
-                    <ChevronLeftIcon size={20} />
+                    <XIcon size={16} />
                   </button>
-                  <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-                  <span className="text-xs uppercase font-mono font-bold text-gray-400">
-                    {panel2Mode === 'create-artist' && 'Nuevo Artista'}
-                    {panel2Mode === 'create-album' && 'Nuevo Álbum'}
-                    {panel2Mode === 'view-artist' && 'Artista'}
-                    {panel2Mode === 'view-album' && 'Álbum'}
-                    {panel2Mode === 'view-playlist' && 'Playlist'}
-                  </span>
                 </div>
-                <button
-                  onClick={() => setIsPanel2Open(false)}
-                  className="p-1.5 rounded-lg hover:bg-white/5 text-gray-400 hover:text-white transition-all cursor-pointer"
-                >
-                  <XIcon size={16} />
-                </button>
+
+                {/* PANEL 2 CONTENT BODY */}
+                <div className="sm:max-w-115 flex-1 secondary-panel-content relative upload-panel-wrap">
+                  {panel2Mode === 'create-artist' && (
+                    <ArtistForm
+                      setArtists={setArtists}
+                      setIsPanel2Open={setIsPanel2Open}
+                    />
+                  )}
+
+                  {panel2Mode === 'create-album' && (
+                    <AlbumForm
+                      setAlbums={setAlbums}
+                      setIsPanel2Open={setIsPanel2Open}
+                    />
+                  )}
+
+                  {panel2Mode === 'view-artist' && (
+                    <ArtistProfile
+                      artist={activeArtist}
+                      onRemove={onRemoveArtist}
+                      triggerViewAlbum={triggerViewAlbum}
+                    />
+                  )}
+
+                  {panel2Mode === 'view-album' &&
+                    <AlbumDetail
+                      activeAlbum={activeAlbum}
+                      onRemove={onRemoveAlbum}
+                    />
+                  }
+
+                  {panel2Mode === 'view-playlist' &&
+                    <PlaylistDetail
+                      activePlaylist={activePlaylist}
+                      onClose={onClosePanel2}
+                    />
+                  }
+                </div>
               </div>
-
-              {/* PANEL 2 CONTENT BODY */}
-              <div className="max-w-115 flex-1 secondary-panel-content relative upload-panel-wrap">
-                {panel2Mode === 'create-artist' && (
-                  <ArtistForm
-                    setArtists={setArtists}
-                    setIsPanel2Open={setIsPanel2Open}
-                  />
-                )}
-
-                {panel2Mode === 'create-album' && (
-                  <AlbumForm
-                    setAlbums={setAlbums}
-                    setIsPanel2Open={setIsPanel2Open}
-                  />
-                )}
-
-                {panel2Mode === 'view-artist' && (
-                  <ArtistProfile
-                    artist={activeArtist}
-                    onRemove={onRemoveArtist}
-                    triggerViewAlbum={triggerViewAlbum}
-                  />
-                )}
-
-                {panel2Mode === 'view-album' &&
-                  <AlbumDetail
-                    activeAlbum={activeAlbum}
-                    onRemove={onRemoveAlbum}
-                  />
-                }
-
-                {panel2Mode === 'view-playlist' &&
-                  <PlaylistDetail
-                    activePlaylist={activePlaylist}
-                    onClose={onClosePanel2}
-                  />
-                }
-              </div>
-            </motion.div>
-          )}
+            )}
+          </div>
         </AnimatePresence>
       </div>
     </div>

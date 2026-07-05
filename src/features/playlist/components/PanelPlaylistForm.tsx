@@ -139,7 +139,7 @@ const PanelPlaylistForm = () => {
           </div>
 
           <div className="w-full">
-            <span className="text-gray-400 block text-xs text-center">
+            <span className="mt-1 text-gray-400 block text-xs text-center">
               {form.isPublic ? 'Pública' : 'Privada'}
             </span>
 
@@ -152,7 +152,7 @@ const PanelPlaylistForm = () => {
               {form.name || 'Mi lista'}
             </h1>
 
-            <div className="mt-2 text-sm text-slate-400 text-center">
+            <div className="mt-1 text-sm text-slate-400 text-center">
               {userOption.label || 'Usuario'}
             </div>
           </div>

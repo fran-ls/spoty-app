@@ -159,7 +159,7 @@ const PlaylistPage: React.FC = () => {
                     coverInputRef.current?.click();
                     setIsEdit(true);
                   }}
-                  className={`${cover ? 'bg-black/50' : 'bg-[#262626]'} hover:text-white w-full h-full flex flex-col items-center gap-1 justify-center absolute top-1/2 left-1/2 -translate-1/2`}
+                  className={`${(cover || coverImages.length > 3) ? 'bg-black/50' : 'bg-[#262626]'} hover:text-white w-full h-full flex flex-col items-center gap-1 justify-center absolute top-1/2 left-1/2 -translate-1/2`}
                   type="button"
                 >
                   <PenIcon className="w-10 h-10" />
