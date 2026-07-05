@@ -91,13 +91,7 @@ const PanelPlaylistForm = () => {
 
   return (
     <div className="overflow-hidden relative">
-      <div
-        style={{
-          minHeight: 'calc(100vh - 73px - 56px)',
-          maxHeight: 'calc(100vh - 73px - 56px)'
-        }}
-        className="animate-fade-in upload-panel-wrap"
-      >
+      <div className="animate-fade-in upload-panel-main-wrap">
         <div
           style={{
             background: gradientCSS

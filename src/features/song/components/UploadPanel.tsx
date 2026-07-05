@@ -36,12 +36,12 @@ export const UploadPanel: React.FC = () => {
 
   const triggerCreateArtist = () => {
     setPanel2Mode('create-artist');
-    setIsPanel2Open(true);
+    onOpenPanel2();
   }
 
   const triggerCreateAlbum = () => {
     setPanel2Mode('create-album');
-    setIsPanel2Open(true);
+    onOpenPanel2();
   }
 
   const triggerViewAlbum = (album: Album) => {
