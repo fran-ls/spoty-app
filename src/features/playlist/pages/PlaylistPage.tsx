@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { EllipsisIcon, ListIcon, MusicIcon, PauseIcon, PenIcon, PlayIcon, PlusIcon, SearchIcon, XIcon } from 'lucide-react';
+import { EllipsisIcon, ListIcon, Music2Icon, MusicIcon, PauseIcon, PenIcon, PlayIcon, PlusIcon, SearchIcon, XIcon } from 'lucide-react';
 import { Toaster as SonnerToaster, toast } from 'sonner';
 import type { PlaylistSong } from '../playlist.types';
 import LayoutMenu from '../components/LayoutMenu';
@@ -39,6 +39,7 @@ const PlaylistPage: React.FC = () => {
 
   const coverInputRef = useRef<HTMLInputElement>(null);
   const cover = form.fileUrl || form.cover;
+  const username = user?.username?.split(' ')[0] || 'Username'
 
   function playlistMenuActions(action: PlaylistMenuAction | 'open') {
     const onClose = () => setIsPlaylistMenu(false);
@@ -119,12 +120,12 @@ const PlaylistPage: React.FC = () => {
           style={{
             background: `linear-gradient(to bottom, ${bgColor} 0%, ${gradientColor} 100%)`,
           }}
-          className="min-[500px]:flex-row p-6 flex-col flex items-center gap-6 overflow-auto hide-scrollbar"
+          className="min-[500px]:flex-row min-[500px]:pt-6 pt-12 px-6 pb-6 flex-col flex items-center gap-6 overflow-auto hide-scrollbar"
         >
           <div
             onPointerEnter={() => setIsHover(true)}
             onMouseLeave={() => setIsHover(false)}
-            className="min-[925px]:max-w-58 min-[925px]:max-h-58 min-[925px]:min-w-58 min-[925px]:min-h-58 w-[25vw] h-[25vw] min-w-[25vw] min-h-[25vw] rounded bg-[#262626] overflow-hidden relative"
+            className="min-[925px]:max-w-58 min-[925px]:max-h-58 min-[925px]:min-w-58 min-[925px]:min-h-58 min-[500px]:min-w-[25vw] min-[500px]:min-h-[25vw] min-w-45 min-h-45 w-[25vw] h-[25vw] rounded bg-[#262626] overflow-hidden relative"
           >
             <SmartImage
               wrapClassName="w-full h-full"
@@ -221,7 +222,7 @@ const PlaylistPage: React.FC = () => {
 
               <a href="#" className="min-[500px]:inline-flex hidden hover:underline">
                 <span className="text-sm ml-2 font-bold">
-                  {user?.username}
+                  {username}
                 </span>
               </a>
               <span className="min-[500px]:inline-flex hidden text-sm ml-2 font-bold">
@@ -235,20 +236,30 @@ const PlaylistPage: React.FC = () => {
                 <div>
                   <a href="#" className="hover:underline">
                     <span className="text-sm ml-2 font-bold">
-                      {user?.username}
+                      {username}
                     </span>
                   </a>
-                  <span className="text-sm ml-2 font-bold">
+                  <span className="text-sm mx-2 font-bold">
                     •
                   </span>
-                  <span className="min-[500px]:hidden inline-flex ml-2 text-sm font-medium">
-                    {isPublic ? 'pública' : 'privada'}
+                  <span className="text-sm font-medium">
+                    {isPublic ? 'Pública' : 'Privada'}
                   </span>
                 </div>
-                <span className="text-sm ml-2 text-nowrap">
+                <span className="min-[420px]:inline-flex hidden text-sm ml-2 text-nowrap">
                   {playlistMeta.total || 0} canciones, {duration.min} min {duration.stringSecs}s
                 </span>
               </div>
+            </div>
+
+            <div className="min-[420px]:hidden mt-5 flex items-center justify-between gap-2">
+              <Music2Icon className="stroke-[#adaaaa]" size={20} />
+              <span className="text-sm text-nowrap mr-auto">
+                {playlistMeta.total || 0} {playlistMeta.total > 1 ? 'canciones' : 'canción'}
+              </span>
+              <span className="text-sm text-nowrap">
+                {duration.min} min {duration.stringSecs}s
+              </span>
             </div>
           </div>
         </section>
@@ -369,7 +380,7 @@ const PlaylistPage: React.FC = () => {
         </section>
 
         <section
-          className={`${isSearch ? 'block' : 'hidden'} bg-[#131313] min-h-[75vh] p-6 pt-0 space-y-6 relative`}
+          className={`${isSearch ? 'block' : 'hidden'} bg-[#131313] min-h-[75vh] sm:p-6 pl-6 pr-3 pb-6 pt-0 space-y-6 relative`}
           style={{
             // background: `linear-gradient(to bottom, ${gradientColor} 0%, #131313 100%)`,
           }}
@@ -377,10 +388,10 @@ const PlaylistPage: React.FC = () => {
           <div className="h-px bg-white/10" />
 
           <div className="mb-8 relative animate-fade-in">
-            <label className="my-3 text-[22px] font-bold block" htmlFor="query">
-              Encontremos algo para tu lista
+            <label className="my-3 min-[460px]:text-[22px] text-[18px] font-bold block" htmlFor="query">
+              {window.innerWidth >= 360 ? 'Encontremos algo para tu lista' : 'Busca algo'}
             </label>
-            <div className="text-[#adaaaa] px-3 py-2.5 text-sm w-full max-w-82 bg-[#262626] gap-2 flex items-center rounded">
+            <div className="text-[#adaaaa] px-3 py-2.5 text-sm w-full min-[460px]:max-w-82 bg-[#262626] gap-2 flex items-center rounded">
               <SearchIcon className="min-w-5 w-5 h-5" />
               <input
                 value={query}
@@ -405,10 +416,10 @@ const PlaylistPage: React.FC = () => {
 
             <button
               onClick={() => setIsSearch(false)}
-              className="text-[#adaaaa] absolute top-1/2 right-0 -translate-1/2"
+              className="text-[#adaaaa] bg-[#131313] absolute min-[460px]:top-1/2 top-0 right-0 min-[460px]:-translate-1/2"
               type="button"
             >
-              <XIcon strokeWidth={1.5} size={32} />
+              <XIcon className="w-7 h-7 min-[460px]:w-8 min-[460px]:h-8" strokeWidth={1.5} />
             </button>
           </div>
 

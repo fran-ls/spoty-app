@@ -97,7 +97,7 @@ export const Library = (props: LibraryProps) => {
   return (
     <aside
       onClick={() => !query && setIsSearch(false)}
-      className={`${isCollapsed ? 'w-18' : isExpanded ? 'w-full' : 'w-72'} ${isExpanded ? 'flex' : 'sm:flex hidden'} rounded-lg h-full overflow-hidden flex-col bg-[#131313] border-none select-none shrink-0 transition-all duration-300 ease-in-out relative`}
+      className={`${isCollapsed ? 'w-18' : isExpanded ? 'w-full' : 'w-72'} ${isExpanded ? 'flex' : 'md:flex hidden'} rounded-lg h-full overflow-hidden flex-col bg-[#131313] border-none select-none shrink-0 transition-all duration-300 ease-in-out relative`}
       id="spotify-sidebar"
     >
       <div className="rounded-lg min-h-[calc(100vh-64px-88px)] max-h-[calc(100vh-64px-88px)]">

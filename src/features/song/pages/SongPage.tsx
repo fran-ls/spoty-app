@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { MusicIcon, PenIcon, PlusIcon, SearchIcon, XIcon } from 'lucide-react';
+import { Music2Icon, MusicIcon, PenIcon, PlusIcon, SearchIcon, XIcon } from 'lucide-react';
 import { Toaster as SonnerToaster, toast } from 'sonner';
 import type { PlaylistDTO, PlaylistFormAction, PlaylistFormState } from '../../playlist/playlist.types';
 import type { Song, SongCover, SongDTO } from '../song.types';
@@ -60,6 +60,7 @@ const SongPage: React.FC = () => {
 
   const duration = getTimeParts(trackMeta?.totalDuration ?? 0);
   const coverInputRef = useRef<HTMLInputElement>(null);
+  const username = user?.username?.split(' ')[0] || 'Username'
 
   async function getTracks(page: number) {
     const data = await searchTracks({
@@ -233,12 +234,12 @@ const SongPage: React.FC = () => {
             style={{
               background: gradientCSS
             }}
-            className="min-[500px]:flex-row p-6 pb-44 flex-col flex items-center sm:gap-6 gap-4 overflow-x-auto hide-scrollbar"
+            className="min-[500px]:flex-row min-[500px]:pt-6 pt-12 px-6 pb-44 flex-col flex items-center sm:gap-6 gap-4 overflow-x-auto hide-scrollbar"
           >
             <div
               onPointerEnter={() => setIsHover(true)}
               onMouseLeave={() => setIsHover(false)}
-              className="min-[925px]:max-w-58 min-[925px]:max-h-58 min-[925px]:min-w-58 min-[925px]:min-h-58 w-[25vw] h-[25vw] min-w-[25vw] min-h-[25vw] rounded bg-[#262626] relative overflow-hidden"
+              className="min-[925px]:max-w-58 min-[925px]:max-h-58 min-[925px]:min-w-58 min-[925px]:min-h-58 min-[500px]:min-w-[25vw] min-[500px]:min-h-[25vw] min-w-45 min-h-45 w-[25vw] h-[25vw] rounded bg-[#262626] relative overflow-hidden"
             >
               <SmartImage
                 wrapClassName="w-full h-full"
@@ -309,7 +310,7 @@ const SongPage: React.FC = () => {
 
                 <a href="#" className="min-[500px]:inline-flex hidden hover:underline">
                   <span className="text-sm ml-2 font-bold">
-                    {user?.username}
+                    {username}
                   </span>
                 </a>
                 <span className="min-[500px]:inline-flex hidden text-sm ml-2 font-bold">
@@ -323,20 +324,30 @@ const SongPage: React.FC = () => {
                   <div>
                     <a href="#" className="hover:underline">
                       <span className="text-sm ml-2 font-bold">
-                        {user?.username}
+                        {username}
                       </span>
                     </a>
                     <span className="text-sm ml-2 font-bold">
                       •
                     </span>
                     <span className="min-[500px]:hidden inline-flex ml-2 text-sm font-medium">
-                      {isPublic ? 'pública' : 'privada'}
+                      {isPublic ? 'Pública' : 'Privada'}
                     </span>
                   </div>
-                  <span className="text-sm ml-2 text-nowrap">
+                  <span className="min-[420px]:inline-flex hidden text-sm ml-2 text-nowrap">
                     {trackMeta.total || 0} canciones, {duration.min} min {duration.stringSecs}s
                   </span>
                 </div>
+              </div>
+
+              <div className="min-[420px]:hidden mt-5 flex items-center justify-between gap-2">
+                <Music2Icon className="stroke-[#adaaaa]" size={20} />
+                <span className="text-sm text-nowrap mr-auto">
+                  {trackMeta.total || 0} {trackMeta.total > 1 ? 'canciones' : 'canción'}
+                </span>
+                <span className="text-sm text-nowrap">
+                  {duration.min} min {duration.stringSecs}s
+                </span>
               </div>
             </div>
           </div>

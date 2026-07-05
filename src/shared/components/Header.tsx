@@ -26,24 +26,24 @@ export const Header: React.FC<HeaderProps> = ({ onExplorePremiumClick }) => {
       className="flex justify-between items-center px-4 py-2 w-full h-16 bg-black transition-all duration-300"
       id="spotify-header"
     >
-      <div className="flex items-center gap-4 max-w-140 w-[50%]">
+      <div className="flex items-center gap-4 max-w-140 md:w-[60%] w-[80%]">
         <div className="flex gap-2">
           <button
             onClick={() => navigate(routes.home)}
             className="w-8 h-8 flex items-center justify-center rounded-full bg-black/40 text-[#adaaaa] hover:text-white hover:bg-black/60 transition-all cursor-pointer"
-            title="Go Home"
+            title="Inicio"
           >
             <ChevronLeft size={20} />
           </button>
           <button
-            className="w-8 h-8 flex items-center justify-center rounded-full bg-black/40 text-[#adaaaa] opacity-50 cursor-not-allowed"
+            className="sm:flex hidden w-8 h-8 items-center justify-center rounded-full bg-black/40 text-[#adaaaa] opacity-50 cursor-not-allowed"
             disabled
           >
             <ChevronRight size={20} />
           </button>
         </div>
 
-        <div className="relative group ml-4 animate-fade-in w-full">
+        <div className="relative group sm:ml-4 animate-fade-in w-full">
           <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-[#adaaaa] group-focus-within:text-white">
             <Search size={18} />
           </div>
@@ -87,10 +87,10 @@ export const Header: React.FC<HeaderProps> = ({ onExplorePremiumClick }) => {
         </button>
 
         <div className="flex items-center gap-3">
-          <button className="text-[#adaaaa] hover:text-white hover:bg-[#262626] rounded-full p-2 transition-all cursor-pointer">
+          <button className="hidden text-[#adaaaa] hover:text-white hover:bg-[#262626] rounded-full p-2 transition-all cursor-pointer">
             <Bell size={20} />
           </button>
-          <button className="text-[#adaaaa] hover:text-white hover:bg-[#262626] rounded-full p-2 transition-all cursor-pointer">
+          <button className="hidden text-[#adaaaa] hover:text-white hover:bg-[#262626] rounded-full p-2 transition-all cursor-pointer">
             <Users size={20} />
           </button>
 
@@ -139,7 +139,7 @@ export const Header: React.FC<HeaderProps> = ({ onExplorePremiumClick }) => {
                   <Link
                     to={routes.library}
                     onClick={onCloseDropdown}
-                    className="flex items-center gap-2 w-full text-left px-4 py-2 text-[#adaaaa] hover:text-white hover:bg-white/10 transition-colors"
+                    className="md:hidden flex items-center gap-2 w-full text-left px-4 py-2 text-[#adaaaa] hover:text-white hover:bg-white/10 transition-colors"
                   >
                     <LibraryIcon size={20} />
                     <span>Tu biblioteca</span>

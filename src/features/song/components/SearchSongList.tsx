@@ -1,4 +1,4 @@
-import { MusicIcon } from 'lucide-react';
+import { MusicIcon, PlusIcon } from 'lucide-react';
 import type { Song } from '../song.types';
 import type { SearchMeta } from '../../../shared/types/common.types';
 import { usePlayer } from '../../../shared/context/PlayerContext';
@@ -19,15 +19,21 @@ const SearchSongList: React.FC<SearchSongListProps> = (props) => {
   const { currentSong } = usePlayer();
   const { loaderRef } = useInfiniteScroll(() => loadMore());
 
+  const grid = {
+    s: 'grid-cols-[1fr_40px]',
+    sm: 'sm:grid-cols-[minmax(200px,2fr)_80px]',
+    md: 'md:grid-cols-[minmax(200px,2fr)_minmax(120px,1fr)_80px]'
+  }
+
   return (
-    <div className="flex flex-col gap-1 animate-fade-in bg-[#131313] overflow-hidden">
+    <div className="flex flex-col gap-1 animate-fade-in bg-[#131313] overflow-x-auto">
       {songs.map((track) => {
         const isCurrentPlayingNow = currentSong?.id === track.id;
         const cover = songService.songCoverUrl(track.id, track.cover);
 
         return (
           <div
-            className="grid grid-cols-[minmax(200px,2fr)_minmax(120px,1fr)_120px] gap-4 p-2.5 items-center rounded hover:bg-white/5 group transition-colors duration-200 song-item"
+            className={`min-w-fit grid ${grid.s} ${grid.sm} ${grid.md} gap-4 p-2.5 items-center sm:rounded hover:bg-white/5 group transition-colors duration-200`}
             key={track.id}
           >
             <div className="flex items-center gap-4 overflow-hidden">
@@ -54,19 +60,20 @@ const SearchSongList: React.FC<SearchSongListProps> = (props) => {
               </div>
             </div>
 
-            <div className="text-[#adaaaa] text-sm truncate hover:text-white transition-colors select-none">
-              {track?.album?.title || 'Sin albúm'}
+            <div className="md:block hidden text-[#adaaaa] text-sm truncate hover:text-white transition-colors select-none">
+              {track?.album?.title || ''}
             </div>
 
-            <div className="text-xs text-white flex items-center justify-end gap-3">
+            <div className="text-xs text-white flex items-center justify-center gap-3">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   addSongToPlaylist(track.id);
                 }}
-                className="hover:bg-[#0e0e0e] font-semibold px-4 py-1.5 border border-white/40 rounded-full duration-200 cursor-pointer hover:border-white hover:text-white"
+                className=" hover:bg-[#0e0e0e] font-semibold sm:px-4 sm:py-1.5 p-1 sm:w-fit sm:h-fit w-5 h-5 sm:border border-2 sm:border-white/40 border-white rounded-full duration-200 cursor-pointer hover:border-white hover:text-white relative"
               >
-                Añadir
+                <span className="sm:block hidden">Añadir</span>
+                <PlusIcon className="sm:fill-current fill-white sm:hidden block absolute top-1/2 left-1/2 -translate-1/2" size={16} />
               </button>
             </div>
           </div>
