@@ -1,485 +1,393 @@
-import React, { useState } from 'react';
-import { Search, ListFilter, Play, Heart, LayoutGrid, List, Rows3 } from 'lucide-react';
-import { mockArtists, mockPodcasts, mockAlbums } from '../../../shared/data/music.data';
-
-type FilterType = 'All' | 'Playlists' | 'Podcasts' | 'Artists' | 'Albums';
-type LayoutMode = 'grid' | 'list' | 'compact';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { PlusIcon, SearchIcon, ListIcon, XIcon, PauseIcon, PlayIcon, PanelTopCloseIcon, PanelTopOpenIcon, LayoutGridIcon, TextAlignJustify, Minimize2Icon, GlobeIcon, LockIcon, GlobeLockIcon } from 'lucide-react';
+import type { PlaylistFilters, PlaylistLayout, PlaylistVisibility } from '../../playlist/playlist.types';
+import { usePlayer } from '../../../shared/context/PlayerContext';
+import { routes } from '../../../shared/utils/routes';
+import CustomMenu, { type OrderItem } from '../components/CustomMenu';
+import playlistService from '../../playlist/services/playlist.service';
+import useAuth from '../../auth/hooks/useAuth';
+import usePlaylist from '../../playlist/hooks/usePlaylist';
+import SmartImage from '../../../shared/components/SmartImage';
+import PlaylistSongItem from '../components/PlaylistSongItem';
+import MenuItem from '../../../shared/components/MenuItem';
+import LibraryItem from '../components/LibraryItem';
+import Loader from '../../../shared/components/Loader';
+import { useInfiniteScroll } from '../../../shared/hooks/useInfiniteScroll';
 
 const LibraryPage: React.FC = () => {
-  const allPlaylists = [] as any[];
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isExpanded] = useState(true);
 
-  const [activeFilter, setActiveFilter] = useState<FilterType>('All');
-  const [showSearchBox, setShowSearchBox] = useState<boolean>(false);
-  const [searchLibraryQuery, setSearchLibraryQuery] = useState<string>('');
-  const [playlistLayout, setPlaylistLayout] = useState<LayoutMode>('grid');
+  const [isVisibilityMenu, setIsVisibilityMenu] = useState(false);
+  const [visibility, setVisibility] = useState<PlaylistVisibility | ''>('');
 
-  const handleTabClick = (filter: FilterType) => {
-    setActiveFilter(filter);
+  const [page, setPage] = useState(0);
+  const [isSearch, setIsSearch] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [hoverIndex, setHoverIndex] = useState<number | null>(null);
+
+  const [query, setQuery] = useState('');
+  const [order, setOrder] = useState<OrderItem>({
+    label: 'Recientes',
+    value: 'recent'
+  });
+  const [layout, setLayout] = useState<PlaylistLayout>('list');
+
+  const { isAdmin, user } = useAuth();
+  const { playlists, playlistMeta, getUserPlaylists } = usePlaylist();
+  const { isPlaying, queueMeta, togglePlay } = usePlayer();
+
+  const filters: PlaylistFilters = {
+    page: 0,
+    name: query.trim(),
+    orderBy: order.value === 'recent' ? 'createdAt' : order.value,
+    order: order.value === 'recent' ? 'desc' : 'asc',
+    ...(visibility && { isPublic: visibility === 'public' })
   }
 
-  const matchFilter = (itemType: FilterType) => {
-    return activeFilter === 'All' || activeFilter === itemType;
+  const { loaderRef } = useInfiniteScroll(async () => {
+    if (playlistMeta.hasNextPage) {
+      await getUserPlaylists(user!.id, { ...filters, page: page + 1 }, { user: false });
+      setPage(page + 1);
+    }
+  });
+
+  const navigate = useNavigate();
+
+  const onSavePlaylist = async () => {
+    const { data } = await playlistService.newPlaylist({
+      name: '',
+      description: '',
+      cover: '',
+      isPublic: false,
+      gradientColor: '',
+      bgColor: '',
+      userId: user?.id!,
+      file: null
+    }, true);
+
+    if (data?.id) {
+      navigate(`${routes.playlists}/${data.id}`);
+    }
   }
 
-  // Filter items matching search input
-  const filterBySearch = (text: string) => {
-    if (!searchLibraryQuery) return true;
-    return text.toLowerCase().includes(searchLibraryQuery.toLowerCase());
-  }
+  useEffect(() => {
+    setTimeout(() => getUserPlaylists(user!.id, { ...filters, page: 0 }, { user: false }), 300);
+    setPage(0);
+  }, [query, order, visibility]);
 
-  const likedTrackIdsLength = 10;
+  const grid = {
+    sm: 'sm:grid-cols-[minmax(200px,2fr)_100px]',
+    md: 'md:grid-cols-[minmax(200px,2fr)_100px_160px]',
+    lg: 'lg:grid-cols-[minmax(200px,2fr)_100px_160px_160px]'
+  }
 
   return (
-    <div
-      className="p-8 pb-10 min-h-full bg-surface text-white select-none scroll-smooth animate-fade-in"
-      id="spotify-library-stage"
+    <aside
+      onClick={() => !query && setIsSearch(false)}
+      className={`${isCollapsed ? 'w-18' : isExpanded ? 'w-full' : 'w-72'} rounded-lg flex h-full overflow-hidden flex-col bg-[#131313] border-none select-none shrink-0 transition-all duration-300 ease-in-out relative`}
+      id="spotify-sidebar"
     >
-      <div className="flex justify-between items-end mb-10">
-        <h1 className="font-headline text-5xl font-extrabold tracking-tight text-white select-none">
-          Your Library
-        </h1>
-        <button
-          className="bg-primary hover:bg-[#63ef82] text-black font-black text-xs px-5 py-2.5 rounded-full transition-all flex items-center gap-1.5 hover:scale-105 active:scale-95 shadow-xl cursor-pointer font-headline"
-        >
-          Create Playlist
-        </button>
-      </div>
+      <div className="rounded-lg min-h-[calc(100vh-64px-88px)] max-h-[calc(100vh-64px-88px)]">
+        <header className="p-4 text-[#adaaaa] relative">
+          <div className={`${isCollapsed ? 'flex-col gap-4' : 'flex-row'} flex items-center justify-between`}>
+            {!isExpanded && (
+              <button
+                onClick={() => setIsCollapsed(!isCollapsed)}
+                className="p-2 rounded-lg text-[#adaaaa] hover:text-white cursor-pointer transition-colors duration-100"
+                title={isCollapsed ? "Abre Tu biblioteca" : "Contraer Tu biblioteca"}
+              >
+                {isCollapsed ?
+                  <PanelTopOpenIcon
+                    className="-rotate-90"
+                    size={20}
+                  /> :
+                  <PanelTopCloseIcon
+                    className="-rotate-90"
+                    size={20}
+                  />
+                }
+              </button>
+            )}
 
-      {/* Filter tabs */}
-      <div className="flex items-center gap-3 mb-8 overflow-x-auto no-scrollbar pb-2 select-none">
-        {(['All', 'Playlists', 'Podcasts', 'Artists', 'Albums'] as FilterType[]).map((filter) => (
-          <button
-            key={filter}
-            onClick={() => handleTabClick(filter)}
-            className={`px-4 py-2 rounded-full text-sm font-bold transition-all hover:scale-105 active:scale-95 cursor-pointer shrink-0 ${activeFilter === filter
-              ? 'bg-white text-black'
-              : 'bg-[#262626] text-white hover:bg-[#323232]'
-              }`}
-          >
-            {filter}
-          </button>
-        ))}
-      </div>
+            {!isCollapsed &&
+              <button
+                // onClick={() => setIsExpanded(true)}
+                type="button"
+              >
+                <h3 className="cursor-pointer text-white font-black text-nowrap">
+                  Tu biblioteca
+                </h3>
+              </button>
+            }
 
-      {/* Action panel with search box and layout customizer switches */}
-      <div className="flex flex-wrap gap-4 justify-between items-center mb-8 select-none">
-        <div className="flex items-center gap-2 relative">
-          <button
-            onClick={() => setShowSearchBox(!showSearchBox)}
-            className="w-10 h-10 flex items-center justify-center rounded-full text-[#adaaaa] hover:text-white hover:bg-[#262626] transition-all cursor-pointer bg-white/5"
-            title="Search Library"
-          >
-            <Search size={18} />
-          </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={onSavePlaylist}
+                className={`${isExpanded ? 'p-2 px-4' : 'p-2'} hover:bg-white/10 cursor-pointer bg-[#1f1f1f] text-sm font-medium rounded-full gap-2 flex items-center transition-colors duration-100`}
+                title="Crea una lista"
+                type="button"
+              >
+                <PlusIcon className="w-5 h-5" />
 
-          {showSearchBox && (
-            <input
-              type="text"
-              placeholder="Search library..."
-              value={searchLibraryQuery}
-              onChange={(e) => setSearchLibraryQuery(e.target.value)}
-              className="bg-[#262626] border-none text-xs rounded-full py-1.5 px-4 outline-none text-white focus:ring-1 focus:ring-white/20 animate-scale-up border border-white/5 ml-1"
-            />
-          )}
-        </div>
+                {(!isCollapsed && isExpanded) &&
+                  <span className="text-white">
+                    Crear
+                  </span>
+                }
+              </button>
 
-        {/* Layout Mode Selector (Cuadrícula, Lista, Lista Compacta) */}
-        <div className="flex items-center gap-6">
-          <div className="flex items-center gap-1 bg-[#181818] border border-white/5 p-1 rounded-full shadow-inner">
-            <button
-              onClick={() => setPlaylistLayout('grid')}
-              className={`p-2 rounded-full transition-all cursor-pointer ${playlistLayout === 'grid' ? 'bg-primary text-black' : 'text-[#adaaaa] hover:text-white'
-                }`}
-              title="Cuadrícula"
-            >
-              <LayoutGrid size={15} />
-            </button>
-            <button
-              onClick={() => setPlaylistLayout('list')}
-              className={`p-2 rounded-full transition-all cursor-pointer ${playlistLayout === 'list' ? 'bg-primary text-black' : 'text-[#adaaaa] hover:text-white'
-                }`}
-              title="Lista"
-            >
-              <List size={15} />
-            </button>
-            <button
-              onClick={() => setPlaylistLayout('compact')}
-              className={`p-2 rounded-full transition-all cursor-pointer ${playlistLayout === 'compact' ? 'bg-primary text-black' : 'text-[#adaaaa] hover:text-white'
-                }`}
-              title="Lista compacta"
-            >
-              <Rows3 size={15} />
-            </button>
+              {isExpanded && (
+                <button
+                  // onClick={() => setIsExpanded(false)}
+                  className="hidden p-2 rounded-full text-[#adaaaa] hover:bg-white/10 hover:text-white cursor-pointer transition-colors duration-100"
+                  title="Contraer Tu biblioteca"
+                >
+                  <Minimize2Icon size={20} />
+                </button>
+              )}
+            </div>
           </div>
 
-          <div className="flex items-center gap-2 group cursor-pointer select-none">
-            <span className="text-[#adaaaa] text-xs font-bold uppercase tracking-wider group-hover:text-white transition-colors">
-              Recents
-            </span>
-            <button className="w-8 h-8 flex items-center justify-center rounded-full text-[#adaaaa] group-hover:text-white bg-white/5">
-              <ListFilter size={15} />
-            </button>
-          </div>
-        </div>
-      </div>
+          {!isCollapsed &&
+            <div className="min-[520px]:flex-row flex-col mt-4 text-[#adaaaa] flex items-center justify-between gap-5 relative">
+              <div
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsSearch(true);
+                }}
+                className={`${(isSearch || isExpanded) ? 'w-full bg-[#1f1f1f] rounded' : 'w-8 h-8 rounded-full'} min-[520px]:max-w-100 z-5 transition-all duration-100 hover:bg-[#1f1f1f] px-2 py-1.5 text-sm cursor-pointer flex items-center`}
+              >
+                <SearchIcon className="min-w-4 w-4 h-4" />
 
-      {/* RENDER MODE: GRID (Cuadrícula) */}
-      {playlistLayout === 'grid' && (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-x-6 gap-y-10 animate-fade-in">
+                {(isSearch || isExpanded) &&
+                  <input
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    className="w-full ml-2"
+                    placeholder={!isExpanded ? "Buscar" : "Buscar en Tu biblioteca"}
+                    type="text"
+                  />
+                }
 
-          {/* Liked Songs Span Card */}
-          {matchFilter('Playlists') && filterBySearch('Liked Songs') && (
-            <div
-              className="col-span-2 row-span-1 p-6 rounded-2xl bg-linear-to-br from-[#450af5] to-[#8e8ee5] flex flex-col justify-end group cursor-pointer hover:shadow-2xl transition-all duration-300 relative overflow-hidden min-h-55 active:scale-98 select-none font-headline"
-            >
-              <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#ffffff_1px,transparent_1px)] background-size:16px_16px pointer-events-none" />
-
-              <div className="relative z-10 select-none">
-                <p className="text-3xl font-black mb-2 text-white leading-none">
-                  Liked<br />Songs
-                </p>
-                <p className="text-white/85 font-medium text-sm mt-3 flex items-center gap-1.5">
-                  <Heart size={14} fill="currentColor" />
-                  {likedTrackIdsLength} songs
-                </p>
+                {isSearch && query &&
+                  <XIcon
+                    className="min-w-4 w-5 h-5"
+                    onClick={() => setQuery('')}
+                  />
+                }
               </div>
 
-              <div className="absolute bottom-6 right-6 opacity-0 group-hover:opacity-100 translate-y-3 group-hover:translate-y-0 transition-all duration-300">
-                <button
-                  className="w-12 h-12 flex items-center justify-center rounded-full bg-primary text-black shadow-2xl scale-110 hover:scale-115 active:scale-90 cursor-pointer"
-                >
-                  <Play size={20} fill="currentColor" stroke="none" className="translate-x-px" />
-                </button>
-              </div>
-            </div>
-          )}
+              <div className="min-[520px]:w-fit w-full flex items-center justify-between gap-5">
+                {isExpanded && (
+                  <div className="min-[520px]:ml-auto relative">
+                    <button
+                      onClick={() => setIsVisibilityMenu(!isVisibilityMenu)}
+                      className="z-5 cursor-pointer hover:text-white text-sm flex items-center gap-2"
+                      type="button"
+                    >
+                      {(!isSearch || isExpanded) &&
+                        <span className="font-semibold">
+                          {visibility === '' && 'Visibilidad'}
+                          {visibility === 'public' && 'Pública'}
+                          {visibility === 'private' && 'Privada'}
+                        </span>
+                      }
 
-          {/* Dynamic Playlists list from workshop state */}
-          {matchFilter('Playlists') && allPlaylists.filter((p: any) => filterBySearch(p.name)).map(playlist => (
-            <div
-              key={playlist.id}
-              className="p-4 rounded-xl bg-[#131313] hover:bg-[#262626] transition-all duration-300 group cursor-pointer flex flex-col active:scale-98 border border-white/5"
-            >
-              <div className="relative aspect-square mb-4 rounded-lg overflow-hidden bg-[#262626]">
-                <img
-                  src={playlist.coverUrl}
-                  alt={playlist.name}
-                  className="w-full h-full object-cover shadow-lg group-hover:scale-[1.03] transition-transform duration-300"
-                  referrerPolicy="no-referrer"
-                />
-                <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300">
-                  <button
-                    className="w-12 h-12 flex items-center justify-center rounded-full bg-primary text-black shadow-xl"
-                  >
-                    <Play size={18} fill="currentColor" stroke="none" className="translate-x-px" />
-                  </button>
-                </div>
-              </div>
-              <h3 className="font-bold text-white truncate mb-1 text-sm sm:text-base leading-snug">
-                {playlist.name}
-              </h3>
-              <p className="text-[#adaaaa] text-xs font-semibold">
-                Playlist • {playlist.creator}
-              </p>
-            </div>
-          ))}
+                      {visibility === 'public' && <GlobeIcon size={18} />}
+                      {visibility === 'private' && <LockIcon size={18} />}
+                      {visibility === '' && <GlobeLockIcon size={18} />}
+                    </button>
 
-          {/* Artists */}
-          {matchFilter('Artists') && mockArtists.filter(a => filterBySearch(a.name)).map(artist => (
-            <div
-              key={artist.id}
-              className="p-4 rounded-xl bg-[#131313] hover:bg-[#262626] transition-all duration-300 group cursor-pointer flex flex-col items-center text-center active:scale-98 border border-white/5"
-            >
-              <div className="relative aspect-square w-full mb-4 rounded-full overflow-hidden bg-[#262626] shadow-xl">
-                <img
-                  src={artist.imageUrl}
-                  alt={artist.name}
-                  className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300"
-                  referrerPolicy="no-referrer"
-                />
-              </div>
-              <h3 className="font-bold text-white truncate mb-1 text-sm sm:text-base leading-snug w-full">
-                {artist.name}
-              </h3>
-              <p className="text-[#adaaaa] text-xs font-semibold">
-                Artist
-              </p>
-            </div>
-          ))}
-
-          {/* Podcasts */}
-          {matchFilter('Podcasts') && mockPodcasts.filter(p => filterBySearch(p.title)).map(podcast => (
-            <div
-              key={podcast.id}
-              onClick={() => alert(`Podcast Selected: ${podcast.title}`)}
-              className="p-4 rounded-xl bg-[#131313] hover:bg-[#262626] transition-all duration-300 group cursor-pointer flex flex-col active:scale-98 border border-white/5"
-            >
-              <div className="relative aspect-square mb-4 rounded-lg overflow-hidden bg-[#2d2d2d] shadow-lg">
-                <img
-                  src={podcast.coverUrl}
-                  alt={podcast.title}
-                  className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300"
-                  referrerPolicy="no-referrer"
-                />
-              </div>
-              <h3 className="font-bold text-white truncate mb-1 text-sm sm:text-base leading-snug">
-                {podcast.title}
-              </h3>
-              <p className="text-[#adaaaa] text-xs font-semibold">
-                Podcast • {podcast.publisher}
-              </p>
-            </div>
-          ))}
-
-          {/* Albums */}
-          {matchFilter('Albums') && mockAlbums.filter(a => filterBySearch(a.title)).map(album => (
-            <div
-              key={album.id}
-              className="p-4 rounded-xl bg-[#131313] hover:bg-[#262626] transition-all duration-300 group cursor-pointer flex flex-col active:scale-98 border border-white/5"
-            >
-              <div className="relative aspect-square mb-4 rounded-lg overflow-hidden bg-[#2d2d2d] shadow-lg">
-                <img
-                  src={album.coverUrl}
-                  alt={album.title}
-                  className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300"
-                  referrerPolicy="no-referrer"
-                />
-              </div>
-              <h3 className="font-bold text-white truncate mb-1 text-sm sm:text-base leading-snug">
-                {album.title}
-              </h3>
-              <p className="text-[#adaaaa] text-xs font-semibold truncate">
-                Album • {album.artist}
-              </p>
-            </div>
-          ))}
-
-        </div>
-      )}
-
-      {/* RENDER MODE: LIST (Lista) */}
-      {playlistLayout === 'list' && (
-        <div className="flex flex-col gap-4 max-w-4xl animate-fade-in" id="library-list-mode">
-
-          {/* Liked Songs row */}
-          {matchFilter('Playlists') && filterBySearch('Liked Songs') && (
-            <div
-              className="flex items-center gap-4 p-4 rounded-xl bg-linear-to-r from-[#450af5] to-[#8e8ee5]/40 hover:from-[#5113fa] hover:to-[#8e8ee5]/60 transition-all group cursor-pointer border border-[#8e8ee5]/20"
-            >
-              <div className="w-16 h-16 rounded-lg bg-linear-to-br from-[#450af5] to-[#8e8ee5] flex items-center justify-center shadow-lg shrink-0">
-                <Heart size={24} fill="currentColor" className="text-white" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="font-bold text-white text-base">Liked Songs</h3>
-                <p className="text-xs text-white/70 font-semibold mt-1">
-                  Playlist • By You • {10} tracks
-                </p>
-              </div>
-              <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                <button
-                  className="w-10 h-10 flex items-center justify-center rounded-full bg-primary text-black transition-transform hover:scale-105 active:scale-95"
-                >
-                  <Play size={16} fill="currentColor" stroke="none" className="translate-x-px" />
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Playlists lists mapping */}
-          {matchFilter('Playlists') && allPlaylists.filter(p => filterBySearch(p.name)).map(playlist => (
-            <div
-              key={playlist.id}
-              className="flex items-center gap-4 p-4 rounded-xl bg-[#131313] hover:bg-[#262626] transition-all group cursor-pointer border border-white/5"
-            >
-              <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-[#262626]">
-                <img src={playlist.coverUrl} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="font-bold text-white text-base truncate">{playlist.name}</h3>
-                <p className="text-xs text-[#adaaaa] font-semibold mt-1">
-                  Playlist • By {playlist.creator} • {playlist.songCount || 0} tracks • {playlist.durationText}
-                </p>
-                {playlist.description && (
-                  <p className="text-[11px] text-[#adaaaa]/80 mt-1 truncate max-w-xl">
-                    {playlist.description}
-                  </p>
+                    <MenuItem
+                      isBtn={false}
+                      open={isVisibilityMenu}
+                      onClose={() => setIsVisibilityMenu(false)}
+                      styles={{
+                        backdrop: 'z-14 bg-transparent',
+                        wrap: 'z-14 absolute top-full right-0 mt-3.5 min-w-0',
+                        menu: 'w-30'
+                      }}
+                      items={[
+                        {
+                          label: 'Todo',
+                          action: 'close',
+                          icon: <GlobeLockIcon size={20} />,
+                          onAction: () => setVisibility('')
+                        },
+                        {
+                          label: 'Privada',
+                          action: 'close',
+                          icon: <LockIcon size={20} />,
+                          onAction: () => setVisibility('private')
+                        },
+                        {
+                          label: 'Pública',
+                          action: 'close',
+                          icon: <GlobeIcon size={20} />,
+                          onAction: () => setVisibility('public')
+                        }
+                      ]}
+                    />
+                  </div>
                 )}
-              </div>
-              <div className="opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap gap-3 flex items-center">
+
                 <button
-                  className="w-10 h-10 flex items-center justify-center rounded-full bg-primary text-black cursor-pointer hover:scale-105 active:scale-95 transition-all"
+                  onClick={() => setIsOpen(!isOpen)}
+                  className="z-5 cursor-pointer hover:text-white text-sm flex items-center gap-2"
+                  type="button"
                 >
-                  <Play size={16} fill="currentColor" stroke="none" className="translate-x-px" />
+                  {(!isSearch || isExpanded) &&
+                    <span className="font-semibold text-nowrap">
+                      {order.label}
+                    </span>
+                  }
+
+                  {layout === 'list' && <ListIcon className="w-5 h-5" />}
+                  {layout === 'compact-list' && <TextAlignJustify className="w-5 h-5" />}
+                  {layout === 'grid' && <LayoutGridIcon className="w-5 h-5" />}
                 </button>
+
+                {isOpen &&
+                  <CustomMenu
+                    order={order}
+                    layout={layout}
+                    onSort={(value) => setOrder(value)}
+                    onLayout={(value) => setLayout(value)}
+                    onClose={() => setIsOpen(false)}
+                  />
+                }
               </div>
             </div>
-          ))}
+          }
+        </header>
 
-          {/* Artists layout row */}
-          {matchFilter('Artists') && mockArtists.filter(a => filterBySearch(a.name)).map(artist => (
-            <div
-              key={artist.id}
-              className="flex items-center gap-4 p-4 rounded-xl bg-[#131313] hover:bg-[#262626] transition-all group cursor-pointer border border-white/5 animate-fade-in"
-            >
-              <div className="w-16 h-16 rounded-full overflow-hidden shrink-0 bg-[#262626]">
-                <img src={artist.imageUrl} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="font-bold text-white text-base truncate">{artist.name}</h3>
-                <p className="text-xs text-[#adaaaa] font-semibold mt-1">
-                  Artist • Pop/Rock classics
-                </p>
-              </div>
-              <span className="text-xs text-white/40 uppercase tracking-widest font-black mr-4">Artist</span>
-            </div>
-          ))}
-
-          {/* Podcasts row layout */}
-          {matchFilter('Podcasts') && mockPodcasts.filter(p => filterBySearch(p.title)).map(podcast => (
-            <div
-              key={podcast.id}
-              onClick={() => alert(`Podcast Episode Selected: ${podcast.title}`)}
-              className="flex items-center gap-4 p-4 rounded-xl bg-[#131313] hover:bg-[#262626] transition-all group cursor-pointer border border-white/5 animate-fade-in"
-            >
-              <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-[#2d2d2d] relative">
-                <img src={podcast.coverUrl} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="font-bold text-white text-base truncate">{podcast.title}</h3>
-                <p className="text-xs text-[#adaaaa] font-semibold mt-1">
-                  Podcast • Published by {podcast.publisher}
-                </p>
-              </div>
-              <div className="h-8 bg-white/5 border border-white/10 px-3 flex items-center justify-center rounded-full text-[10px] uppercase font-bold tracking-wider text-[#adaaaa]">
-                Podcast
-              </div>
-            </div>
-          ))}
-
-          {/* Albums row layout */}
-          {matchFilter('Albums') && mockAlbums.filter(a => filterBySearch(a.title)).map(album => (
-            <div
-              key={album.id}
-              className="flex items-center gap-4 p-4 rounded-xl bg-[#131313] hover:bg-[#262626] transition-all group cursor-pointer border border-white/5 animate-fade-in"
-            >
-              <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-[#2d2d2d]">
-                <img src={album.coverUrl} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="font-bold text-white text-base truncate">{album.title}</h3>
-                <p className="text-xs text-[#adaaaa] font-semibold mt-1">
-                  Album • Artist: {album.artist}
-                </p>
-              </div>
-              <span className="text-xs text-white/40 font-black mr-2">Core Album</span>
-            </div>
-          ))}
-
-        </div>
-      )}
-
-      {/* RENDER MODE: COMPACT LIST (Lista Compacta) */}
-      {playlistLayout === 'compact' && (
-        <div className="flex flex-col gap-1.5 max-w-4xl bg-[#131313]/40 border border-white/5 p-4 rounded-2xl animate-fade-in" id="library-compact-mode">
-
-          {/* Liked Songs Line */}
-          {matchFilter('Playlists') && filterBySearch('Liked Songs') && (
-            <div
-              className="flex items-center justify-between gap-4 py-2 px-3 rounded-xl hover:bg-white/5 transition-all cursor-pointer font-medium text-xs text-[#adaaaa]"
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="w-8 h-8 rounded-md bg-linear-to-br from-[#450af5] to-[#8e8ee5] flex items-center justify-center shrink-0 shadow">
-                  <Heart size={12} fill="currentColor" className="text-white" />
-                </div>
-                <span className="text-white font-heavy text-sm">Liked Songs</span>
-                <span className="text-white/20 select-none">•</span>
-                <span>By You</span>
-                <span className="text-white/10 select-none">|</span>
-                <span>{likedTrackIdsLength} songs favorited</span>
-              </div>
-              <span className="text-[10px] text-primary font-black uppercase tracking-widest bg-primary/10 px-2 py-0.5 rounded border border-primary/20">Liked List</span>
-            </div>
+        <nav className={`${isCollapsed ? 'h-[calc(100vh-64px-88px-100px)]' : 'h-[calc(100vh-64px-88px-116px)]'} overflow-y-auto overflow-x-hidden relative`}>
+          {(isExpanded && layout !== 'grid') && (
+            <ul className={`bg-[#131313] text-[13px] text-[#adaaaa] border-b border-white/10 px-4 sticky top-0 z-10 grid gap-3 ${grid.sm} ${grid.md} ${grid.lg}`}>
+              <li className="py-2 line-clamp-1 font-semibold">
+                Título
+              </li>
+              <li className="sm:block hidden py-2 line-clamp-1 font-semibold">
+                Visibilidad
+              </li>
+              <li
+                className="md:block hidden py-2 line-clamp-1 font-semibold text-nowrap"
+                title="Fecha en que se añadió"
+              >
+                Fecha en que se añadió
+              </li>
+              <li className="lg:block hidden py-2 line-clamp-1 font-semibold">
+                Canciones
+              </li>
+            </ul>
           )}
 
-          {/* Playlists mappings */}
-          {matchFilter('Playlists') && allPlaylists.filter(p => filterBySearch(p.name)).map(playlist => (
-            <div
-              key={playlist.id}
-              className="flex items-center justify-between gap-4 py-2 px-3 rounded-xl hover:bg-white/5 transition-all cursor-pointer font-medium text-xs text-[#adaaaa]"
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="w-8 h-8 rounded bg-[#262626] overflow-hidden shrink-0 flex items-center justify-center">
-                  <img src={playlist.coverUrl} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                </div>
-                <span className="text-white font-bold truncate text-sm">{playlist.name}</span>
-                <span className="text-white/20 select-none">•</span>
-                <span className="truncate">Creator: {playlist.creator}</span>
-                <span className="text-white/10 select-none">|</span>
-                <span className="truncate">{playlist.songCount || 0} song{playlist.songCount === 1 ? '' : 's'}</span>
-              </div>
-              <span className="shrink-0 font-mono text-[10px] font-bold text-white/50">{playlist.durationText}</span>
-            </div>
-          ))}
+          <ul className={`${isCollapsed ? 'pl-0 pb-5' : 'pl-2 pb-2'} w-full absolute top-0 left-0 min-[520px]:pb-0 pb-12 ${(layout === 'grid' && !isCollapsed) ? 'grid' : ''} ${!isExpanded ? 'grid-cols-2' : 'grid-cols-[repeat(auto-fit,136px)]'} ${(isExpanded && layout !== 'grid') ? 'mt-10' : ''}`}>
+            {isAdmin && (
+              <li
+                onClick={() => {
+                  // setIsExpanded(false);
+                  navigate(routes.songs);
+                }}
+                className={`p-2 cursor-pointer text-[#adaaaa] hover:bg-[#1f1f1f] rounded-md gap-3 grid ${layout !== 'grid' ? `${grid.sm} ${grid.md} ${grid.lg}` : 'max-w-34'}`}
+              >
+                {isCollapsed && (
+                  <SmartImage
+                    wrapClassName="min-w-12 rounded"
+                    iconClassName="text-primary"
+                    url={null}
+                  />
+                )}
 
-          {/* Artists list */}
-          {matchFilter('Artists') && mockArtists.filter(a => filterBySearch(a.name)).map(artist => (
-            <div
-              key={artist.id}
-              className="flex items-center justify-between gap-4 py-2 px-3 rounded-xl hover:bg-white/5 transition-all cursor-pointer font-medium text-xs text-[#adaaaa]"
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="w-8 h-8 rounded-full bg-[#262626] overflow-hidden shrink-0 flex items-center justify-center">
-                  <img src={artist.imageUrl} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                </div>
-                <span className="text-white font-bold truncate text-sm">{artist.name}</span>
-                <span className="text-white/20 select-none">•</span>
-                <span>Active Artist profile</span>
-              </div>
-              <span className="shrink-0 text-[9px] font-bold text-[#adaaaa] tracking-wider uppercase border border-white/10 px-1.5 py-0.5 rounded bg-white/3">Artist</span>
-            </div>
-          ))}
+                {!isCollapsed && (
+                  <PlaylistSongItem
+                    isExpanded={isExpanded}
+                    isCollapsed={isCollapsed}
+                    layout={layout}
+                    queueMeta={queueMeta}
+                    user={user!}
+                  />
+                )}
+              </li>
+            )}
 
-          {/* Podcasts list */}
-          {matchFilter('Podcasts') && mockPodcasts.filter(p => filterBySearch(p.title)).map(podcast => (
-            <div
-              key={podcast.id}
-              onClick={() => alert(`Podcast Selected: ${podcast.title}`)}
-              className="flex items-center justify-between gap-4 py-2 px-3 rounded-xl hover:bg-white/5 transition-all cursor-pointer font-medium text-xs text-[#adaaaa]"
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="w-8 h-8 rounded bg-[#2d2d2d] overflow-hidden shrink-0 flex items-center justify-center">
-                  <img src={podcast.coverUrl} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                </div>
-                <span className="text-white font-bold truncate text-sm">{podcast.title}</span>
-                <span className="text-white/20 select-none">•</span>
-                <span className="truncate">Publisher: {podcast.publisher}</span>
-              </div>
-              <span className="shrink-0 text-[9px] font-bold text-[#adfeff] tracking-wider uppercase border border-[#adfeff]/10 px-1.5 py-0.5 rounded bg-[#adfeff]/3">Podcast</span>
-            </div>
-          ))}
+            {playlists.map((playlist, i) => {
+              const cover = playlistService.playlistCover(playlist.id, playlist.cover);
 
-          {/* Albums list */}
-          {matchFilter('Albums') && mockAlbums.filter(a => filterBySearch(a.title)).map(album => (
-            <div
-              key={album.id}
-              className="flex items-center justify-between gap-4 py-2 px-3 rounded-xl hover:bg-white/5 transition-all cursor-pointer font-medium text-xs text-[#adaaaa]"
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="w-8 h-8 rounded bg-[#2d2d2d] overflow-hidden shrink-0 flex items-center justify-center">
-                  <img src={album.coverUrl} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                </div>
-                <span className="text-white font-bold truncate text-sm">{album.title}</span>
-                <span className="text-white/20 select-none">•</span>
-                <span className="truncate">Artist: {album.artist}</span>
-              </div>
-              <span className="shrink-0 text-[9px] font-bold text-white/40 tracking-wider uppercase">Album</span>
-            </div>
-          ))}
+              return (
+                <li
+                  onClick={() => {
+                    // setIsExpanded(false);
+                    navigate(`${routes.playlists}/${playlist.id}`);
+                  }}
+                  className={`p-2 cursor-pointer text-[#adaaaa] hover:bg-[#1f1f1f] rounded-md gap-3 grid ${layout !== 'grid' ? `${grid.sm} ${grid.md} ${grid.lg}` : 'max-w-34'}`}
+                  onPointerEnter={() => setHoverIndex(i)}
+                  onPointerLeave={() => setHoverIndex(null)}
+                  key={playlist.id}
+                >
+                  {isCollapsed && (
+                    <div className="min-w-12 w-12 h-12 bg-[#262626] rounded relative overflow-hidden hover:badge:bg-blue-500">
+                      <SmartImage url={cover} />
 
-        </div>
-      )}
+                      {hoverIndex !== null && hoverIndex === i &&
+                        <button
+                          onClick={() => {
+                            if (queueMeta.playlistId === playlist.id) togglePlay();
+                          }}
+                          className="text-white badge w-full h-full absolute top-0 left-0 bg-black/50 flex items-center justify-center"
+                          type="button"
+                        >
+                          {(isPlaying && queueMeta.playlistId === playlist.id) ?
+                            <PauseIcon
+                              className="min-w-5 w-5 h-5"
+                              fill="currentColor"
+                              stroke="0"
+                            /> :
+                            <PlayIcon
+                              className="min-w-5.5 w-5.5 h-5.5"
+                              fill="currentColor"
+                              stroke="0"
+                            />
+                          }
+                        </button>
+                      }
+                    </div>
+                  )}
 
-    </div>
+                  {!isCollapsed &&
+                    <LibraryItem
+                      isPlaying={isPlaying && queueMeta.playlistId === playlist.id}
+                      isHover={hoverIndex !== null && hoverIndex === i}
+                      playlist={{ ...playlist, cover }}
+                      isExpanded={isExpanded}
+                      queueMeta={queueMeta}
+                      layout={layout}
+                      user={user!}
+                      togglePlay={togglePlay}
+                    />
+                  }
+                </li>
+              )
+            })}
+
+            {playlistMeta.hasNextPage &&
+              <li
+                className="flex items-center justify-center overflow-hidden py-1"
+                ref={loaderRef}
+              >
+                <Loader
+                  className="border-transparent border-t-slate-200"
+                  size={20}
+                  stroke={2}
+                />
+              </li>
+            }
+          </ul>
+        </nav>
+      </div>
+    </aside>
   )
 }
 

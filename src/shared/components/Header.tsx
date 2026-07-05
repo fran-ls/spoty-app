@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Bell, Users, User, Search, Sparkles, XIcon, GlobeIcon, CircleUserRoundIcon, SettingsIcon, LaptopMinimalIcon, LogOutIcon, UploadIcon, MusicIcon, DownloadIcon } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Bell, Users, User, Search, Sparkles, XIcon, GlobeIcon, CircleUserRoundIcon, SettingsIcon, LaptopMinimalIcon, LogOutIcon, UploadIcon, MusicIcon, DownloadIcon, LibraryIcon } from 'lucide-react';
 import useAuth from '../../features/auth/hooks/useAuth';
 import { routes } from '../utils/routes';
 
@@ -131,33 +131,82 @@ export const Header: React.FC<HeaderProps> = ({ onExplorePremiumClick }) => {
                       showProfile();
                       onCloseDropdown();
                     }}
-                    className="flex items-center gap-2 w-full text-left px-4 py-2 text-[#adaaaa] hover:text-white hover:bg-white/10 transition-colors"
+                    className="cursor-pointer flex items-center gap-2 w-full text-left px-4 py-2 text-[#adaaaa] hover:text-white hover:bg-white/10 transition-colors"
                   >
                     <CircleUserRoundIcon size={20} />
                     <span>Perfil</span>
                   </button>
                   <Link
+                    to={routes.library}
                     onClick={onCloseDropdown}
-                    to={routes.songs}
                     className="flex items-center gap-2 w-full text-left px-4 py-2 text-[#adaaaa] hover:text-white hover:bg-white/10 transition-colors"
                   >
-                    <MusicIcon size={20} />
-                    <span>Canciones</span>
+                    <LibraryIcon size={20} />
+                    <span>Tu biblioteca</span>
                   </Link>
-
                   <button
                     onClick={onCloseDropdown}
-                    className="flex items-center gap-2 w-full text-left px-4 py-2 text-[#adaaaa] hover:text-white hover:bg-white/10 transition-colors"
+                    className="cursor-pointer flex items-center gap-2 w-full text-left px-4 py-2 text-[#adaaaa] hover:text-white hover:bg-white/10 transition-colors"
                   >
                     <SettingsIcon size={20} />
                     <span>Configuración</span>
                   </button>
 
-                  <div className="relative">
+                  <div className="border-t border-[#3e3e3e]" />
+
+                  <button
+                    onClick={logout}
+                    className="cursor-pointer flex items-center gap-2 w-full text-left px-4 py-2 text-[#adaaaa] hover:text-white hover:bg-white/10 transition-colors"
+                  >
+                    <LogOutIcon size={20} />
+                    <span>Cerrar sesión</span>
+                  </button>
+
+                  {isAdmin && (
+                    <>
+                      <div className="border-t border-[#3e3e3e]" />
+
+                      <Link
+                        onClick={onCloseDropdown}
+                        to={routes.songs}
+                        className="flex items-center gap-2 w-full text-left px-4 py-2 text-[#adaaaa] hover:text-white hover:bg-white/10 transition-colors"
+                      >
+                        <MusicIcon size={20} />
+                        <span>Canciones</span>
+                      </Link>
+
+                      <button
+                        onClick={() => {
+                          dispatch({
+                            type: 'upload',
+                            payload: { isActive: true }
+                          });
+                          onCloseDropdown();
+                        }}
+                        className="cursor-pointer flex items-center gap-2 w-full text-left px-4 py-2 text-[#adaaaa] hover:text-white hover:bg-white/10 transition-colors"
+                      >
+                        <UploadIcon size={20} />
+                        <span>Subir</span>
+                      </button>
+
+                      <Link
+                        to={routes.YTDrop.download}
+                        onClick={() => {
+                          onCloseDropdown();
+                        }}
+                        className="flex items-center gap-2 w-full text-left px-4 py-2 text-[#adaaaa] hover:text-white hover:bg-white/10 transition-colors"
+                      >
+                        <DownloadIcon size={20} />
+                        <span>Descargar</span>
+                      </Link>
+                    </>
+                  )}
+
+                  <div className="relative hidden border-t border-[#3e3e3e]">
                     <button
                       onClick={() => setIsActive(!isActive)}
                       onMouseEnter={() => setIsActive(true)}
-                      className="border-t border-[#3e3e3e] flex items-center justify-between gap-2 w-full text-left px-4 py-2 text-[#adaaaa] hover:text-white hover:bg-white/10 transition-colors"
+                      className="flex items-center justify-between gap-2 w-full text-left px-4 py-2 text-[#adaaaa] hover:text-white hover:bg-white/10 transition-colors"
                       type="button"
                     >
                       <span>Más</span>
@@ -179,7 +228,7 @@ export const Header: React.FC<HeaderProps> = ({ onExplorePremiumClick }) => {
                                 });
                                 onCloseDropdown();
                               }}
-                              className="flex items-center gap-2 w-full text-left px-4 py-2 text-[#adaaaa] hover:text-white hover:bg-white/10 transition-colors"
+                              className="cursor-pointer flex items-center gap-2 w-full text-left px-4 py-2 text-[#adaaaa] hover:text-white hover:bg-white/10 transition-colors"
                             >
                               <UploadIcon size={20} />
                               <span>Subir</span>
@@ -203,7 +252,7 @@ export const Header: React.FC<HeaderProps> = ({ onExplorePremiumClick }) => {
                             onCloseDropdown();
                             alert('Spotify Clone Web Player - Created in React + TS');
                           }}
-                          className="flex items-center gap-2 w-full text-left px-4 py-2 text-[#adaaaa] hover:text-white hover:bg-white/10 transition-colors"
+                          className="cursor-pointer flex items-center gap-2 w-full text-left px-4 py-2 text-[#adaaaa] hover:text-white hover:bg-white/10 transition-colors"
                         >
                           <LaptopMinimalIcon size={20} />
                           <span>Sobre el sistema</span>
@@ -211,14 +260,6 @@ export const Header: React.FC<HeaderProps> = ({ onExplorePremiumClick }) => {
                       </div>
                     )}
                   </div>
-
-                  <button
-                    onClick={logout}
-                    className="border-t border-[#3e3e3e] flex items-center gap-2 w-full text-left px-4 py-2 text-[#adaaaa] hover:text-white hover:bg-white/10 transition-colors"
-                  >
-                    <LogOutIcon size={20} />
-                    <span>Cerrar sesión</span>
-                  </button>
                 </div>
               </>
             )}

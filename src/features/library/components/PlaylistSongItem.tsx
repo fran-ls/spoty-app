@@ -20,7 +20,7 @@ const PlaylistSongItem = ({ layout, user, queueMeta, isExpanded }: PlaylistItemP
     <>
       {(layout === 'list') && (
         <>
-          <div className="flex items-center gap-3 col-span-2">
+          <div className="flex items-center gap-3">
             <SmartImage
               wrapClassName="min-w-12 rounded"
               iconClassName="text-primary"
@@ -53,7 +53,7 @@ const PlaylistSongItem = ({ layout, user, queueMeta, isExpanded }: PlaylistItemP
 
       {(layout === 'compact-list') && (
         <>
-          <div className="text-[13px] font-semibold flex items-center gap-1 w-full text-[#adaaaa] col-span-2">
+          <div className="text-[13px] font-semibold flex items-center gap-1 w-full text-[#adaaaa]">
             <h4
               className={`${queueMeta.playlistId === playlist.id ? 'text-primary' : 'text-white'} w--full line-clamp-1 text-[15px] font-semibold`}
               title={playlist.name}
@@ -103,13 +103,13 @@ export default PlaylistSongItem;
 const TrItem = ({ playlist }: { playlist: Partial<Playlist> }) => {
   return (
     <>
-      <div className="text-sm font-medium flex items-center">
+      <div className="sm:flex hidden text-sm font-medium items-center">
         {playlist.isPublic ? 'Pública' : 'Privada'}
       </div>
-      <div className="text-sm font-medium flex items-center">
+      <div className="md:flex hidden text-sm font-medium items-center">
         {playlist.createdAt}
       </div>
-      <div className="text-sm font-medium flex items-center">
+      <div className="lg:flex hidden text-sm font-medium items-center">
         {playlist.trackCount}
       </div>
     </>

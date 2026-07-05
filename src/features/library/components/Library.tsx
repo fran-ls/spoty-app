@@ -283,7 +283,7 @@ export const Library: React.FC = () => {
                   setIsExpanded(false);
                   navigate(routes.songs);
                 }}
-                className={`${isCollapsed ? 'justify-center' : 'justify-start'} flex items-center p-2 cursor-pointer text-[#adaaaa] hover:bg-[#1f1f1f] rounded-md gap-3 playlist-item ${(layout !== 'grid' && isExpanded) ? 'grid grid-cols-5' : ''} ${layout === 'grid' ? 'max-w-34' : ''}`}
+                className={`${isCollapsed ? 'justify-center' : 'justify-start'} flex items-center p-2 cursor-pointer text-[#adaaaa] hover:bg-[#1f1f1f] rounded-md gap-3 ${(layout !== 'grid' && isExpanded) ? 'grid grid-cols-5' : ''} ${layout === 'grid' ? 'max-w-34' : ''}`}
               >
                 {isCollapsed && (
                   <SmartImage
@@ -314,7 +314,7 @@ export const Library: React.FC = () => {
                     setIsExpanded(false);
                     navigate(`${routes.playlists}/${playlist.id}`);
                   }}
-                  className={`${isCollapsed ? 'justify-center' : 'justify-start'} flex items-center p-2 cursor-pointer text-[#adaaaa] hover:bg-[#1f1f1f] rounded-md gap-3 playlist-item ${(layout !== 'grid' && isExpanded) ? 'grid grid-cols-5' : ''} ${layout === 'grid' ? 'max-w-34' : ''}`}
+                  className={`${isCollapsed ? 'justify-center' : 'justify-start'} flex items-center p-2 cursor-pointer text-[#adaaaa] hover:bg-[#1f1f1f] rounded-md gap-3 ${(layout !== 'grid' && isExpanded) ? 'grid grid-cols-5' : ''} ${layout === 'grid' ? 'max-w-34' : ''}`}
                   onPointerEnter={() => setHoverIndex(i)}
                   onPointerLeave={() => setHoverIndex(null)}
                   key={playlist.id}

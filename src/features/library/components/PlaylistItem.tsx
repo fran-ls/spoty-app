@@ -24,7 +24,7 @@ const PlaylistItem = (props: PlaylistItemProps) => {
       {(layout === 'list') && (
         <>
           <div className="flex items-center gap-3 col-span-2">
-            <div className="col-span-2min-w-12 w-12 h-12 bg-[#262626] rounded relative overflow-hidden hover:badge:bg-blue-500">
+            <div className="col-span-2 min-w-12 w-12 h-12 bg-[#262626] rounded relative overflow-hidden hover:badge:bg-blue-500">
               <SmartImage url={playlist.cover} />
 
               {isHover &&
