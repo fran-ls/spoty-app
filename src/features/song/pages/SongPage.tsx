@@ -12,7 +12,7 @@ import SongListEmpty from '../components/SongListEmpty';
 import { usePlayer } from '../../../shared/context/PlayerContext';
 import useAuth from '../../auth/hooks/useAuth';
 import { GRADIENT_COLORS, GRADIENT_CSS } from '../../../shared/data/gradientColors.data';
-import PlaylistMenu from '../../playlist/components/PlaylistMenu';
+import PlaylistMenu, { type PlaylistMenuAction } from '../../playlist/components/PlaylistMenu';
 import TrackModal from '../components/TrackModal';
 import SongDeleteConfirm from '../components/SongDeleteConfirm';
 import PlaylistForm from '../../playlist/components/PlaylistForm';
@@ -158,7 +158,7 @@ const SongPage: React.FC = () => {
     }
   }
 
-  function onOpenPlaylistMenu(action: 'open' | 'remove' | 'add-to-queue' | 'edit-track' | 'share') {
+  function playlistMenuActions(action: PlaylistMenuAction | 'open') {
     switch (action) {
       case 'open':
         setIsPlaylistMenu(true);
@@ -170,7 +170,7 @@ const SongPage: React.FC = () => {
       case 'add-to-queue':
         setIsPlaylistMenu(false);
         return;
-      case 'edit-track':
+      case 'view-track':
         setIsEditTrack(true);
         setIsPlaylistMenu(false);
         return;
@@ -233,7 +233,7 @@ const SongPage: React.FC = () => {
             style={{
               background: gradientCSS
             }}
-            className="p-6 pb-44 flex items-center gap-6 overflow-x-auto hide-scrollbar"
+            className="min-[500px]:flex-row p-6 pb-44 flex-col flex items-center sm:gap-6 gap-4 overflow-x-auto hide-scrollbar"
           >
             <div
               onPointerEnter={() => setIsHover(true)}
@@ -283,18 +283,18 @@ const SongPage: React.FC = () => {
             </div>
 
             <div className="mt-auto w-full">
-              <span className="block text-sm font-medium">
+              <span className="min-[500px]:block hidden text-sm font-medium">
                 Lista {isPublic ? 'pública' : 'privada'}
               </span>
               <h1
                 onClick={() => setIsEdit(true)}
-                className="playlist-title font-black cursor-pointer google-sans-flex-font"
+                className={`min-[500px]:mb-0 mb-5 min-[500px]:text-left text-center font-black cursor-pointer ${window.innerWidth >= 500 ? 'playlist-title google-sans-flex-font' : 'playlist-title-font truncate'}`}
               >
                 {form.name || 'Mi lista'}
               </h1>
 
               {form.description &&
-                <div className="text-sm text-slate-400">
+                <div className="min-[500px]:block hidden text-sm text-slate-400">
                   {form.description}
                 </div>
               }
@@ -306,17 +306,37 @@ const SongPage: React.FC = () => {
                 >
                   <PlusIcon className="w-4 h-4" />
                 </button>
-                <a href="#">
+
+                <a href="#" className="min-[500px]:inline-flex hidden hover:underline">
                   <span className="text-sm ml-2 font-bold">
                     {user?.username}
                   </span>
-                  <span className="text-sm ml-2 font-bold">
-                    •
-                  </span>
+                </a>
+                <span className="min-[500px]:inline-flex hidden text-sm ml-2 font-bold">
+                  •
+                </span>
+                <span className="min-[500px]:inline-flex hidden text-sm ml-2 text-nowrap">
+                  {trackMeta.total || 0} canciones, {duration.min} min {duration.stringSecs}s
+                </span>
+
+                <div className="min-[500px]:hidden flex-wrap gap-2 flex w-full items-center justify-between">
+                  <div>
+                    <a href="#" className="hover:underline">
+                      <span className="text-sm ml-2 font-bold">
+                        {user?.username}
+                      </span>
+                    </a>
+                    <span className="text-sm ml-2 font-bold">
+                      •
+                    </span>
+                    <span className="min-[500px]:hidden inline-flex ml-2 text-sm font-medium">
+                      {isPublic ? 'pública' : 'privada'}
+                    </span>
+                  </div>
                   <span className="text-sm ml-2 text-nowrap">
                     {trackMeta.total || 0} canciones, {duration.min} min {duration.stringSecs}s
                   </span>
-                </a>
+                </div>
               </div>
             </div>
           </div>
@@ -384,7 +404,7 @@ const SongPage: React.FC = () => {
                   songs={tracks}
                   searchMeta={trackMeta}
                   onOpenPlaylistMenu={(track, index) => {
-                    onOpenPlaylistMenu('open');
+                    playlistMenuActions('open');
                     setActiveTrackIndex(index);
                     setActiveTrack(track);
                   }}
@@ -419,11 +439,11 @@ const SongPage: React.FC = () => {
 
         {isPlaylistMenu &&
           <PlaylistMenu
-            onOpen={onOpenPlaylistMenu}
+            actions={playlistMenuActions}
             onClose={() => setIsPlaylistMenu(false)}
           />
         }
-      </div>
+      </div >
 
       {isEdit &&
         <PlaylistForm
@@ -433,10 +453,12 @@ const SongPage: React.FC = () => {
         />
       }
 
-      {isEditTrack &&
+      {
+        isEditTrack &&
         <TrackModal
-          onUpdateSong={onUpdateSong}
+          isPlaylist={false}
           activeTrack={activeTrack}
+          onUpdateSong={onUpdateSong}
           onClose={() => {
             setIsEditTrack(false);
             setActiveTrackIndex(null);
@@ -445,7 +467,8 @@ const SongPage: React.FC = () => {
         />
       }
 
-      {isRemoveSong &&
+      {
+        isRemoveSong &&
         <SongDeleteConfirm
           isOpen={isRemoveSong}
           songName={activeTrack?.title!}

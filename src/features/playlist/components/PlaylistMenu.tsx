@@ -1,12 +1,14 @@
 import { CircleMinusIcon, ListPlusIcon, Music2Icon, UploadIcon } from "lucide-react";
 import { usePlayer } from "../../../shared/context/PlayerContext";
 
+export type PlaylistMenuAction = 'remove' | 'add-to-queue' | 'view-track' | 'share' | 'close';
+
 interface PlaylistMenuProps {
-  onOpen: (action: "remove" | "add-to-queue" | "edit-track" | "share") => void;
+  actions: (action: PlaylistMenuAction) => void;
   onClose: () => void;
 }
 
-const PlaylistMenu = ({ onOpen, onClose }: PlaylistMenuProps) => {
+const PlaylistMenu = ({ actions, onClose }: PlaylistMenuProps) => {
   const { isQueue } = usePlayer();
 
   return (
@@ -20,7 +22,7 @@ const PlaylistMenu = ({ onOpen, onClose }: PlaylistMenuProps) => {
         <ul className="text-[#adaaaa] flex flex-col items-center justify-between">
           <li className="w-full font-medium hover:text-white hover:bg-white/10 rounded-xs">
             <button
-              onClick={() => onOpen('remove')}
+              onClick={() => actions('remove')}
               className="w-full flex items-center gap-2 cursor-pointer px-3 py-2"
               type="button"
             >
@@ -30,7 +32,7 @@ const PlaylistMenu = ({ onOpen, onClose }: PlaylistMenuProps) => {
           </li>
           <li className="w-full font-medium hover:text-white hover:bg-white/10 rounded-xs">
             <button
-              onClick={() => onOpen('add-to-queue')}
+              onClick={() => actions('add-to-queue')}
               className="w-full flex items-center gap-2 cursor-pointer px-3 py-2"
               type="button"
             >
@@ -40,17 +42,17 @@ const PlaylistMenu = ({ onOpen, onClose }: PlaylistMenuProps) => {
           </li>
           <li className="w-full font-medium hover:text-white hover:bg-white/10 rounded-xs">
             <button
-              onClick={() => onOpen('edit-track')}
+              onClick={() => actions('view-track')}
               className="w-full flex items-center gap-2 cursor-pointer px-3 py-2"
               type="button"
             >
               <Music2Icon className="w-5 h-5" />
-              <span>Ver canción</span>
+              <span>Ver pista</span>
             </button>
           </li>
           <li className="w-full font-medium hover:text-white hover:bg-white/10 rounded-xs">
             <button
-              onClick={() => onOpen('share')}
+              onClick={() => actions('share')}
               className="w-full flex items-center gap-2 cursor-pointer px-3 py-2"
               type="button"
             >

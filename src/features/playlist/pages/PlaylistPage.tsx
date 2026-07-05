@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { EllipsisIcon, ListIcon, MusicIcon, PauseIcon, PenIcon, PlayIcon, PlusIcon, SearchIcon, XIcon } from 'lucide-react';
 import { Toaster as SonnerToaster, toast } from 'sonner';
+import type { PlaylistSong } from '../playlist.types';
 import LayoutMenu from '../components/LayoutMenu';
 import ActionMenu from '../components/ActionMenu';
 import EditData from '../components/EditData';
@@ -11,30 +12,63 @@ import SearchSongList from '../../song/components/SearchSongList';
 import PlaylistSongs from '../components/PlaylistSongs';
 import { usePlayer } from '../../../shared/context/PlayerContext';
 import usePlaylist from '../hooks/usePlaylist';
-import PlaylistMenu from '../components/PlaylistMenu';
+import PlaylistMenu, { type PlaylistMenuAction } from '../components/PlaylistMenu';
 import useAuth from '../../auth/hooks/useAuth';
 import SmartImage from '../../../shared/components/SmartImage';
+import TrackModal from '../../song/components/TrackModal';
 
 const PlaylistPage: React.FC = () => {
-  const coverInputRef = useRef<HTMLInputElement>(null);
-  const [toasterTime, setToasterTime] = useState(2500);
-
   const { playlistId } = useParams();
   const { user } = useAuth();
   const { isPlaying, queueMeta, play, togglePlay } = usePlayer();
   const {
     isPlay, isPublic, playlistSongs, searchMeta, gradientColor, bgColor,
     form, isBackground, isRemove, isHover, isOpen, isEdit, isOpenAction, query, isSearch,
-    searchSongs, duration, playlistMeta, playlistItems, activeItem, coverImages, setGradientColor,
-    setBgColor, setForm, setIsHover, setIsEdit, setIsOpenAction, setQuery, setIsSearch, setSearchSongs,
+    searchSongs, duration, playlistMeta, playlistItems, coverImages, setGradientColor,
+    setBgColor, setForm, setIsHover, setIsEdit, setIsOpenAction, setQuery, setIsSearch,
     onFileChange, getPlaylist, onSavePlaylist, onRemovePlaylist, getPlaylistTracks, searchTracks,
     addSongToPlaylist, onChangeVisibility, setIsOpen, setIsRemove, setIsBackground,
-    removeSongFromPlaylist, setActiveItem, getPlaylistCover
+    removeSongFromPlaylist, getPlaylistCover, setSearchSongs
   } = usePlaylist();
 
   const [page, setPage] = useState(0);
+  const [toasterTime, setToasterTime] = useState(2500);
+  const [isViewTrack, setIsViewTrack] = useState(false);
+  const [isPlaylistMenu, setIsPlaylistMenu] = useState(false);
+  const [activeItem, setActiveItem] = useState<PlaylistSong | null>(null);
 
+  const coverInputRef = useRef<HTMLInputElement>(null);
   const cover = form.fileUrl || form.cover;
+
+  function playlistMenuActions(action: PlaylistMenuAction | 'open') {
+    const onClose = () => setIsPlaylistMenu(false);
+
+    switch (action) {
+      case 'open':
+        setIsPlaylistMenu(true);
+        return;
+      case 'add-to-queue':
+        onClose();
+        return;
+      case 'remove':
+        onRemoveTrack(activeItem?.id!);
+        onClose();
+        return;
+      case 'view-track':
+        setIsViewTrack(true);
+        onClose();
+        return;
+      case 'share':
+        onClose();
+        return;
+      case 'close':
+        onClose();
+        return;
+      default:
+        onClose();
+        return;
+    }
+  }
 
   const onRemoveTrack = async (id: string) => {
     if (!id) return;
@@ -85,7 +119,7 @@ const PlaylistPage: React.FC = () => {
           style={{
             background: `linear-gradient(to bottom, ${bgColor} 0%, ${gradientColor} 100%)`,
           }}
-          className="p-6 flex items-center gap-6 overflow-auto hide-scrollbar"
+          className="min-[500px]:flex-row p-6 flex-col flex items-center gap-6 overflow-auto hide-scrollbar"
         >
           <div
             onPointerEnter={() => setIsHover(true)}
@@ -160,19 +194,19 @@ const PlaylistPage: React.FC = () => {
           </div>
 
           <div className="mt-auto w-full">
-            <span className="block text-sm font-medium">
+            <span className="min-[500px]:block hidden text-sm font-medium">
               Lista {isPublic ? 'pública' : 'privada'}
             </span>
             <h1
               onClick={() => setIsEdit(true)}
-              className="playlist-title google-sans-flex-font font-black cursor-pointer"
+              className={`min-[500px]:mb-0 mb-5 min-[500px]:text-left text-center  font-black cursor-pointer ${window.innerWidth >= 500 ? 'playlist-title google-sans-flex-font' : 'playlist-title-font truncate'}`}
               title={form.name}
             >
               {form.name || 'Mi lista'}
             </h1>
 
             {form.description &&
-              <div className="text-sm text-slate-400">
+              <div className="min-[500px]:block hidden text-sm text-slate-400">
                 {form.description}
               </div>
             }
@@ -185,17 +219,36 @@ const PlaylistPage: React.FC = () => {
                 <PlusIcon className="w-4 h-4" />
               </button>
 
-              <a href="#">
+              <a href="#" className="min-[500px]:inline-flex hidden hover:underline">
                 <span className="text-sm ml-2 font-bold">
                   {user?.username}
                 </span>
               </a>
-              <span className="text-sm ml-2 font-bold">
+              <span className="min-[500px]:inline-flex hidden text-sm ml-2 font-bold">
                 •
               </span>
-              <span className="text-sm ml-2 text-nowrap">
+              <span className="min-[500px]:inline-flex hidden text-sm ml-2 text-nowrap">
                 {playlistMeta.total} canciones, {duration.min} min {duration.stringSecs}s
               </span>
+
+              <div className="min-[500px]:hidden flex-wrap gap-2 flex w-full items-center justify-between">
+                <div>
+                  <a href="#" className="hover:underline">
+                    <span className="text-sm ml-2 font-bold">
+                      {user?.username}
+                    </span>
+                  </a>
+                  <span className="text-sm ml-2 font-bold">
+                    •
+                  </span>
+                  <span className="min-[500px]:hidden inline-flex ml-2 text-sm font-medium">
+                    {isPublic ? 'pública' : 'privada'}
+                  </span>
+                </div>
+                <span className="text-sm ml-2 text-nowrap">
+                  {playlistMeta.total || 0} canciones, {duration.min} min {duration.stringSecs}s
+                </span>
+              </div>
             </div>
           </div>
         </section>
@@ -286,12 +339,15 @@ const PlaylistPage: React.FC = () => {
           </div>
         }
 
-        <section className={`${(playlistSongs.length > 0 && !isSearch) ? 'block' : 'hidden'} px-5 animate-fade-in`}>
+        <section className={`${(playlistSongs.length > 0 && !isSearch) ? 'block' : 'hidden'} sm:px-5 p-1 animate-fade-in`}>
           <PlaylistSongs
             songs={playlistSongs}
             items={playlistItems}
             playlistMeta={{ ...playlistMeta, playlistId: playlistId! }}
-            setActiveItem={setActiveItem}
+            getItem={(item) => {
+              setActiveItem(item);
+              playlistMenuActions('open');
+            }}
             loadMore={() => {
               if (page < playlistMeta.totalPages) {
                 const nextPage = page + 1;
@@ -399,20 +455,10 @@ const PlaylistPage: React.FC = () => {
         }
       </div>
 
-      {activeItem &&
+      {isPlaylistMenu &&
         <PlaylistMenu
-          onOpen={(action) => {
-            switch (action) {
-              case 'add-to-queue':
-                return;
-              case 'remove':
-                onRemoveTrack(activeItem?.id!);
-                return;
-              default:
-                return;
-            }
-          }}
-          onClose={() => setActiveItem(null)}
+          actions={playlistMenuActions}
+          onClose={() => playlistMenuActions('close')}
         />
       }
 
@@ -435,6 +481,14 @@ const PlaylistPage: React.FC = () => {
           playlistName={form.name}
           onClose={() => setIsRemove(false)}
           onConfirm={() => onRemovePlaylist(playlistId!)}
+        />
+      }
+
+      {isViewTrack &&
+        <TrackModal
+          onUpdateSong={async () => { }}
+          activeTrack={activeItem?.song || null}
+          onClose={() => setIsViewTrack(false)}
         />
       }
 

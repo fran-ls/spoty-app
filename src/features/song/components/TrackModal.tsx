@@ -8,6 +8,7 @@ import SmartImage from "../../../shared/components/SmartImage";
 import useAuth from "../../auth/hooks/useAuth";
 
 interface TrackModalProps {
+  isPlaylist?: boolean;
   activeTrack: Song | null;
   onClose: () => void;
   onUpdateSong: (song: SongDTO) => Promise<void>;
@@ -15,7 +16,7 @@ interface TrackModalProps {
 
 const TrackModal = (props: TrackModalProps) => {
   const { isAdmin } = useAuth();
-  const { activeTrack, onClose, onUpdateSong } = props;
+  const { isPlaylist = true, activeTrack, onClose, onUpdateSong } = props;
 
   const [isImgHover, setIsImgHover] = useState(false);
   const [isActions, setIsActions] = useState(false);
@@ -27,18 +28,18 @@ const TrackModal = (props: TrackModalProps) => {
     title: activeTrack?.title || '',
     audio: null,
     quality: '',
-    cover: songService.songCoverUrl(activeTrack?.id!, activeTrack?.cover) || null
+    cover: null
   });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const cover = fileUrl || form.cover || '';
+  const cover = fileUrl || songService.songCoverUrl(activeTrack?.id!, activeTrack?.cover) || '';
 
   return (
     <div className="bg-black/50 flex items-center justify-center z-100 fixed min-h-screen w-full top-0 left-0">
       <div className="text-[#adaaaa] py-3 bg-[#212121] w-full max-w-105 rounded-2xl">
         <header className="px-6 py-3 flex items-center gap-3 justify-between">
           <h1 className="text-xl font-bold">
-            {window.innerWidth >= 500 ? 'Información de la canción' : 'Canción'}
+            {window.innerWidth >= 500 ? 'Información de la pista' : 'Pista'}
           </h1>
           {isAdmin &&
             <button
@@ -125,7 +126,7 @@ const TrackModal = (props: TrackModalProps) => {
           }
         </div>
 
-        <div className="p-6 pb-4 space-y-1">
+        <div className="p-6 pb-3 space-y-1">
           <div className="flex items-center justify-between gap-2">
             <div className="w-full flex items-center justify-between gap-2">
               <Music2Icon size={20} />
@@ -161,27 +162,16 @@ const TrackModal = (props: TrackModalProps) => {
 
           <div className="mt-4 w-full flex items-center justify-between gap-2">
             <UserIcon size={20} />
-
-            {!isEdit
-              ?
-              <span
-                className="w-full text-sm line-clamp-1"
-                title={form.artistName}
-              >
-                {form.artistName}
-              </span>
-              :
-              <input
-                className="w-full text-sm border-b pb-1 border-[#424242]"
-                onChange={(e) => setForm({ ...form, artistName: e.target.value })}
-                value={form.artistName}
-                type="text"
-              />
-            }
+            <span
+              className="w-full text-sm line-clamp-1"
+              title={form.artistName}
+            >
+              {form.artistName}
+            </span>
           </div>
         </div>
 
-        <div className="px-6 py-3  space-y-1 flex items-center gap-2">
+        <div className="px-6 py-3 flex items-center gap-2">
           <DiscIcon size={20} />
           <span className="text-sm">
             Álbum
@@ -191,7 +181,7 @@ const TrackModal = (props: TrackModalProps) => {
           </span>
         </div>
 
-        <div className="px-6 py-3  space-y-1 flex items-center gap-2">
+        <div className="px-6 py-3 flex items-center gap-2">
           <ClockIcon size={20} />
           <span className="text-sm">
             Duración
@@ -201,13 +191,13 @@ const TrackModal = (props: TrackModalProps) => {
           </span>
         </div>
 
-        <div className="px-6 py-3 space-y-1 flex items-center gap-2">
+        <div className="px-6 py-3 flex items-center gap-2">
           <CalendarIcon size={20} />
           <span className="text-sm">
-            Publicada
+            {isPlaylist ? 'Fecha en la que se añadió' : 'Fecha en la que se subió'}
           </span>
           <span className="text-sm ml-auto">
-            {getFmtDate(activeTrack?.createdAt!, 'dd MMM yyyy')}
+            {activeTrack?.createdAt ? getFmtDate(activeTrack?.createdAt, 'dd MMM yyyy') : ''}
           </span>
         </div>
       </div>

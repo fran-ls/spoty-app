@@ -14,35 +14,39 @@ interface PlaylistSongsProps {
   songs: Song[];
   items: PlaylistSong[];
   playlistMeta: PlaylistMeta;
-  setActiveItem: React.Dispatch<React.SetStateAction<PlaylistSong | null>>;
+  getItem: (item: PlaylistSong) => void;
   loadMore: () => void;
 }
 
 const PlaylistSongs: React.FC<PlaylistSongsProps> = (props) => {
-  const { songs, items, playlistMeta, loadMore, setActiveItem } = props;
+  const { songs, items, playlistMeta, loadMore, getItem } = props;
   const { currentSong, play } = usePlayer();
   const { loaderRef } = useInfiniteScroll(() => loadMore());
 
   const grid = {
-    s: 'grid-cols-[40px_minmax(200px,2fr)_40px_40px_28px]',
-    sm: 'sm:grid-cols-[40px_minmax(200px,2fr)_minmax(120px,1fr)_40px_40px_28px]',
-    md: 'md:grid-cols-[40px_minmax(200px,2fr)_minmax(120px,1fr)_minmax(120px,1fr)_40px_40px_28px]',
+    s: 'grid-cols-[minmax(200px,2fr)_28px]',
+    sm: 'sm:grid-cols-[40px_minmax(200px,2fr)_40px_40px_28px]',
+    md: 'md:grid-cols-[40px_minmax(200px,2fr)_40px_40px_28px]',
+    lg: 'lg:grid-cols-[40px_minmax(200px,2fr)_minmax(120px,1fr)_minmax(120px,1fr)_40px_40px_28px]'
   }
 
   return (
     <div className={`overflow-x-auto bg-[#131313] relative ${window.innerWidth <= 768 ? 'hide-scrollbar' : ''}`}>
-      <div className={`min-w-fit grid ${grid.s} ${grid.sm} ${grid.md} gap-4 px-4 py-2 border-b border-white/10 text-[#adaaaa] text-xs font-semibold tracking-wider`}>
+      <div className={`sm:grid hidden min-w-fit ${grid.s} ${grid.sm} ${grid.md} ${grid.lg} gap-4 px-4 py-2 border-b border-white/10 text-[#adaaaa] text-xs font-semibold tracking-wider`}>
         <span className="text-sm">#</span>
         <span>Título</span>
-        <span className="sm:block hidden">Álbum</span>
-        <span className="md:block hidden line-clamp-1 truncate text-nowrap">
+        <span className="lg:block hidden">Álbum</span>
+        <span
+          className="lg:block hidden line-clamp-1 truncate text-nowrap"
+          title="Fecha en la que se añadió"
+        >
           Fecha en la que se añadió
         </span>
-        <span></span>
-        <span className="flex items-center justify-end">
+        <span className="sm:block hidden" />
+        <span className="sm:flex hidden items-center justify-end">
           <ClockIcon size={16} strokeWidth={2.5} />
         </span>
-        <span className="flex items-center justify-end">
+        <span className="sm:flex hidden items-center justify-end">
           <div className="relative flex justify-end w-4 h-4">
             <DropdownIcon
               className="fill-[#adaaaa] absolute top-1/2 left-1/2 -translate-1/2"
@@ -61,10 +65,10 @@ const PlaylistSongs: React.FC<PlaylistSongsProps> = (props) => {
           return (
             <div
               onClick={() => play(songs, i, playlistMeta)}
-              className={`min-w-fit grid ${grid.s} ${grid.sm} ${grid.md} gap-4 px-4 py-2 items-center rounded hover:bg-white/5 transition-colors group cursor-pointer duration-200 relative`}
+              className={`min-w-fit grid ${grid.s} ${grid.sm} ${grid.md} ${grid.lg} gap-4 px-4 py-2 items-center sm:rounded hover:bg-white/5 transition-colors group cursor-pointer duration-200 relative`}
               key={item.id}
             >
-              <div className={`${isCurrentPlayingNow ? 'text-primary' : 'text-[#adaaaa]'} text-sm font-medium flex items-center`}>
+              <div className={`${isCurrentPlayingNow ? 'text-primary' : 'text-[#adaaaa]'} sm:flex hidden items-center text-sm font-medium`}>
                 <span className="group-hover:hidden">
                   {i + 1}
                 </span>
@@ -101,15 +105,15 @@ const PlaylistSongs: React.FC<PlaylistSongsProps> = (props) => {
                 </div>
               </div>
 
-              <div className="sm:block hidden text-[#adaaaa] text-sm truncate group-hover:text-white transition-colors">
+              <div className="lg:block hidden text-[#adaaaa] text-sm truncate group-hover:text-white transition-colors">
                 {track?.album?.title || ''}
               </div>
 
-              <div className="md:block hidden text-[#adaaaa] text-sm truncate select-none">
+              <div className="lg:block hidden text-[#adaaaa] text-sm truncate select-none">
                 {track?.createdAt ? getFmtDate(track?.createdAt, 'dd MMM yyyy') : ''}
               </div>
 
-              <div className="flex items-center justify-center">
+              <div className="sm:flex hidden items-center justify-center">
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -120,16 +124,28 @@ const PlaylistSongs: React.FC<PlaylistSongsProps> = (props) => {
                 </button>
               </div>
 
-              <span className="text-[#adaaaa] text-sm flex justify-end">
+              <span className="sm:flex hidden text-[#adaaaa] text-sm justify-end">
                 {formatTime(track?.duration ?? 0)}
               </span>
 
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  setActiveItem(item);
+                  getItem(item);
                 }}
-                className="group-hover:block hidden ml-auto hover:text-white cursor-pointer"
+                className="sm:hidden ml-auto hover:text-white cursor-pointer"
+                type="button"
+              >
+                <EllipsisIcon className="rotate-90" size={20} />
+              </button>
+
+              {/* DESKTOP */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  getItem(item);
+                }}
+                className="sm:group-hover:block hidden ml-auto hover:text-white cursor-pointer"
                 type="button"
               >
                 <EllipsisIcon size={20} />
