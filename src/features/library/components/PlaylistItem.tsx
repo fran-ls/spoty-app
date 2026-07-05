@@ -23,8 +23,8 @@ const PlaylistItem = (props: PlaylistItemProps) => {
     <>
       {(layout === 'list') && (
         <>
-          <div className="flex items-center gap-3 col-span-2">
-            <div className="col-span-2 min-w-12 w-12 h-12 bg-[#262626] rounded relative overflow-hidden hover:badge:bg-blue-500">
+          <div className="flex items-center gap-3">
+            <div className="min-w-12 w-12 h-12 bg-[#262626] rounded relative overflow-hidden hover:badge:bg-blue-500">
               <SmartImage url={playlist.cover} />
 
               {isHover &&
@@ -76,7 +76,7 @@ const PlaylistItem = (props: PlaylistItemProps) => {
 
       {(layout === 'compact-list') && (
         <>
-          <div className="text-[13px] font-semibold flex items-center gap-1 w-full col-span-2">
+          <div className="text-[13px] font-semibold flex items-center gap-1 w-full">
             <h4
               className={`${queueMeta.playlistId === playlist.id ? 'text-primary' : 'text-white'} line-clamp-1 text-[15px] font-semibold`}
               title={playlist.name}
@@ -125,13 +125,13 @@ export default PlaylistItem;
 const TrItem = ({ playlist }: { playlist: Playlist }) => {
   return (
     <>
-      <div className="text-sm font-medium">
+      <div className="sm:block hidden my-auto text-sm font-medium">
         {playlist.isPublic ? 'Pública' : 'Privada'}
       </div>
-      <div className="text-sm font-medium">
+      <div className="md:block hidden my-auto text-sm font-medium">
         {playlist.createdAt}
       </div>
-      <div className="text-sm font-medium">
+      <div className="lg:block hidden my-auto text-sm font-medium">
         {playlist.trackCount}
       </div>
     </>

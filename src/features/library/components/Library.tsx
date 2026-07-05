@@ -15,9 +15,15 @@ import PlaylistItem from './PlaylistItem';
 import Loader from '../../../shared/components/Loader';
 import { useInfiniteScroll } from '../../../shared/hooks/useInfiniteScroll';
 
-export const Library: React.FC = () => {
-  const [isCollapsed, setIsCollapsed] = useState(true);
-  const [isExpanded, setIsExpanded] = useState(false);
+interface LibraryProps {
+  isPage?: boolean;
+  isCollapsed?: boolean;
+  isExpanded?: boolean;
+}
+
+export const Library = (props: LibraryProps) => {
+  const [isCollapsed, setIsCollapsed] = useState(props.isCollapsed ?? false);
+  const [isExpanded, setIsExpanded] = useState(props.isExpanded ?? false);
 
   const [isVisibilityMenu, setIsVisibilityMenu] = useState(false);
   const [visibility, setVisibility] = useState<PlaylistVisibility | ''>('');
@@ -77,10 +83,21 @@ export const Library: React.FC = () => {
     setPage(0);
   }, [query, order, visibility]);
 
+  const grid = {
+    sm: 'sm:grid-cols-[minmax(200px,2fr)_100px]',
+    md: 'md:grid-cols-[minmax(200px,2fr)_100px_180px]',
+    lg: 'lg:grid-cols-[minmax(200px,2fr)_100px_180px_160px]'
+  }
+
+  const responsive = {
+    headerMin: 'min-[520px]',
+    headerMax: 'max-[520px]',
+  }
+
   return (
     <aside
       onClick={() => !query && setIsSearch(false)}
-      className={`${isCollapsed ? 'w-18' : isExpanded ? 'w-full' : 'w-72'} rounded-lg hidden md:flex h-full overflow-hidden flex-col bg-[#131313] border-none select-none shrink-0 transition-all duration-300 ease-in-out relative`}
+      className={`${isCollapsed ? 'w-18' : isExpanded ? 'w-full' : 'w-72'} ${isExpanded ? 'flex' : 'sm:flex hidden'} rounded-lg h-full overflow-hidden flex-col bg-[#131313] border-none select-none shrink-0 transition-all duration-300 ease-in-out relative`}
       id="spotify-sidebar"
     >
       <div className="rounded-lg min-h-[calc(100vh-64px-88px)] max-h-[calc(100vh-64px-88px)]">
@@ -127,12 +144,12 @@ export const Library: React.FC = () => {
 
                 {(!isCollapsed && isExpanded) &&
                   <span className="text-white">
-                    Crear
+                    Lista
                   </span>
                 }
               </button>
 
-              {isExpanded && (
+              {(isExpanded && !props.isPage) && (
                 <button
                   onClick={() => setIsExpanded(false)}
                   className="p-2 rounded-full text-[#adaaaa] hover:bg-white/10 hover:text-white cursor-pointer transition-colors duration-100"
@@ -145,7 +162,7 @@ export const Library: React.FC = () => {
           </div>
 
           {!isCollapsed &&
-            <div className="mt-4 text-[#adaaaa] flex items-center justify-between gap-5 relative">
+            <div className={`${isExpanded ? 'flex-col' : 'flex-row'} ${responsive.headerMin}:flex-row mt-4 text-[#adaaaa] flex items-center justify-between gap-5 relative`}>
               <div
                 onClick={(e) => {
                   e.stopPropagation();
@@ -173,117 +190,119 @@ export const Library: React.FC = () => {
                 }
               </div>
 
-              {isExpanded && (
-                <div className="relative ml-auto">
-                  <button
-                    onClick={() => setIsVisibilityMenu(!isVisibilityMenu)}
-                    className="z-5 cursor-pointer hover:text-white text-sm flex items-center gap-2"
-                    type="button"
-                  >
-                    {(!isSearch || isExpanded) &&
-                      <span className="font-semibold">
-                        {visibility === '' && 'Visibilidad'}
-                        {visibility === 'public' && 'Pública'}
-                        {visibility === 'private' && 'Privada'}
-                      </span>
-                    }
-
-                    {visibility === 'public' && <GlobeIcon size={18} />}
-                    {visibility === 'private' && <LockIcon size={18} />}
-                    {visibility === '' && <GlobeLockIcon size={18} />}
-                  </button>
-
-                  <MenuItem
-                    isBtn={false}
-                    open={isVisibilityMenu}
-                    onClose={() => setIsVisibilityMenu(false)}
-                    styles={{
-                      backdrop: 'z-14 bg-transparent',
-                      wrap: 'z-14 absolute top-full right-0 mt-3.5 min-w-0',
-                      menu: 'w-30'
-                    }}
-                    items={[
-                      {
-                        label: 'Todo',
-                        action: 'close',
-                        icon: <GlobeLockIcon size={20} />,
-                        onAction: () => setVisibility('')
-                      },
-                      {
-                        label: 'Privada',
-                        action: 'close',
-                        icon: <LockIcon size={20} />,
-                        onAction: () => setVisibility('private')
-                      },
-                      {
-                        label: 'Pública',
-                        action: 'close',
-                        icon: <GlobeIcon size={20} />,
-                        onAction: () => setVisibility('public')
+              <div className={`${isExpanded ? `${responsive.headerMin}:w-fit w-full` : ''} flex items-center justify-between gap-5`}>
+                {isExpanded && (
+                  <div className={`${responsive.headerMin}:ml-auto relative`}>
+                    <button
+                      onClick={() => setIsVisibilityMenu(!isVisibilityMenu)}
+                      className="z-5 cursor-pointer hover:text-white text-sm flex items-center gap-2"
+                      type="button"
+                    >
+                      {(!isSearch || isExpanded) &&
+                        <span className="font-semibold">
+                          {visibility === '' && 'Visibilidad'}
+                          {visibility === 'public' && 'Pública'}
+                          {visibility === 'private' && 'Privada'}
+                        </span>
                       }
-                    ]}
+
+                      {visibility === 'public' && <GlobeIcon size={18} />}
+                      {visibility === 'private' && <LockIcon size={18} />}
+                      {visibility === '' && <GlobeLockIcon size={18} />}
+                    </button>
+
+                    <MenuItem
+                      isBtn={false}
+                      open={isVisibilityMenu}
+                      onClose={() => setIsVisibilityMenu(false)}
+                      styles={{
+                        backdrop: 'z-14 bg-transparent',
+                        wrap: `${responsive.headerMin}:right-0 ${responsive.headerMax}:left-0 w-32 z-14 absolute top-full mt-3.5 min-w-0`,
+                        menu: 'w-full'
+                      }}
+                      items={[
+                        {
+                          label: 'Todo',
+                          action: 'close',
+                          icon: <GlobeLockIcon size={20} />,
+                          onAction: () => setVisibility('')
+                        },
+                        {
+                          label: 'Privada',
+                          action: 'close',
+                          icon: <LockIcon size={20} />,
+                          onAction: () => setVisibility('private')
+                        },
+                        {
+                          label: 'Pública',
+                          action: 'close',
+                          icon: <GlobeIcon size={20} />,
+                          onAction: () => setVisibility('public')
+                        }
+                      ]}
+                    />
+                  </div>
+                )}
+
+                <button
+                  onClick={() => setIsOpen(!isOpen)}
+                  className="z-5 cursor-pointer hover:text-white text-sm flex items-center gap-2"
+                  type="button"
+                >
+                  {(!isSearch || isExpanded) &&
+                    <span className="font-semibold text-nowrap">
+                      {order.label}
+                    </span>
+                  }
+
+                  {layout === 'list' && <ListIcon className="w-5 h-5" />}
+                  {layout === 'compact-list' && <TextAlignJustify className="w-5 h-5" />}
+                  {layout === 'grid' && <LayoutGridIcon className="w-5 h-5" />}
+                </button>
+
+                {isOpen &&
+                  <CustomMenu
+                    order={order}
+                    layout={layout}
+                    onSort={(value) => setOrder(value)}
+                    onLayout={(value) => setLayout(value)}
+                    onClose={() => setIsOpen(false)}
                   />
-                </div>
-              )}
-
-              <button
-                onClick={() => setIsOpen(!isOpen)}
-                className="z-5 cursor-pointer hover:text-white text-sm flex items-center gap-2"
-                type="button"
-              >
-                {(!isSearch || isExpanded) &&
-                  <span className="font-semibold">
-                    {order.label}
-                  </span>
                 }
-
-                {layout === 'list' && <ListIcon className="w-5 h-5" />}
-                {layout === 'compact-list' && <TextAlignJustify className="w-5 h-5" />}
-                {layout === 'grid' && <LayoutGridIcon className="w-5 h-5" />}
-              </button>
-
-              {isOpen &&
-                <CustomMenu
-                  order={order}
-                  layout={layout}
-                  onSort={(value) => setOrder(value)}
-                  onLayout={(value) => setLayout(value)}
-                  onClose={() => setIsOpen(false)}
-                />
-              }
+              </div>
             </div>
           }
         </header>
 
-        <nav className={`${isCollapsed ? 'h-[calc(100vh-64px-88px-100px)]' : 'h-[calc(100vh-64px-88px-116px)]'} overflow-y-auto overflow-x-hidden relative`}>
+        <nav className={`${isCollapsed ? 'h-[calc(100vh-64px-88px-100px)]' : isExpanded ? `${responsive.headerMin}:h-[calc(100vh-64px-88px-116px)] h-[calc(100vh-64px-88px-156px)]` : 'h-[calc(100vh-64px-88px-116px)]'} overflow-y-auto overflow-x-hidden relative`}>
           {(isExpanded && layout !== 'grid') && (
-            <ul className={`bg-[#131313] text-[13px] text-[#adaaaa] border-b border-white/10 px-4 sticky top-0 z-10 grid grid-cols-5 gap-3`}>
-              <li className="py-2 line-clamp-1 w-full font-semibold max-w-lg col-span-2">
+            <ul className={`sm:grid hidden ${grid.sm} ${grid.md} ${grid.lg} gap-3 bg-[#131313] text-[13px] text-[#adaaaa] border-b border-white/10 px-4 sticky top-0 z-10`}>
+              <li className="py-2 line-clamp-1 font-semibold">
                 Título
               </li>
-              <li className="py-2 line-clamp-1 font-semibold">
+              <li className="sm:block hidden py-2 line-clamp-1 font-semibold">
                 Visibilidad
               </li>
               <li
-                className="py-2 line-clamp-1 font-semibold text-nowrap"
-                title="Fecha en que se añadió"
+                className="md:block hidden py-2 line-clamp-1 font-semibold text-nowrap"
+                title="Fecha en la que se añadió"
               >
-                Fecha en que se añadió
+                Fecha en la que se añadió
               </li>
-              <li className="py-2 line-clamp-1 font-semibold">
+              <li className="lg:block hidden py-2 line-clamp-1 font-semibold">
                 Canciones
               </li>
             </ul>
           )}
 
-          <ul className={`${isCollapsed ? 'pl-0 pb-5' : 'pl-2 pb-2'} w-full absolute top-0 left-0 ${(layout === 'grid' && !isCollapsed) ? 'grid' : ''} ${!isExpanded ? 'grid-cols-2' : 'grid-cols-[repeat(auto-fit,136px)]'} ${(isExpanded && layout !== 'grid') ? 'mt-10' : ''}`}>
+          <ul className={`${isCollapsed ? 'pl-0 pb-5' : 'pl-2 pb-2'} w-full absolute top-0 left-0 ${(layout === 'grid' && !isCollapsed) ? 'grid' : ''} ${!isExpanded ? 'grid-cols-2' : 'grid-cols-[repeat(auto-fit,136px)]'} ${(isExpanded && layout !== 'grid') ? 'sm:mt-10' : ''}`}>
             {isAdmin && (
               <li
                 onClick={() => {
                   setIsExpanded(false);
                   navigate(routes.songs);
                 }}
-                className={`${isCollapsed ? 'justify-center' : 'justify-start'} flex items-center p-2 cursor-pointer text-[#adaaaa] hover:bg-[#1f1f1f] rounded-md gap-3 ${(layout !== 'grid' && isExpanded) ? 'grid grid-cols-5' : ''} ${layout === 'grid' ? 'max-w-34' : ''}`}
+                className={`${isCollapsed ? 'justify-center' : isExpanded ? `justify-start ${grid.sm} ${grid.md} ${grid.lg} gap-3` : ''} grid p-2 cursor-pointer text-[#adaaaa] hover:bg-[#1f1f1f] rounded-md`}
               >
                 {isCollapsed && (
                   <SmartImage
@@ -314,7 +333,7 @@ export const Library: React.FC = () => {
                     setIsExpanded(false);
                     navigate(`${routes.playlists}/${playlist.id}`);
                   }}
-                  className={`${isCollapsed ? 'justify-center' : 'justify-start'} flex items-center p-2 cursor-pointer text-[#adaaaa] hover:bg-[#1f1f1f] rounded-md gap-3 ${(layout !== 'grid' && isExpanded) ? 'grid grid-cols-5' : ''} ${layout === 'grid' ? 'max-w-34' : ''}`}
+                  className={`${isCollapsed ? 'justify-center' : isExpanded ? `justify-start ${grid.sm} ${grid.md} ${grid.lg} gap-3` : ''} grid p-2 cursor-pointer text-[#adaaaa] hover:bg-[#1f1f1f] rounded-md`}
                   onPointerEnter={() => setHoverIndex(i)}
                   onPointerLeave={() => setHoverIndex(null)}
                   key={playlist.id}

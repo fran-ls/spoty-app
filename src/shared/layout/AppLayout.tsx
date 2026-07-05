@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { AnimatePresence } from "motion/react";
 import { Library } from "../../features/library/components/Library";
 import { QueueList } from "../../features/player/QueueList";
@@ -15,10 +16,11 @@ import { routes } from "../utils/routes";
 import YTDropAppLayout from "../../yt_drop/components/layout/YTDropAppLayout";
 
 const AppLayout = ({ children }: { children: React.ReactNode }) => {
+  const { pathname } = useLocation();
   const { isAdmin, isUploadModal } = useAuth();
   const [isPremiumOpen, setIsPremiumOpen] = useState(false);
 
-  const currentPath = window.location.pathname;
+  const currentPath = pathname;
   const paths: string[] = [routes.upload];
 
   const YTDropPaths: string[] = [
@@ -54,7 +56,9 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
       <Header onExplorePremiumClick={() => setIsPremiumOpen(true)} />
 
       <div className="px-2 flex gap-2 select-none rounded-lg">
-        <Library />
+        {(currentPath !== routes.library) && (
+          <Library />
+        )}
 
         <main className="w-full rounded-lg bg-[#131313] overflow-hidden">
           <div className={`${STYLES.maxHeightMain} ${STYLES.minHeightMain} flex-1 overflow-y-auto`}>
