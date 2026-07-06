@@ -177,10 +177,9 @@ const DownloadTable = ({ items, meta, isLoading, error, loadMore, onDelete }: Do
               display: meta && meta.page < meta.totalPages ? '' : 'none',
             }}>
               <td colSpan={10}>
-                <div
-                  className="spinner"
-                  ref={loaderRef}
-                />
+                <div className="w-full h-full" ref={loaderRef}>
+                  <div className="spinner" />
+                </div>
               </td>
             </tr>
 

@@ -80,7 +80,7 @@ const DownloadFilters = (props: DownloadFiltersProps) => {
       </div>
       <button
         onClick={onClearFilters}
-        className="btn-filter-clear"
+        className="btn-filter-clear btn-filter-clear-1"
         type="button"
         title="Limpiar filtros"
       >
@@ -88,22 +88,36 @@ const DownloadFilters = (props: DownloadFiltersProps) => {
       </button>
       <div className="filter-spacer" />
       <div
-        style={{ textAlign: 'right' }}
-        className="filter-group"
+        style={{
+          textAlign: 'right',
+          display: 'flex'
+        }}
+        className="filter-group div-filter-group"
       >
-        <span className="filter-label">
-          Resultados
-        </span>
-        <span
-          style={{
-            fontSize: 16,
-            width: '100%',
-            padding: '9px 0',
-          }}
-          className="results-count" id="results-count"
+        <button
+          onClick={onClearFilters}
+          className="btn-filter-clear btn-filter-clear-1"
+          type="button"
+          title="Limpiar filtros"
         >
-          {meta.items} / {meta.total}
-        </span>
+          <XIcon size={20} />
+        </button>
+
+        <div className="result-group">
+          <span className="filter-label block">
+            Resultados
+          </span>
+          <span
+            style={{
+              fontSize: 16,
+              width: '100%',
+              padding: '9px 0',
+            }}
+            className="results-count block" id="results-count"
+          >
+            {meta.items} / {meta.total}
+          </span>
+        </div>
       </div>
     </div>
   )

@@ -91,7 +91,7 @@ const DownloadPage = () => {
       <main className="history-section">
         <div className="history-header">
           <h2 className="history-title">
-            Historial de descargas &nbsp; {meta.totalPages > 1 && <span id="count">
+            Descargas &nbsp; {meta.totalPages > 1 && <span id="count">
               {`( ${downloads.length} - ${meta.total} )`}
             </span>}
           </h2>

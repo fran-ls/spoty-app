@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { ChartNoAxesColumnIcon, DownloadIcon, HistoryIcon, HomeIcon } from "lucide-react";
+import { ChartNoAxesColumnIcon, DownloadIcon, HeadphonesIcon, HistoryIcon } from "lucide-react";
 import { AppIcon } from "../shared/Icons";
 import UploadMenu from "../shared/UploadMenu";
 import { routes } from "../../../shared/utils/routes";
@@ -99,7 +99,7 @@ const Header = () => {
             style={{ color: 'var(--muted)' }}
             className="max-[500px]:hidden flex w-8 h-8 items-center justify-center rounded-full text-[#adaaaa] hover:text-white hover:bg-black/60 transition-all cursor-pointer"
           >
-            <HomeIcon size={24} />
+            <HeadphonesIcon size={24} />
           </Link>
 
           <UploadMenu />

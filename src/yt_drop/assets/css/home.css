@@ -557,3 +557,15 @@
     display: block;
   }
 }
+
+@media(width<=600px) {
+  .yt-drop-wrap,
+  .yt-drop .history-wrap,
+  .yt-drop .download-wrap {
+    padding: 16px !important;
+  }
+
+  .yt-drop .download-wrap .card {
+    padding: 24px;
+  }
+}

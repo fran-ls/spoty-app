@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ChartNoAxesColumnIcon, HistoryIcon, HomeIcon, SettingsIcon } from "lucide-react";
+import { ChartNoAxesColumnIcon, HistoryIcon, HeadphonesIcon, SettingsIcon } from "lucide-react";
 import { getIsUploadToSpotify, setIsUploadToSpotify } from "../../helpers/getIsUpload";
 import { useAppCtx } from "../../../shared/context/AppContext";
 import { config } from "../../../shared/data/config.data";
 import { routes } from "../../../shared/utils/routes";
+import useAuth from "../../../features/auth/hooks/useAuth";
 
 const UploadMenu = () => {
+  const { user } = useAuth();
   const { isSettingsMenu, setIsSettingsMenu, setIsSettingsModal } = useAppCtx();
   const [isUpload, setIsUpload] = useState(false);
 
@@ -38,18 +40,38 @@ const UploadMenu = () => {
           className={`${isSettingsMenu ? 'open' : ''} settings-dropdown`}
           id="settings-dropdown"
         >
+          <div className="nav-u-dropwdown">
+            <div className="nav-avatar" id="nav-avatar">
+              {user?.username ? user?.username[0].toUpperCase() : '?'}
+            </div>
+            <div className="nav-u">
+              <span
+                className="nav-username h-4 block text-nowrap overflow-hidden max-w-50" id="nav-username"
+                title={user?.username}
+              >
+                {user?.username}
+              </span>
+              <span
+                className="block text-xs text-nowrap overflow-hidden max-w-45"
+                title={user?.email}
+              >
+                {user?.email}
+              </span>
+            </div>
+          </div>
+
           <Link
             to={routes.home}
             onClick={() => setIsSettingsMenu(false)}
             className="sd-item-label sd-item sd-item-menu nav-i-h"
           >
             <div className="flex items-center gap-2.5">
-              <HomeIcon />
+              <HeadphonesIcon />
               <span style={{
                 display: 'block',
                 marginTop: '4px'
               }}>
-                Spotify
+                {config.APP_NAME}
               </span>
             </div>
           </Link>

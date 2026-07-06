@@ -621,3 +621,18 @@
 .yt-drop .config-panel .artist-group .img-drop:hover .btn-img-clear {
   display: flex;
 }
+
+.yt-drop .nav-right .nav-u-dropwdown {
+  display: none;
+  gap: 12px;
+  justify-content: start;
+  padding: 13px 16px;
+  display: hidden !important;
+  border-bottom: 1px solid rgba(42, 42, 56, 0.6);
+}
+
+@media (width<=500px) {
+  .yt-drop .nav-right .nav-u-dropwdown {
+    display: flex;
+  }
+}
