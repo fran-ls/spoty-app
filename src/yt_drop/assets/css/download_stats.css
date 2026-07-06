@@ -52,10 +52,16 @@
 }
 
 .yt-drop .nav-links {
-  display: flex;
+  display: none;
   align-items: center;
   gap: 4px;
   margin-left: 16px;
+
+  @media (width>=810px) {
+    & {
+      display: flex;
+    }
+  }
 }
 
 .yt-drop .nav-link {
@@ -93,6 +99,16 @@
   gap: 10px;
   font-size: 0.8rem;
   color: var(--muted);
+}
+
+.yt-drop .nav-u-item {
+  display: none;
+
+  @media (width>=500px) {
+    & {
+      display: block !important;
+    }
+  }
 }
 
 .yt-drop .nav-avatar {
@@ -702,4 +718,24 @@
   z-index: 50;
   border: 1px solid var(--border);
   border-radius: 4px;
+}
+
+.yt-drop .sd-item-menu {
+  display: block;
+}
+
+.yt-drop .nav-i-h {
+  display: block !important;
+
+  @media (width>=500px) {
+    & {
+      display: none !important;
+    }
+  }
+}
+
+@media (width>=810px) {
+  .yt-drop .sd-item-menu {
+    display: none !important;
+  }
 }

@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
-import { SettingsIcon } from "lucide-react";
+import { Link } from "react-router-dom";
+import { ChartNoAxesColumnIcon, HistoryIcon, HomeIcon, SettingsIcon } from "lucide-react";
 import { getIsUploadToSpotify, setIsUploadToSpotify } from "../../helpers/getIsUpload";
 import { useAppCtx } from "../../../shared/context/AppContext";
 import { config } from "../../../shared/data/config.data";
+import { routes } from "../../../shared/utils/routes";
 
 const UploadMenu = () => {
   const { isSettingsMenu, setIsSettingsMenu, setIsSettingsModal } = useAppCtx();
@@ -36,6 +38,54 @@ const UploadMenu = () => {
           className={`${isSettingsMenu ? 'open' : ''} settings-dropdown`}
           id="settings-dropdown"
         >
+          <Link
+            to={routes.home}
+            onClick={() => setIsSettingsMenu(false)}
+            className="sd-item-label sd-item sd-item-menu nav-i-h"
+          >
+            <div className="flex items-center gap-2.5">
+              <HomeIcon />
+              <span style={{
+                display: 'block',
+                marginTop: '4px'
+              }}>
+                Spotify
+              </span>
+            </div>
+          </Link>
+
+          <Link
+            to={routes.YTDrop.history}
+            onClick={() => setIsSettingsMenu(false)}
+            className="sd-item-label sd-item sd-item-menu"
+          >
+            <div className="flex items-center gap-2.5">
+              <HistoryIcon />
+              <span style={{
+                display: 'block',
+                marginTop: '4px'
+              }}>
+                Historial
+              </span>
+            </div>
+          </Link>
+
+          <Link
+            to={routes.YTDrop.historyStats}
+            onClick={() => setIsSettingsMenu(false)}
+            className="sd-item-label sd-item sd-item-menu"
+          >
+            <div className="flex items-center gap-2.5">
+              <ChartNoAxesColumnIcon />
+              <span style={{
+                display: 'block',
+                marginTop: '4px'
+              }}>
+                Análisis
+              </span>
+            </div>
+          </Link>
+
           <div className="sd-header">
             <span className="sd-title">Configuración</span>
           </div>
@@ -50,8 +100,12 @@ const UploadMenu = () => {
                 </svg>
               </div>
               <div>
-                <div className="sd-item-label">Subir a {config.APP_NAME}</div>
-                <div className="sd-item-sub">Auto-subir tras descarga</div>
+                <div className="sd-item-label">
+                  Subir a {config.APP_NAME}
+                </div>
+                <div className="sd-item-sub">
+                  Auto-subir tras descarga
+                </div>
               </div>
             </div>
 

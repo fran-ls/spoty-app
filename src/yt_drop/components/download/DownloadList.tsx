@@ -1,7 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { InfoIcon, XIcon } from "lucide-react";
 import type { Download, PaginationMeta } from "../../types/download.types";
-import { truncateTitleAll, setAllItems } from "../../helpers/truncateText";
 import { useInfiniteScroll } from "../../hooks/useInfiniteScroll";
 import { fmtDuration } from "../../helpers/formats";
 import { QUALITIES } from "../../data/qualities.data";
@@ -43,19 +42,7 @@ const DownloadList = ({ items, meta, loadMore }: DownloadListProps) => {
     return meta;
   }
 
-  const handleTruncate = () => truncateTitleAll(wrapRef.current!);
-
-  useEffect(() => {
-    setTimeout(() => {
-      setAllItems(wrapRef.current!);
-      handleTruncate();
-    }, 1000)
-  }, []);
-
-  useEffect(() => {
-    window.addEventListener('resize', handleTruncate);
-    return () => window.removeEventListener('resize', handleTruncate);
-  }, []);
+  const size = window.innerWidth <= 600;
 
   return (
     <div
@@ -69,31 +56,94 @@ const DownloadList = ({ items, meta, loadMore }: DownloadListProps) => {
 
         return (
           <div
+            style={{
+              flexDirection: size ? 'column' : 'row'
+            }}
             className="hist-item"
             key={`idx-${i}`}
           >
-            {item.thumbnail ?
-              <img
-                className="hist-thumb"
-                src={item.thumbnail}
-                onError={(e) => {
-                  e.currentTarget.style.display = 'none';
-                }}
-              />
-              :
-              <div className="hist-thumb"></div>
-            }
+            <div className="w-full flex gap-3 relative" style={{
+              display: size ? 'flex' : 'none'
+            }}>
+              {item.thumbnail ?
+                <img
+                  style={{
+                    width: '70px',
+                    height: '50px'
+                  }}
+                  className="hist-thumb"
+                  src={item.thumbnail}
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                  }}
+                />
+                :
+                <div className="hist-thumb"></div>
+              }
 
-            <div className="hist-body">
+              <div className="hist-badge" style={{
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'start'
+              }}>
+                <div className="flex items-center gap-2">
+                  <span className={`badge ${item.format === 'audio' ? 'badge-audio' : 'badge-video'}`}>
+                    {item.format || 'video'}
+                  </span>
+                  <span className={`badge ${item.status === 'success' ? 'badge-ok' : 'badge-error'}`}>
+                    {item.status === 'success' ? 'OK' : 'Error'}
+                  </span>
+                </div>
+                <div
+                  className="hist-meta truncate"
+                  title={meta}
+                >
+                  {meta}
+                </div>
+              </div>
+
+              <button
+                style={{ top: '14px' }}
+                onClick={() => downloadService.download(item)}
+                className="dl-btn"
+              >
+                <DownloadIcon />
+              </button>
+            </div>
+
+            <div style={{
+              display: !size ? 'block' : 'none'
+            }}>
+              {item.thumbnail ?
+                <img
+                  className="hist-thumb"
+                  src={item.thumbnail}
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                  }}
+                />
+                :
+                <div className="hist-thumb"></div>
+              }
+            </div>
+
+            <div className="hist-body" style={{
+              width: size ? '100%' : ''
+            }}>
               <div className="hist-title">
                 <h4
-                  className="h-title truncate"
+                  style={{
+                    maxWidth: size ? '100%' : ''
+                  }}
+                  className="h-title"
                   title={title}
                 >
                   {title}
                 </h4>
 
-                <div className="hist-badge">
+                <div className="hist-badge" style={{
+                  display: !size ? 'flex' : 'none'
+                }}>
                   <span className={`badge ${item.format === 'audio' ? 'badge-audio' : 'badge-video'}`}>
                     {item.format || 'video'}
                   </span>
@@ -112,18 +162,27 @@ const DownloadList = ({ items, meta, loadMore }: DownloadListProps) => {
                 </button>
               </div>
               <div
+                style={{
+                  maxWidth: '100%'
+                }}
                 className="hist-url"
                 title={item.url}
               >
                 {item.url}
               </div>
               <div
+                style={{
+                  display: !size ? 'block' : 'none'
+                }}
                 className="hist-meta truncate"
                 title={meta}
               >
                 {meta}
               </div>
               <button
+                style={{
+                  display: !size ? 'block' : 'none'
+                }}
                 onClick={() => downloadService.download(item)}
                 className="dl-btn"
               >

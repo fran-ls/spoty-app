@@ -72,6 +72,11 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 12px;
+
+  .select-wrap,
+  .select-label {
+    max-width: 120px !important;
+  }
 }
 
 .yt-drop .history-section {
@@ -163,7 +168,13 @@
 }
 
 .yt-drop .h-title {
-  width: fit-content;
+  width: 100%;
+  max-width: calc(100% - 56px - 103px);
+  line-height: 1.25;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
 }
 
 .yt-drop .hist-badge {

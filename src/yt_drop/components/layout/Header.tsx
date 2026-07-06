@@ -79,7 +79,7 @@ const Header = () => {
           <div className="nav-avatar" id="nav-avatar">
             {user?.username ? user?.username[0].toUpperCase() : '?'}
           </div>
-          <div style={{ marginRight: '10px' }}>
+          <div className="nav-u-item">
             <span
               className="nav-username h-4 block text-nowrap overflow-hidden max-w-50" id="nav-username"
               title={user?.username}
@@ -97,7 +97,7 @@ const Header = () => {
           <Link
             to={routes.home}
             style={{ color: 'var(--muted)' }}
-            className="w-8 h-8 flex items-center justify-center rounded-full text-[#adaaaa] hover:text-white hover:bg-black/60 transition-all cursor-pointer"
+            className="max-[500px]:hidden flex w-8 h-8 items-center justify-center rounded-full text-[#adaaaa] hover:text-white hover:bg-black/60 transition-all cursor-pointer"
           >
             <HomeIcon size={24} />
           </Link>
