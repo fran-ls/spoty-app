@@ -107,10 +107,10 @@ const TrItem = ({ playlist }: { playlist: Partial<Playlist> }) => {
         {playlist.isPublic ? 'Pública' : 'Privada'}
       </div>
       <div className="md:flex hidden text-sm font-medium items-center">
-        {playlist.createdAt}
+        {playlist.trackCount}
       </div>
       <div className="lg:flex hidden text-sm font-medium items-center">
-        {playlist.trackCount}
+        {playlist.createdAt}
       </div>
     </>
   )

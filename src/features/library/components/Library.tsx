@@ -84,14 +84,9 @@ export const Library = (props: LibraryProps) => {
   }, [query, order, visibility]);
 
   const grid = {
-    sm: 'sm:grid-cols-[minmax(200px,2fr)_100px]',
-    md: 'md:grid-cols-[minmax(200px,2fr)_100px_180px]',
-    lg: 'lg:grid-cols-[minmax(200px,2fr)_100px_180px_160px]'
-  }
-
-  const responsive = {
-    headerMin: 'min-[520px]',
-    headerMax: 'max-[520px]',
+    sm: 'sm:grid-cols-[minmax(200px,2fr)_1fr]',
+    md: 'md:grid-cols-[minmax(200px,2fr)_1fr_1fr]',
+    lg: 'lg:grid-cols-[minmax(200px,2fr)_1fr_1fr_minmax(180px,1fr)]'
   }
 
   return (
@@ -100,7 +95,7 @@ export const Library = (props: LibraryProps) => {
       className={`${isCollapsed ? 'w-18' : isExpanded ? 'w-full' : 'w-72'} ${isExpanded ? 'flex' : 'md:flex hidden'} rounded-lg h-full overflow-hidden flex-col bg-[#131313] border-none select-none shrink-0 transition-all duration-300 ease-in-out relative`}
       id="spotify-sidebar"
     >
-      <div className="rounded-lg min-h-[calc(100vh-64px-88px)] max-h-[calc(100vh-64px-88px)]">
+      <div className="rounded-lg min-h-[calc(100dvh-64px-88px)] max-h-[calc(100dvh-64px-88px)]">
         <header className="p-4 text-[#adaaaa] relative">
           <div className={`${isCollapsed ? 'flex-col gap-4' : 'flex-row'} flex items-center justify-between`}>
             {!isExpanded && (
@@ -162,13 +157,13 @@ export const Library = (props: LibraryProps) => {
           </div>
 
           {!isCollapsed &&
-            <div className={`${isExpanded ? 'flex-col' : 'flex-row'} ${responsive.headerMin}:flex-row mt-4 text-[#adaaaa] flex items-center justify-between gap-5 relative`}>
+            <div className={`min-[520px]:flex-row flex-col mt-4 text-[#adaaaa] flex items-center justify-between gap-5 relative`}>
               <div
                 onClick={(e) => {
                   e.stopPropagation();
                   setIsSearch(true);
                 }}
-                className={`${(isSearch || isExpanded) ? 'w-full bg-[#1f1f1f] rounded' : 'w-8 h-8 rounded-full'} md:max-w-100 z-5 transition-all duration-100 hover:bg-[#1f1f1f] px-2 py-1.5 text-sm cursor-pointer flex items-center`}
+                className={`${(isSearch || isExpanded) ? 'w-full bg-[#1f1f1f] rounded' : 'w-8 h-8 rounded-full'} sm:max-w-100 z-5 transition-all duration-100 hover:bg-[#1f1f1f] px-2 py-1.5 text-sm cursor-pointer flex items-center`}
               >
                 <SearchIcon className="min-w-4 w-4 h-4" />
 
@@ -190,9 +185,9 @@ export const Library = (props: LibraryProps) => {
                 }
               </div>
 
-              <div className={`${isExpanded ? `${responsive.headerMin}:w-fit w-full` : ''} flex items-center justify-between gap-5`}>
+              <div className="min-[520px]:w-fit w-full flex items-center justify-between gap-5">
                 {isExpanded && (
-                  <div className={`${responsive.headerMin}:ml-auto relative`}>
+                  <div className="min-[520px]:ml-auto relative">
                     <button
                       onClick={() => setIsVisibilityMenu(!isVisibilityMenu)}
                       className="z-5 cursor-pointer hover:text-white text-sm flex items-center gap-2"
@@ -217,7 +212,7 @@ export const Library = (props: LibraryProps) => {
                       onClose={() => setIsVisibilityMenu(false)}
                       styles={{
                         backdrop: 'z-14 bg-transparent',
-                        wrap: `${responsive.headerMin}:right-0 ${responsive.headerMax}:left-0 w-32 z-14 absolute top-full mt-3.5 min-w-0`,
+                        wrap: `min-[520px]:right-0 max-[520px]:left-0 w-32 z-14 absolute top-full mt-3.5 min-w-0`,
                         menu: 'w-full'
                       }}
                       items={[
@@ -274,7 +269,7 @@ export const Library = (props: LibraryProps) => {
           }
         </header>
 
-        <nav className={`${isCollapsed ? 'h-[calc(100vh-64px-88px-100px)]' : isExpanded ? `${responsive.headerMin}:h-[calc(100vh-64px-88px-116px)] h-[calc(100vh-64px-88px-156px)]` : 'h-[calc(100vh-64px-88px-116px)]'} overflow-y-auto overflow-x-hidden relative`}>
+        <nav className={`${isCollapsed ? 'h-[calc(100dvh-64px-88px-100px)]' : isExpanded ? `min-[520px]:h-[calc(100dvh-64px-88px-116px)] h-[calc(100dvh-64px-88px-156px)]` : 'h-[calc(100dvh-64px-88px-116px)]'} overflow-y-auto overflow-x-hidden relative`}>
           {(isExpanded && layout !== 'grid') && (
             <ul className={`sm:grid hidden ${grid.sm} ${grid.md} ${grid.lg} gap-3 bg-[#131313] text-[13px] text-[#adaaaa] border-b border-white/10 px-4 sticky top-0 z-10`}>
               <li className="py-2 line-clamp-1 font-semibold">
@@ -283,14 +278,14 @@ export const Library = (props: LibraryProps) => {
               <li className="sm:block hidden py-2 line-clamp-1 font-semibold">
                 Visibilidad
               </li>
+              <li className="md:block hidden py-2 line-clamp-1 font-semibold">
+                Canciones
+              </li>
               <li
-                className="md:block hidden py-2 line-clamp-1 font-semibold text-nowrap"
+                className="lg:block hidden py-2 line-clamp-1 font-semibold text-nowrap"
                 title="Fecha en la que se añadió"
               >
                 Fecha en la que se añadió
-              </li>
-              <li className="lg:block hidden py-2 line-clamp-1 font-semibold">
-                Canciones
               </li>
             </ul>
           )}
@@ -333,7 +328,7 @@ export const Library = (props: LibraryProps) => {
                     setIsExpanded(false);
                     navigate(`${routes.playlists}/${playlist.id}`);
                   }}
-                  className={`${isCollapsed ? 'justify-center' : isExpanded ? `justify-start ${grid.sm} ${grid.md} ${grid.lg} gap-3` : ''} grid p-2 cursor-pointer text-[#adaaaa] hover:bg-[#1f1f1f] rounded-md`}
+                  className={`${isCollapsed ? 'justify-center' : isExpanded ? `justify-start ${grid.sm} ${grid.md} ${grid.lg} gap-3` : ''} grid p-2 cursor-pointer text-[#adaaaa] hover:bg-[#1f1f1f] rounded-md ${layout === 'compact-list' ? 'sm:grid-cols-1 grid-cols-[minmax(200px,2fr)_1fr]' : 'grid'}`}
                   onPointerEnter={() => setHoverIndex(i)}
                   onPointerLeave={() => setHoverIndex(null)}
                   key={playlist.id}

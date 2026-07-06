@@ -69,7 +69,10 @@ const PlaylistItem = (props: PlaylistItemProps) => {
           </div>
 
           {isExpanded && (
-            <TrItem playlist={{ ...playlist, createdAt }} />
+            <TrItem
+              layout={layout}
+              playlist={{ ...playlist, createdAt }}
+            />
           )}
         </>
       )}
@@ -88,7 +91,10 @@ const PlaylistItem = (props: PlaylistItemProps) => {
           </div>
 
           {isExpanded && (
-            <TrItem playlist={{ ...playlist, createdAt }} />
+            <TrItem
+              layout={layout}
+              playlist={{ ...playlist, createdAt }}
+            />
           )}
         </>
       )}
@@ -122,17 +128,29 @@ const PlaylistItem = (props: PlaylistItemProps) => {
 
 export default PlaylistItem;
 
-const TrItem = ({ playlist }: { playlist: Playlist }) => {
+const TrItem = ({ layout, playlist }: {
+  layout: PlaylistLayout;
+  playlist: Playlist;
+}) => {
   return (
     <>
       <div className="sm:block hidden my-auto text-sm font-medium">
         {playlist.isPublic ? 'Pública' : 'Privada'}
       </div>
       <div className="md:block hidden my-auto text-sm font-medium">
-        {playlist.createdAt}
+        {playlist.trackCount}
       </div>
       <div className="lg:block hidden my-auto text-sm font-medium">
-        {playlist.trackCount}
+        {playlist.createdAt}
+      </div>
+
+      <div className={`${layout === 'compact-list' ? 'sm:hidden min-[400px]:grid hidden min-[500px]:justify-items-start justify-items-end min-[500px]:grid-cols-[minmax(80px,1fr)_minmax(140px,1fr)] grid-cols-1 pr-3' : 'hidden'} gap-3`}>
+        <div className="min-[400px]:inline-block hidden my-auto text-sm font-medium text-nowrap">
+          {playlist.isPublic ? 'Pública' : 'Privada'}
+        </div>
+        <div className="min-[500px]:inline-block hidden my-auto text-sm font-medium text-nowrap">
+          {playlist.trackCount} &nbsp; {(((playlist?.trackCount || 0) === 0) || ((playlist?.trackCount || 0) > 1)) ? 'Canciones' : 'Canción'}
+        </div>
       </div>
     </>
   )
