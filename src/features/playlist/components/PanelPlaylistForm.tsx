@@ -115,7 +115,7 @@ const PanelPlaylistForm = () => {
 
             {isImgHover &&
               <button
-                className={`${fileUrl ? 'bg-black/50' : 'bg-[#262626]'} text-sm hover:text-white w-full h-full flex flex-col items-center gap-1 justify-center absolute top-1/2 left-1/2 -translate-1/2`}
+                className={`${fileUrl ? 'bg-black/50' : 'bg-[#262626]'} text-gray-400 text-sm hover:text-white w-full h-full flex flex-col items-center gap-1 justify-center absolute top-1/2 left-1/2 -translate-1/2`}
                 onClick={() => coverInputRef.current?.click()}
                 type="button"
               >

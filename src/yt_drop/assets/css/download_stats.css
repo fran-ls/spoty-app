@@ -150,7 +150,37 @@
 .yt-drop .history-wrap {
   max-width: var(--max-width-wrap);
   margin: 0 auto;
-  padding: 0 24px 60px;
+  padding: 0 24px 30px;
+  max-height: calc(100dvh - 56px);
+  overflow-y: auto;
+}
+
+.yt-drop .history-wrap::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.yt-drop .history-wrap::-webkit-scrollbar-track {
+  background: var(--bg)
+}
+
+.yt-drop .history-wrap::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 0px
+}
+
+.yt-drop .table-wrap::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.yt-drop .table-wrap::-webkit-scrollbar-track {
+  background: var(--bg)
+}
+
+.yt-drop .table-wrap::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 0px
 }
 
 /* ── Page header ─────────────────────────────────────────────────────── */
