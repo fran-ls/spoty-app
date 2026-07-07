@@ -39,7 +39,8 @@ const PlaylistPage: React.FC = () => {
 
   const coverInputRef = useRef<HTMLInputElement>(null);
   const cover = form.fileUrl || form.cover;
-  const username = user?.username?.split(' ')[0] || 'Username'
+  const username = user?.username?.split(' ')[0] || 'Username';
+  const isTrackCount = playlistMeta.total === 0 || playlistMeta.total > 1;
 
   function playlistMenuActions(action: PlaylistMenuAction | 'open') {
     const onClose = () => setIsPlaylistMenu(false);
@@ -120,12 +121,12 @@ const PlaylistPage: React.FC = () => {
           style={{
             background: `linear-gradient(to bottom, ${bgColor} 0%, ${gradientColor} 100%)`,
           }}
-          className="min-[500px]:flex-row min-[500px]:pt-6 pt-12 px-6 pb-6 flex-col flex items-center gap-6 overflow-auto hide-scrollbar"
+          className="min-[500px]:flex-row min-[500px]:pt-6 pt-10 px-6 pb-6 flex-col flex items-center gap-6 overflow-auto hide-scrollbar"
         >
           <div
             onPointerEnter={() => setIsHover(true)}
             onMouseLeave={() => setIsHover(false)}
-            className="min-[925px]:max-w-58 min-[925px]:max-h-58 min-[925px]:min-w-58 min-[925px]:min-h-58 min-[500px]:min-w-[25vw] min-[500px]:min-h-[25vw] min-w-45 min-h-45 w-[25vw] h-[25vw] rounded bg-[#262626] overflow-hidden relative"
+            className="min-[925px]:max-w-58 min-[925px]:max-h-58 min-[925px]:min-w-58 min-[925px]:min-h-58 min-[500px]:min-w-[25vw] min-[500px]:min-h-[25vw] min-w-40 min-h-40 w-[25vw] h-[25vw] min-[500px]:rounded bg-[#262626] overflow-hidden relative"
           >
             <SmartImage
               wrapClassName="w-full h-full"
@@ -162,7 +163,7 @@ const PlaylistPage: React.FC = () => {
                   className={`${(cover || coverImages.length > 3) ? 'bg-black/50' : 'bg-[#262626]'} hover:text-white w-full h-full flex flex-col items-center gap-1 justify-center absolute top-1/2 left-1/2 -translate-1/2`}
                   type="button"
                 >
-                  <PenIcon className="w-10 h-10" />
+                  <PenIcon className="w-[25%] h-[25%] sm:w-10 sm:h-10" />
                   <span>Elegir foto</span>
                 </button>
 
@@ -229,7 +230,7 @@ const PlaylistPage: React.FC = () => {
                 •
               </span>
               <span className="min-[500px]:inline-flex hidden text-sm ml-2 text-nowrap">
-                {playlistMeta.total} canciones, {duration.min} min {duration.stringSecs}s
+                {playlistMeta.total} {isTrackCount ? 'canciones' : 'canción'}, {duration.min} min {duration.stringSecs}s
               </span>
 
               <div className="min-[500px]:hidden flex-wrap gap-2 flex w-full items-center justify-between">
@@ -247,7 +248,7 @@ const PlaylistPage: React.FC = () => {
                   </span>
                 </div>
                 <span className="min-[420px]:inline-flex hidden text-sm ml-2 text-nowrap">
-                  {playlistMeta.total || 0} canciones, {duration.min} min {duration.stringSecs}s
+                  {playlistMeta.total} {isTrackCount ? 'canciones' : 'canción'}, {duration.min} min {duration.stringSecs}s
                 </span>
               </div>
             </div>
@@ -255,7 +256,7 @@ const PlaylistPage: React.FC = () => {
             <div className="min-[420px]:hidden mt-5 flex items-center justify-between gap-2">
               <Music2Icon className="stroke-[#adaaaa]" size={20} />
               <span className="text-sm text-nowrap mr-auto">
-                {playlistMeta.total || 0} {playlistMeta.total > 1 ? 'canciones' : 'canción'}
+                {playlistMeta.total} {isTrackCount ? 'canciones' : 'canción'}
               </span>
               <span className="text-sm text-nowrap">
                 {duration.min} min {duration.stringSecs}s
@@ -380,7 +381,7 @@ const PlaylistPage: React.FC = () => {
         </section>
 
         <section
-          className={`${isSearch ? 'block' : 'hidden'} bg-[#131313] min-h-[75vh] sm:p-6 pl-6 pr-3 pb-6 pt-0 space-y-6 relative`}
+          className={`${isSearch ? 'block' : 'hidden'} bg-[#131313] min-h-[75vh] sm:p-6 px-3 pb-6 pt-0 space-y-6 relative`}
           style={{
             // background: `linear-gradient(to bottom, ${gradientColor} 0%, #131313 100%)`,
           }}

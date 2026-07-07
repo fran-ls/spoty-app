@@ -61,7 +61,7 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
         )}
 
         <main className="w-full rounded-lg bg-[#131313] overflow-hidden">
-          <div className={`${STYLES.maxHeightMain} ${STYLES.minHeightMain} flex-1 overflow-y-auto`}>
+          <div className={`${STYLES.maxHeightMain} ${STYLES.minHeightMain} flex-1 overflow-y-auto ${window.innerWidth >= 640 ? '' : 'hide-scrollbar'}`}>
             {children}
           </div>
         </main>

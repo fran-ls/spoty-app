@@ -186,7 +186,7 @@ const MenuItem = (props: MenuItemProps) => {
       }
     }, {
       action: 'add-to-queue',
-      label: 'Añadir a cola',
+      label: 'Añadir a la cola',
       icon: <ListPlusIcon className="w-5 h-5" />,
       onAction: () => {
         actions?.('add-to-queue');
@@ -194,7 +194,7 @@ const MenuItem = (props: MenuItemProps) => {
       }
     }, {
       action: 'view-track',
-      label: 'Ver canción',
+      label: 'Ver pista',
       icon: <Music2Icon className="w-5 h-5" />,
       onAction: () => {
         actions?.('view-track');

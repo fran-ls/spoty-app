@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { EllipsisIcon, GlobeIcon, InfoIcon, LockIcon, MusicIcon, PenIcon, XIcon } from "lucide-react";
+import { EllipsisIcon, GlobeIcon, InfoIcon, LockIcon, PenIcon, XIcon } from "lucide-react";
 import type { PlaylistDTO, PlaylistFormAction, PlaylistFormState } from "../playlist.types";
+import SmartImage from "../../../shared/components/SmartImage";
 
 interface PlaylistFormProps {
   state: PlaylistFormState;
@@ -17,6 +18,7 @@ const PlaylistForm = ({ state, onAction, onClose }: PlaylistFormProps) => {
   const [isHover, setIsHover] = useState(false);
 
   const coverImages = state.coverImages;
+  const cover = state.fileUrl || state.cover;
 
   const onFormChange = (field: keyof PlaylistDTO, value: any) => {
     onAction('set-state', { field, value });
@@ -27,7 +29,7 @@ const PlaylistForm = ({ state, onAction, onClose }: PlaylistFormProps) => {
     <>
       <div className="bg-black/60 min-h-screen w-full fixed top-0 left-0 z-999" />
 
-      <div className="text-white space-y-4 bg-[#212121] p-6 rounded-lg w-full max-w-131 z-999 fixed top-1/2 left-1/2 -translate-1/2">
+      <div className="text-white space-y-4 bg-[#212121] p-6 rounded-lg w-full min-[525px]:max-w-131 max-w-100 z-999 fixed top-1/2 left-1/2 -translate-1/2">
         <div className="flex items-center justify-between gap-3">
           <h1 className="text-xl font-bold text-white">
             Editar información
@@ -60,40 +62,36 @@ const PlaylistForm = ({ state, onAction, onClose }: PlaylistFormProps) => {
           </div>
         }
 
-        <div className="flex items-center justify-center gap-4">
+        <div className="min-[525px]:flex-row flex-col flex items-center justify-center gap-4">
           <div
             onPointerEnter={() => setIsHover(true)}
             onMouseLeave={() => setIsHover(false)}
             className="font-medium text-center min-w-45 w-45 h-45 rounded bg-[#282828] overflow-hidden relative"
           >
-            {state.cover ? (
-              <img
-                className="object-cover w-full h-full"
-                crossOrigin="anonymous"
-                src={state.cover}
-                alt=""
-              />
-            ) : (
-              coverImages.length > 3 ? (
-                coverImages.map((d, i) => {
-                  const className = i === 0
-                    ? 'top-0 left-0' : i === 1
-                      ? 'top-0 right-0' : i === 3
-                        ? 'bottom-0 left-0' : 'bottom-0 right-0';
+            <SmartImage
+              wrapClassName="w-full h-full"
+              iconClassName="w-1/4 h-1/4"
+              url={cover}
+            />
 
-                  return (
-                    <img
-                      className={`${className} absolute w-1/2 h-1/2 object-cover`}
-                      crossOrigin="anonymous"
-                      src={d.url}
-                      alt=""
-                      key={d.id}
-                    />
-                  )
-                })
-              ) : (
-                <MusicIcon className="w-1/4 h-1/4 absolute top-1/2 left-1/2 -translate-1/2" />
-              ))}
+            {!cover && coverImages.length > 3 && (
+              coverImages.map((d, i) => {
+                const className = i === 0
+                  ? 'top-0 left-0' : i === 1
+                    ? 'top-0 right-0' : i === 3
+                      ? 'bottom-0 left-0' : 'bottom-0 right-0';
+
+                return (
+                  <img
+                    className={`${className} absolute w-1/2 h-1/2 object-cover`}
+                    crossOrigin="anonymous"
+                    src={d.url}
+                    alt=""
+                    key={d.id}
+                  />
+                )
+              })
+            )}
 
             {isHover && (
               <>

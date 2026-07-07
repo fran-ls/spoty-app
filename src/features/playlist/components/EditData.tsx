@@ -34,7 +34,7 @@ const EditData = (props: EditDataProps) => {
     <>
       <div className="bg-black/60 min-h-screen w-full fixed top-0 left-0 z-999" />
 
-      <div className="space-y-4 bg-[#212121] p-6 rounded-lg w-full max-w-131 z-999 fixed top-1/2 left-1/2 -translate-1/2">
+      <div className="space-y-4 bg-[#212121] p-6 rounded-lg w-full min-[525px]:max-w-131 max-w-100 z-999 fixed top-1/2 left-1/2 -translate-1/2">
         <div className="flex items-center justify-between gap-3">
           <h1 className="text-xl font-bold text-white">
             Editar información
@@ -67,7 +67,7 @@ const EditData = (props: EditDataProps) => {
           </div>
         }
 
-        <div className="flex items-center justify-center gap-4">
+        <div className="min-[525px]:flex-row flex-col flex items-center justify-center gap-4">
           <div
             onPointerEnter={() => setIsHover(true)}
             onMouseLeave={() => setIsHover(false)}

@@ -60,7 +60,8 @@ const SongPage: React.FC = () => {
 
   const duration = getTimeParts(trackMeta?.totalDuration ?? 0);
   const coverInputRef = useRef<HTMLInputElement>(null);
-  const username = user?.username?.split(' ')[0] || 'Username'
+  const username = user?.username?.split(' ')[0] || 'Username';
+  const isTrackCount = trackMeta.total === 0 || trackMeta.total > 1;
 
   async function getTracks(page: number) {
     const data = await searchTracks({
@@ -234,12 +235,12 @@ const SongPage: React.FC = () => {
             style={{
               background: gradientCSS
             }}
-            className="min-[500px]:flex-row min-[500px]:pt-6 pt-12 px-6 pb-44 flex-col flex items-center sm:gap-6 gap-4 overflow-x-auto hide-scrollbar"
+            className="min-[500px]:flex-row min-[500px]:pt-6 pt-10 px-6 pb-44 flex-col flex items-center sm:gap-6 gap-4 overflow-x-auto hide-scrollbar"
           >
             <div
               onPointerEnter={() => setIsHover(true)}
               onMouseLeave={() => setIsHover(false)}
-              className="min-[925px]:max-w-58 min-[925px]:max-h-58 min-[925px]:min-w-58 min-[925px]:min-h-58 min-[500px]:min-w-[25vw] min-[500px]:min-h-[25vw] min-w-45 min-h-45 w-[25vw] h-[25vw] rounded bg-[#262626] relative overflow-hidden"
+              className="min-[925px]:max-w-58 min-[925px]:max-h-58 min-[925px]:min-w-58 min-[925px]:min-h-58 min-[500px]:min-w-[25vw] min-[500px]:min-h-[25vw] min-w-40 min-h-40 w-[25vw] h-[25vw] min-[500px]:rounded bg-[#262626] relative overflow-hidden"
             >
               <SmartImage
                 wrapClassName="w-full h-full"
@@ -317,7 +318,7 @@ const SongPage: React.FC = () => {
                   •
                 </span>
                 <span className="min-[500px]:inline-flex hidden text-sm ml-2 text-nowrap">
-                  {trackMeta.total || 0} canciones, {duration.min} min {duration.stringSecs}s
+                  {trackMeta.total} {isTrackCount ? 'canciones' : 'canción'}, {duration.min} min {duration.stringSecs}s
                 </span>
 
                 <div className="min-[500px]:hidden flex-wrap gap-2 flex w-full items-center justify-between">
@@ -335,7 +336,7 @@ const SongPage: React.FC = () => {
                     </span>
                   </div>
                   <span className="min-[420px]:inline-flex hidden text-sm ml-2 text-nowrap">
-                    {trackMeta.total || 0} canciones, {duration.min} min {duration.stringSecs}s
+                    {trackMeta.total} {isTrackCount ? 'canciones' : 'canción'}, {duration.min} min {duration.stringSecs}s
                   </span>
                 </div>
               </div>
@@ -343,7 +344,7 @@ const SongPage: React.FC = () => {
               <div className="min-[420px]:hidden mt-5 flex items-center justify-between gap-2">
                 <Music2Icon className="stroke-[#adaaaa]" size={20} />
                 <span className="text-sm text-nowrap mr-auto">
-                  {trackMeta.total || 0} {trackMeta.total > 1 ? 'canciones' : 'canción'}
+                  {trackMeta.total} {isTrackCount ? 'canciones' : 'canción'}
                 </span>
                 <span className="text-sm text-nowrap">
                   {duration.min} min {duration.stringSecs}s
@@ -464,8 +465,7 @@ const SongPage: React.FC = () => {
         />
       }
 
-      {
-        isEditTrack &&
+      {isEditTrack &&
         <TrackModal
           isPlaylist={false}
           activeTrack={activeTrack}
@@ -478,8 +478,7 @@ const SongPage: React.FC = () => {
         />
       }
 
-      {
-        isRemoveSong &&
+      {isRemoveSong &&
         <SongDeleteConfirm
           isOpen={isRemoveSong}
           songName={activeTrack?.title!}
