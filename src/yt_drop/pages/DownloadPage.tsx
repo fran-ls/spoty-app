@@ -78,102 +78,104 @@ const DownloadPage = () => {
 
   return (
     <div className="yt-drop-wrap">
-      <header>
-        <Link to={routes.YTDrop.download}>
-          <div className="logo">
-            <AppIcon />
-            <span>YTDrop</span>
+      <div className="download-wrap">
+        <header>
+          <Link to={routes.YTDrop.download}>
+            <div className="logo">
+              <AppIcon />
+              <span>YTDrop</span>
+            </div>
+          </Link>
+          <p className="tagline">Historial</p>
+        </header>
+
+        <main className="history-section">
+          <div className="history-header">
+            <h2 className="history-title">
+              Descargas &nbsp; {meta.totalPages > 1 && <span id="count">
+                {`( ${downloads.length} - ${meta.total} )`}
+              </span>}
+            </h2>
+
+            <Select
+              option={(o) => setFilters({ ...filters, format: o.value })}
+              activeIndex={0}
+              label="Tipo"
+              className="media-type"
+              wrapId="media-type"
+              items={[
+                {
+                  label: "Tipo",
+                  value: "",
+                },
+                {
+                  label: "Video",
+                  value: "video",
+                },
+                {
+                  label: "Audio",
+                  value: "audio",
+                }
+              ]}
+            />
+
+            {downloads.length > 0 &&
+              <button
+                onClick={() => showConfirmToast({
+                  title: 'Borrar historial',
+                  message: '¿Quieres limpiar todo el historial?',
+                  type: 'del',
+                  icon: <TrashIcon />
+                })}
+                className="btn-ghost" id="clear-history-btn"
+                type="button"
+              >
+                <TrashIcon />
+                Limpiar
+              </button>
+            }
           </div>
-        </Link>
-        <p className="tagline">Historial</p>
-      </header>
 
-      <main className="history-section">
-        <div className="history-header">
-          <h2 className="history-title">
-            Descargas &nbsp; {meta.totalPages > 1 && <span id="count">
-              {`( ${downloads.length} - ${meta.total} )`}
-            </span>}
-          </h2>
-
-          <Select
-            option={(o) => setFilters({ ...filters, format: o.value })}
-            activeIndex={0}
-            label="Tipo"
-            className="media-type"
-            wrapId="media-type"
-            items={[
-              {
-                label: "Tipo",
-                value: "",
-              },
-              {
-                label: "Video",
-                value: "video",
-              },
-              {
-                label: "Audio",
-                value: "audio",
+          <DownloadList
+            meta={meta}
+            items={downloads}
+            loadMore={() => {
+              if (meta.page < meta.totalPages) {
+                const nextPage = meta.page + 1;
+                getDownloads({ ...filters, page: nextPage }, true);
               }
-            ]}
+            }}
           />
 
-          {downloads.length > 0 &&
-            <button
-              onClick={() => showConfirmToast({
-                title: 'Borrar historial',
-                message: '¿Quieres limpiar todo el historial?',
-                type: 'del',
-                icon: <TrashIcon />
-              })}
-              className="btn-ghost" id="clear-history-btn"
-              type="button"
-            >
-              <TrashIcon />
-              Limpiar
-            </button>
+          {downloads.length <= 0 &&
+            <div className="empty-state" id="empty-state">
+              <svg viewBox="0 0 24 24">
+                <path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2Zm0 6v4l3 3" />
+              </svg>
+              <p>Aún no hay descargas registradas</p>
+            </div>
           }
-        </div>
+        </main>
 
-        <DownloadList
-          meta={meta}
-          items={downloads}
-          loadMore={() => {
-            if (meta.page < meta.totalPages) {
-              const nextPage = meta.page + 1;
-              getDownloads({ ...filters, page: nextPage }, true);
-            }
-          }}
+        <footer>
+          &copy; 2026 YTDrop
+        </footer>
+
+        <Toast
+          {...toast}
+          isActive={isActiveToast}
+          isFirstLoad={isFirstLoadToast}
+          onClose={() => setIsActiveToast(false)}
         />
 
-        {downloads.length <= 0 &&
-          <div className="empty-state" id="empty-state">
-            <svg viewBox="0 0 24 24">
-              <path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2Zm0 6v4l3 3" />
-            </svg>
-            <p>Aún no hay descargas registradas</p>
-          </div>
-        }
-      </main>
-
-      <footer>
-        &copy; 2026 YTDrop
-      </footer>
-
-      <Toast
-        {...toast}
-        isActive={isActiveToast}
-        isFirstLoad={isFirstLoadToast}
-        onClose={() => setIsActiveToast(false)}
-      />
-
-      <ConfirmToast
-        {...confirmToast}
-        isActive={isActiveConfirmToast}
-        isFirstLoad={isFirstLoadConfirmToast}
-        onClose={() => setIsActiveConfirmToast(false)}
-        onConfirm={clearDownloads}
-      />
+        <ConfirmToast
+          {...confirmToast}
+          isActive={isActiveConfirmToast}
+          isFirstLoad={isFirstLoadConfirmToast}
+          onClose={() => setIsActiveConfirmToast(false)}
+          onConfirm={clearDownloads}
+        />
+      </div>
     </div>
   )
 }

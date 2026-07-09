@@ -259,314 +259,316 @@ const DownloadPage = () => {
 
   return (
     <>
-      <div className="yt-drop-wrap download-wrap">
-        <header>
-          <div className="logo">
-            <div className="logo-link">
-              <AppIcon />
+      <div className="yt-drop-wrap">
+        <div className="download-wrap">
+          <header>
+            <div className="logo">
+              <div className="logo-link">
+                <AppIcon />
+              </div>
+              <span>YTDrop</span>
             </div>
-            <span>YTDrop</span>
-          </div>
-          <p className="tagline">Descarga videos y audios de YouTube con un solo clic</p>
-        </header>
+            <p className="tagline">Descarga videos y audios de YouTube con un solo clic</p>
+          </header>
 
-        <main className="card">
-          <div className="card-before-wrap">
-            <div className="card-before"></div>
-          </div>
+          <main className="card">
+            <div className="card-before-wrap">
+              <div className="card-before"></div>
+            </div>
 
-          <div className="section-title">
-            <p>URLs de YouTube</p>
-            <button
-              onClick={() => navigator.clipboard.readText().then(urlFormat)}
-              className="btn-paste"
-              id="btn-paste" type="button"
-              title="Pegar"
-            >
-              <PasteIcon />
-            </button>
-          </div>
-
-          <div className="url-list" id="url-list">
-            <div className="url-row">
-              <textarea
-                value={urls}
-                onChange={(e) => setUrls(e.target.value)}
-                onBlur={() => !urls && inputHeight(true)}
-                onPaste={(e) => {
-                  e.preventDefault();
-                  const clipText = e.clipboardData.getData('text');
-                  urlFormat(clipText);
-                }}
-                ref={inputRef}
-                className="url-input"
-                placeholder="https://www.youtube.com/watch?v=..."
-                autoComplete="off"
-                name="urls"
-                id="url-input"
-                rows={3}
-              ></textarea>
+            <div className="section-title">
+              <p>URLs de YouTube</p>
               <button
-                onClick={() => {
-                  setUrls('');
-                  inputHeight(true);
-                }}
-                className="btn-clear"
-                id="btn-clear" type="button"
-                title="Limpiar"
+                onClick={() => navigator.clipboard.readText().then(urlFormat)}
+                className="btn-paste"
+                id="btn-paste" type="button"
+                title="Pegar"
               >
-                ⨉
+                <PasteIcon />
               </button>
             </div>
-          </div>
 
-          <div id="preview-strip"></div>
+            <div className="url-list" id="url-list">
+              <div className="url-row">
+                <textarea
+                  value={urls}
+                  onChange={(e) => setUrls(e.target.value)}
+                  onBlur={() => !urls && inputHeight(true)}
+                  onPaste={(e) => {
+                    e.preventDefault();
+                    const clipText = e.clipboardData.getData('text');
+                    urlFormat(clipText);
+                  }}
+                  ref={inputRef}
+                  className="url-input"
+                  placeholder="https://www.youtube.com/watch?v=..."
+                  autoComplete="off"
+                  name="urls"
+                  id="url-input"
+                  rows={3}
+                ></textarea>
+                <button
+                  onClick={() => {
+                    setUrls('');
+                    inputHeight(true);
+                  }}
+                  className="btn-clear"
+                  id="btn-clear" type="button"
+                  title="Limpiar"
+                >
+                  ⨉
+                </button>
+              </div>
+            </div>
 
-          <div className="options">
-            <Select
-              option={(p) => setFormat(p.value as FormatType)}
-              label="Formato"
-              wrapId="format-wrap"
-              className="select-format"
-              activeIndex={format === 'video' ? 0 : 1}
-              items={[
-                {
-                  label: "Video (MP4)",
-                  value: "video",
-                  icon: <VideoIcon />
-                },
-                {
-                  label: "Audio (MP3)",
-                  value: "audio",
-                  icon: <AudioIcon />
-                },
-              ]}
-            />
+            <div id="preview-strip"></div>
 
-            {format === 'audio' ? (
+            <div className="options">
               <Select
-                option={(p) => setQuality(p.value)}
-                activeIndex={2}
-                label="Bitrate"
-                wrapId="audio-quality-group"
-                className="select-audio"
-                deps={[format]}
+                option={(p) => setFormat(p.value as FormatType)}
+                label="Formato"
+                wrapId="format-wrap"
+                className="select-format"
+                activeIndex={format === 'video' ? 0 : 1}
                 items={[
                   {
-                    label: "320 kbps — Max",
-                    value: "320",
+                    label: "Video (MP4)",
+                    value: "video",
+                    icon: <VideoIcon />
                   },
                   {
-                    label: "192 kbps — Alta",
-                    value: "192",
+                    label: "Audio (MP3)",
+                    value: "audio",
+                    icon: <AudioIcon />
                   },
-                  {
-                    label: "128 kbps — Normal",
-                    value: "128",
-                  }
                 ]}
               />
-            ) : (
-              <Select
-                option={(p) => setQuality(p.value)}
-                activeIndex={2}
-                label="Calidad"
-                wrapId="video-quality-group"
-                className="select-video"
-                deps={[format]}
-                items={[
-                  {
-                    label: "1080p — Full HD",
-                    value: "1080",
-                  },
-                  {
-                    label: "720p — HD",
-                    value: "720",
-                  },
-                  {
-                    label: "480p — SD",
-                    value: "480",
-                  },
-                  {
-                    label: "360p — Low",
-                    value: "360",
-                  }
-                ]}
-              />
-            )}
 
-            {!isLoading ? (
-              <button
-                onClick={initDownload}
-                className="btn btn-primary"
-                disabled={isLoading}
-                id="download-btn"
-                title="Descargar"
-              >
-                <DownloadIcon />
-                <span>Descargar</span>
-              </button>
-            ) : (
-              <button
-                className="btn btn-primary"
-                id="spinner-btn"
-                title="Cargando..."
-              >
-                <div className="spinner"></div>
-                <span>Cargando...</span>
-              </button>
-            )}
-          </div>
-        </main>
+              {format === 'audio' ? (
+                <Select
+                  option={(p) => setQuality(p.value)}
+                  activeIndex={2}
+                  label="Bitrate"
+                  wrapId="audio-quality-group"
+                  className="select-audio"
+                  deps={[format]}
+                  items={[
+                    {
+                      label: "320 kbps — Max",
+                      value: "320",
+                    },
+                    {
+                      label: "192 kbps — Alta",
+                      value: "192",
+                    },
+                    {
+                      label: "128 kbps — Normal",
+                      value: "128",
+                    }
+                  ]}
+                />
+              ) : (
+                <Select
+                  option={(p) => setQuality(p.value)}
+                  activeIndex={2}
+                  label="Calidad"
+                  wrapId="video-quality-group"
+                  className="select-video"
+                  deps={[format]}
+                  items={[
+                    {
+                      label: "1080p — Full HD",
+                      value: "1080",
+                    },
+                    {
+                      label: "720p — HD",
+                      value: "720",
+                    },
+                    {
+                      label: "480p — SD",
+                      value: "480",
+                    },
+                    {
+                      label: "360p — Low",
+                      value: "360",
+                    }
+                  ]}
+                />
+              )}
 
-        <div
-          ref={progressPanelRef}
-          id="progress-panel"
-        >
-          <div className="progress-wrap">
-            <div
-              style={{ display: isHiddenDlAllBar ? 'none' : 'flex' }}
-              id="dl-all-bar"
-            >
-              <span id="dl-all-label">
-                {files.length} archivos listos
-              </span>
-              <button
-                onClick={downloadZip}
-                disabled={!files.length}
-                className="btn btn-green"
-                id="dl-all-btn"
-              >
-                <DownloadIcon />
-                Descargar todo (.zip)
-              </button>
+              {!isLoading ? (
+                <button
+                  onClick={initDownload}
+                  className="btn btn-primary"
+                  disabled={isLoading}
+                  id="download-btn"
+                  title="Descargar"
+                >
+                  <DownloadIcon />
+                  <span>Descargar</span>
+                </button>
+              ) : (
+                <button
+                  className="btn btn-primary"
+                  id="spinner-btn"
+                  title="Cargando..."
+                >
+                  <div className="spinner"></div>
+                  <span>Cargando...</span>
+                </button>
+              )}
             </div>
+          </main>
 
-            <div className="progress-header">
-              <span className="progress-status" id="progress-status">
-                {statusLabel}
-              </span>
-              <span className="progress-pct" id="progress-pct">
-                {Math.round(progress)}%
-              </span>
-            </div>
-
-            <div className="progress-bar-bg">
+          <div
+            ref={progressPanelRef}
+            id="progress-panel"
+          >
+            <div className="progress-wrap">
               <div
-                style={{ width: `${progress}%` }}
-                className="progress-bar-fill" id="progress-fill"
-              />
-            </div>
-
-            <div className="files-list" id="files-list">
-              {files.map((f) => (
-                <div className="file-item" key={crypto.randomUUID()}>
-                  {f.thumbnail ? (
-                    <img
-                      className="file-thumb"
-                      src={f.thumbnail}
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
-                  ) : (
-                    <div className="file-thumb"></div>
-                  )}
-
-                  <div className="file-info">
-                    <div
-                      className="file-title truncate"
-                      onLoad={(e) => truncateText(e.currentTarget, '56px')}
-                      title={f.title || f.filename}
-                    >
-                      {f.title || f.filename}
-                    </div>
-                    <div
-                      className="file-meta truncate"
-                      onLoad={(e) => truncateText(e.currentTarget, '56px')}
-                      title={`${f.filename} · ${fmtSize(f.sizeBytes)}`}
-                    >
-                      {f.filename} · {fmtSize(f.sizeBytes)}
-                    </div>
-                  </div>
-
-                  <button
-                    className="dl-btn"
-                    title="Descargar"
-                    onClick={() => downloadService.download(f)}
-                  >
-                    <DownloadIcon />
-                  </button>
-                </div>
-              ))}
-
-              {errors.map((e) => (
-                <div className="file-info" key={crypto.randomUUID()}>
-                  <div
-                    className="file-title"
-                    style={{ color: '#ff6464' }}>
-                    Error
-                  </div>
-                  <div className="file-meta">{e.url}</div>
-                  <div
-                    className="file-meta"
-                    style={{
-                      color: '#ff6464',
-                      marginTop: '4px'
-                    }}
-                  >
-                    {e.error}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <section className="history-section history-section-home">
-          <div className="history-header">
-            <Link
-              to="/history"
-              title="Historial completo"
-            >
-              <h2 className="download-title">
-                Descargas recientes
-                <DropdownArrowIcon />
-              </h2>
-            </Link>
-
-            {downloads.length > 0 &&
-              <button
-                onClick={() => showConfirmToast({
-                  title: 'Borrar historial',
-                  message: '¿Quieres limpiar todo el historial?',
-                  type: 'del',
-                  icon: <TrashIcon />
-                })}
-                className="btn-ghost" id="clear-history-btn"
-                type="button"
+                style={{ display: isHiddenDlAllBar ? 'none' : 'flex' }}
+                id="dl-all-bar"
               >
-                <TrashIcon />
-                Limpiar
-              </button>
-            }
+                <span id="dl-all-label">
+                  {files.length} archivos listos
+                </span>
+                <button
+                  onClick={downloadZip}
+                  disabled={!files.length}
+                  className="btn btn-green"
+                  id="dl-all-btn"
+                >
+                  <DownloadIcon />
+                  Descargar todo (.zip)
+                </button>
+              </div>
+
+              <div className="progress-header">
+                <span className="progress-status" id="progress-status">
+                  {statusLabel}
+                </span>
+                <span className="progress-pct" id="progress-pct">
+                  {Math.round(progress)}%
+                </span>
+              </div>
+
+              <div className="progress-bar-bg">
+                <div
+                  style={{ width: `${progress}%` }}
+                  className="progress-bar-fill" id="progress-fill"
+                />
+              </div>
+
+              <div className="files-list" id="files-list">
+                {files.map((f) => (
+                  <div className="file-item" key={crypto.randomUUID()}>
+                    {f.thumbnail ? (
+                      <img
+                        className="file-thumb"
+                        src={f.thumbnail}
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    ) : (
+                      <div className="file-thumb"></div>
+                    )}
+
+                    <div className="file-info">
+                      <div
+                        className="file-title truncate"
+                        onLoad={(e) => truncateText(e.currentTarget, '56px')}
+                        title={f.title || f.filename}
+                      >
+                        {f.title || f.filename}
+                      </div>
+                      <div
+                        className="file-meta truncate"
+                        onLoad={(e) => truncateText(e.currentTarget, '56px')}
+                        title={`${f.filename} · ${fmtSize(f.sizeBytes)}`}
+                      >
+                        {f.filename} · {fmtSize(f.sizeBytes)}
+                      </div>
+                    </div>
+
+                    <button
+                      className="dl-btn"
+                      title="Descargar"
+                      onClick={() => downloadService.download(f)}
+                    >
+                      <DownloadIcon />
+                    </button>
+                  </div>
+                ))}
+
+                {errors.map((e) => (
+                  <div className="file-info" key={crypto.randomUUID()}>
+                    <div
+                      className="file-title"
+                      style={{ color: '#ff6464' }}>
+                      Error
+                    </div>
+                    <div className="file-meta">{e.url}</div>
+                    <div
+                      className="file-meta"
+                      style={{
+                        color: '#ff6464',
+                        marginTop: '4px'
+                      }}
+                    >
+                      {e.error}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
 
-          <DownloadList items={downloads} />
+          <section className="history-section history-section-home">
+            <div className="history-header">
+              <Link
+                to="/history"
+                title="Historial completo"
+              >
+                <h2 className="download-title">
+                  Descargas recientes
+                  <DropdownArrowIcon />
+                </h2>
+              </Link>
 
-          {downloads.length <= 0 &&
-            <div className="empty-state" id="empty-state">
-              <svg viewBox="0 0 24 24">
-                <path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2Zm0 6v4l3 3" />
-              </svg>
-              <p>Aún no hay descargas registradas</p>
+              {downloads.length > 0 &&
+                <button
+                  onClick={() => showConfirmToast({
+                    title: 'Borrar historial',
+                    message: '¿Quieres limpiar todo el historial?',
+                    type: 'del',
+                    icon: <TrashIcon />
+                  })}
+                  className="btn-ghost" id="clear-history-btn"
+                  type="button"
+                >
+                  <TrashIcon />
+                  Limpiar
+                </button>
+              }
             </div>
-          }
-        </section>
 
-        <footer>
-          &copy; 2026 YTDrop
-        </footer>
+            <DownloadList items={downloads} />
+
+            {downloads.length <= 0 &&
+              <div className="empty-state" id="empty-state">
+                <svg viewBox="0 0 24 24">
+                  <path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2Zm0 6v4l3 3" />
+                </svg>
+                <p>Aún no hay descargas registradas</p>
+              </div>
+            }
+          </section>
+
+          <footer>
+            &copy; 2026 YTDrop
+          </footer>
+        </div>
       </div>
 
       <UploadSidebar

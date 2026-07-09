@@ -560,8 +560,7 @@
 
 @media(width<=600px) {
   .yt-drop-wrap,
-  .yt-drop .history-wrap,
-  .yt-drop .download-wrap {
+  .yt-drop .history-wrap {
     padding: 16px !important;
   }
 
