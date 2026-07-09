@@ -21,7 +21,7 @@ import useTrack from '../hooks/useTrack';
 
 const SongPage: React.FC = () => {
   const { user, isAdmin } = useAuth();
-  const { setQueueMeta } = usePlayer();
+  const { play, setQueueMeta, setCurrentPlaylist } = usePlayer();
   const { tracks, trackMeta, searchTracks, setTracks, setTrackMeta } = useTrack()
 
   const [gradientCSS, setGradientCSS] = useState<string>(GRADIENT_CSS);
@@ -415,6 +415,10 @@ const SongPage: React.FC = () => {
                 <SongList
                   songs={tracks}
                   searchMeta={trackMeta}
+                  onPlay={(index) => {
+                    play(tracks, index, { ...trackMeta, playlistId: '', totalDuration: 0 });
+                    setCurrentPlaylist((prev) => ({ ...prev, bgColor, gradientColor }));
+                  }}
                   onOpenPlaylistMenu={(track, index) => {
                     playlistMenuActions('open');
                     setActiveTrackIndex(index);

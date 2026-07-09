@@ -25,6 +25,7 @@ const usePlaylist = () => {
     fileUrl: ''
   });
 
+  const [playlist, setPlaylist] = useState<Playlist | null>(null);
   const [coverImages, setCoverImages] = useState<SongCover[]>([]);
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [playlistSongs, setPlaylistSongs] = useState<Song[]>([]);
@@ -120,6 +121,7 @@ const usePlaylist = () => {
     }
 
     if (r.data) {
+      setPlaylist(r.data);
       onSetForm(r.data);
     }
 
@@ -257,6 +259,7 @@ const usePlaylist = () => {
   return {
     isPlay: playlistSongs.length > 0,
     duration,
+    playlist, setPlaylist,
     playlistMeta, setPlaylistMeta,
     playlistSongs, setPlaylistSongs,
     playlistItems, setPlaylistItems,

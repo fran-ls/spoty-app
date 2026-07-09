@@ -1,5 +1,5 @@
 import { createContext, useContext, useMemo, useRef, useState } from 'react'
-import type { PlaylistMeta } from '../../features/playlist/playlist.types';
+import type { Playlist, PlaylistMeta } from '../../features/playlist/playlist.types';
 import type { Song } from '../../features/song/song.types';
 import songService from '../../features/song/services/song.service';
 
@@ -16,6 +16,7 @@ interface PlayerContextType {
   isQueue: boolean;
   queue: Song[];
   queueMeta: PlaylistMeta;
+  currentPlaylist: Playlist;
   next: () => void;
   prev: () => void;
   seek: (time: number) => void;
@@ -29,6 +30,7 @@ interface PlayerContextType {
   setIsMuted: React.Dispatch<React.SetStateAction<boolean>>;
   setIsQueue: React.Dispatch<React.SetStateAction<boolean>>;
   setQueueMeta: React.Dispatch<React.SetStateAction<PlaylistMeta>>;
+  setCurrentPlaylist: React.Dispatch<React.SetStateAction<Playlist>>;
 }
 
 export const PlayerContext = createContext<PlayerContextType>({
@@ -51,6 +53,17 @@ export const PlayerContext = createContext<PlayerContextType>({
     totalDuration: 0,
     playlistId: ''
   },
+  currentPlaylist: {
+    id: '',
+    name: '',
+    description: '',
+    cover: '',
+    isPublic: false,
+    gradientColor: '',
+    bgColor: '',
+    userId: '',
+    createdAt: ''
+  },
   play: () => { },
   next: () => { },
   prev: () => { },
@@ -64,6 +77,7 @@ export const PlayerContext = createContext<PlayerContextType>({
   setQueueMeta: () => { },
   setIsQueue: () => { },
   setQueue: () => { },
+  setCurrentPlaylist: () => { }
 });
 
 export const PlayerProvider = ({ children }: any) => {
@@ -87,6 +101,18 @@ export const PlayerProvider = ({ children }: any) => {
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
   const [prevVolume, setPrevVolume] = useState<number>(1);
+
+  const [currentPlaylist, setCurrentPlaylist] = useState<Playlist>({
+    id: '',
+    name: '',
+    description: '',
+    cover: '',
+    isPublic: false,
+    gradientColor: '',
+    bgColor: '',
+    userId: '',
+    createdAt: ''
+  });
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -200,6 +226,7 @@ export const PlayerProvider = ({ children }: any) => {
         isMuted, setIsMuted,
         isQueue, setIsQueue,
         queueMeta, setQueueMeta,
+        currentPlaylist, setCurrentPlaylist,
         play, togglePlay,
         next, prev,
         seek, toggleMute,

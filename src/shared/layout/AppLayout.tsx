@@ -14,6 +14,8 @@ import useAuth from "../../features/auth/hooks/useAuth";
 import AdminLayout from "./AdminLayout";
 import { routes } from "../utils/routes";
 import YTDropAppLayout from "../../yt_drop/components/layout/YTDropAppLayout";
+import MobilePlayer from "../../features/player/MobilePlayer";
+import { getDeviceType } from "../utils/getDeviceType";
 
 const AppLayout = ({ children }: { children: React.ReactNode }) => {
   const { pathname } = useLocation();
@@ -29,6 +31,9 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
     routes.YTDrop.history,
     routes.YTDrop.historyStats,
   ];
+
+  const device = getDeviceType();
+  const isDesktop = device === 'desktop';
 
   useEffect(() => {
     const timeout = 14 * 60 * 1000 + 500; // 14:30 minutes
@@ -69,7 +74,7 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
         <QueueList />
       </div>
 
-      <PlayerBar />
+      {!isDesktop ? <MobilePlayer /> : <PlayerBar />}
 
       <UserProfile />
 

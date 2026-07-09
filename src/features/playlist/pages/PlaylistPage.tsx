@@ -20,9 +20,9 @@ import TrackModal from '../../song/components/TrackModal';
 const PlaylistPage: React.FC = () => {
   const { playlistId } = useParams();
   const { user } = useAuth();
-  const { isPlaying, queueMeta, play, togglePlay } = usePlayer();
+  const { isPlaying, queueMeta, play, togglePlay, setCurrentPlaylist } = usePlayer();
   const {
-    isPlay, isPublic, playlistSongs, searchMeta, gradientColor, bgColor,
+    isPlay, isPublic, playlistSongs, searchMeta, gradientColor, bgColor, playlist,
     form, isBackground, isRemove, isHover, isOpen, isEdit, isOpenAction, query, isSearch,
     searchSongs, duration, playlistMeta, playlistItems, coverImages, setGradientColor,
     setBgColor, setForm, setIsHover, setIsEdit, setIsOpenAction, setQuery, setIsSearch,
@@ -119,7 +119,7 @@ const PlaylistPage: React.FC = () => {
       <div className="animate-fade-in">
         <section
           style={{
-            background: `linear-gradient(to bottom, ${bgColor} 0%, ${gradientColor} 100%)`,
+            background: `linear-gradient(to bottom, ${bgColor} 0%, ${gradientColor} 100%)`
           }}
           className="min-[500px]:flex-row min-[500px]:pt-6 pt-10 px-6 pb-6 flex-col flex items-center gap-6 overflow-auto hide-scrollbar"
         >
@@ -353,9 +353,12 @@ const PlaylistPage: React.FC = () => {
 
         <section className={`${(playlistSongs.length > 0 && !isSearch) ? 'block' : 'hidden'} sm:px-5 p-1 animate-fade-in`}>
           <PlaylistSongs
-            songs={playlistSongs}
             items={playlistItems}
             playlistMeta={{ ...playlistMeta, playlistId: playlistId! }}
+            onPlay={(index) => {
+              play(playlistSongs, index, playlistMeta);
+              playlist && setCurrentPlaylist(playlist);
+            }}
             getItem={(item) => {
               setActiveItem(item);
               playlistMenuActions('open');

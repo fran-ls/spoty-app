@@ -1,6 +1,5 @@
 import { PlayIcon, MusicIcon, EllipsisIcon, ClockIcon, CheckIcon } from 'lucide-react';
 import type { PlaylistMeta, PlaylistSong } from '../playlist.types';
-import type { Song } from '../../song/song.types';
 import { usePlayer } from '../../../shared/context/PlayerContext';
 import { formatTime } from '../../../shared/utils/formatTime';
 import { getFmtDate } from '../../../shared/utils/getFormatDate';
@@ -11,16 +10,16 @@ import { DropdownIcon } from '../../../shared/components/Icons';
 import SmartImage from '../../../shared/components/SmartImage';
 
 interface PlaylistSongsProps {
-  songs: Song[];
   items: PlaylistSong[];
   playlistMeta: PlaylistMeta;
   getItem: (item: PlaylistSong) => void;
+  onPlay: (index: number) => void;
   loadMore: () => void;
 }
 
 const PlaylistSongs: React.FC<PlaylistSongsProps> = (props) => {
-  const { songs, items, playlistMeta, loadMore, getItem } = props;
-  const { currentSong, play } = usePlayer();
+  const { items, playlistMeta, loadMore, getItem, onPlay } = props;
+  const { currentSong } = usePlayer();
   const { loaderRef } = useInfiniteScroll(() => loadMore());
 
   const grid = {
@@ -64,7 +63,7 @@ const PlaylistSongs: React.FC<PlaylistSongsProps> = (props) => {
 
           return (
             <div
-              onClick={() => play(songs, i, playlistMeta)}
+              onClick={() => onPlay(i)}
               className={`min-w-fit grid ${grid.s} ${grid.sm} ${grid.md} ${grid.lg} gap-4 px-4 py-2 items-center sm:rounded hover:bg-white/5 transition-colors group cursor-pointer duration-200 relative`}
               key={item.id}
             >

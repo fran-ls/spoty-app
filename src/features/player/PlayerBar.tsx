@@ -1,13 +1,13 @@
 import React, { useRef, useState } from 'react';
 import {
-  Play, Pause, SkipBack, SkipForward, Shuffle, Repeat, Heart,
-  Volume2, VolumeX, List, Radio, Laptop,
-  MusicIcon,
+  Volume2, VolumeX, MusicIcon, HeartIcon, ShuffleIcon, PauseIcon,
+  PlayIcon, RepeatIcon, ListIcon, RadioIcon, LaptopIcon,
 } from 'lucide-react';
 import { usePlayer } from '../../shared/context/PlayerContext';
 import { formatTime } from '../../shared/utils/formatTime';
 import songService from '../song/services/song.service';
 import SmartImage from '../../shared/components/SmartImage';
+import { SkipForwardIcon } from '../../shared/components/Icons';
 
 export const PlayerBar: React.FC = () => {
   const {
@@ -148,10 +148,9 @@ export const PlayerBar: React.FC = () => {
             </div>
             <button
               // onClick={() => toggleLikeTrack(currentSong?.id)}
-              className={`shrink-0 transition-transform duration-150 active:scale-75 hover:scale-115 cursor-pointer ${isLiked ? 'text-primary' : 'text-[#adaaaa] hover:text-white'
-                }`}
+              className={`shrink-0 transition-transform duration-150 active:scale-75 hover:scale-115 cursor-pointer ${isLiked ? 'text-primary' : 'text-[#adaaaa] hover:text-white'}`}
             >
-              <Heart size={16} fill={isLiked ? '#72fe8f' : 'transparent'} />
+              <HeartIcon size={16} fill={isLiked ? '#72fe8f' : 'transparent'} />
             </button>
           </>
         }
@@ -159,16 +158,14 @@ export const PlayerBar: React.FC = () => {
 
       {/* CENTER: Playback Controls */}
       <div className="flex flex-col items-center gap-2 lg:w-[40%] w-full lg:max-w-150">
-        {/* Buttons Grid */}
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <button
               // onClick={toggleShuffle}
-              className={`p-2 transition-colors duration-200 cursor-pointer relative ${isShuffle ? 'text-primary' : 'text-[#adaaaa] hover:text-white'
-                }`}
+              className={`p-2 transition-colors duration-200 cursor-pointer relative ${isShuffle ? 'text-primary' : 'text-[#adaaaa] hover:text-white'}`}
               title="Habilitar la reproducción aleatoria"
             >
-              <Shuffle size={16} />
+              <ShuffleIcon size={16} />
               {isShuffle && (
                 <span className="absolute -bottom-px left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full" />
               )}
@@ -176,10 +173,10 @@ export const PlayerBar: React.FC = () => {
 
             <button
               onClick={prev}
-              className="p-2 text-[#adaaaa] hover:text-white transition-colors duration-200 cursor-pointer"
+              className="ml-1 text-[#adaaaa] hover:text-white transition-colors duration-200 cursor-pointer"
               title="Anterior"
             >
-              <SkipBack size={16} fill="currentColor" />
+              <SkipForwardIcon className="-rotate-180" size={28} fill="currentColor" />
             </button>
           </div>
 
@@ -189,28 +186,27 @@ export const PlayerBar: React.FC = () => {
             title={isPlaying ? "Pausar" : "Reproducir"}
           >
             {isPlaying ? (
-              <Pause size={16} fill="currentColor" className="translate-x-0" />
+              <PauseIcon size={16} fill="currentColor" className="translate-x-0" />
             ) : (
-              <Play size={16} fill="currentColor" className="translate-x-px" />
+              <PlayIcon size={16} fill="currentColor" className="translate-x-px" />
             )}
           </button>
 
           <div className="flex items-center gap-2">
             <button
               onClick={next}
-              className="p-2 text-[#adaaaa] hover:text-white transition-colors duration-200 cursor-pointer"
+              className="mr-1 text-[#adaaaa] hover:text-white transition-colors duration-200 cursor-pointer"
               title="Siguiente"
             >
-              <SkipForward size={16} fill="currentColor" />
+              <SkipForwardIcon size={28} fill="currentColor" />
             </button>
 
             <button
               // onClick={toggleRepeat}
-              className={`p-2 transition-colors duration-200 cursor-pointer relative ${isRepeat ? 'text-primary' : 'text-[#adaaaa] hover:text-white'
-                }`}
+              className={`p-2 transition-colors duration-200 cursor-pointer relative ${isRepeat ? 'text-primary' : 'text-[#adaaaa] hover:text-white'}`}
               title="Activar repetir"
             >
-              <Repeat size={16} />
+              <RepeatIcon size={16} />
               {isRepeat && (
                 <span className="absolute -bottom-px left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full" />
               )}
@@ -278,14 +274,14 @@ export const PlayerBar: React.FC = () => {
           title="Cola"
           type="button"
         >
-          <List size={18} />
+          <ListIcon size={18} />
         </button>
         <button
           className="text-[#adaaaa] hover:text-primary transition-all cursor-pointer"
           title="Conectar a un dispositivo"
           type="button"
         >
-          <Radio size={18} />
+          <RadioIcon size={18} />
         </button>
         <button
           onClick={toggleMute}
@@ -319,7 +315,7 @@ export const PlayerBar: React.FC = () => {
           title="Abrir el Minireproductor"
           type="button"
         >
-          <Laptop size={18} />
+          <LaptopIcon size={18} />
         </button>
       </div>
     </footer>

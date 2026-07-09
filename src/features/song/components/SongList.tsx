@@ -13,13 +13,14 @@ import SmartImage from '../../../shared/components/SmartImage';
 interface SongListProps {
   songs: Song[];
   searchMeta: PaginationMeta;
+  onPlay: (index: number) => void;
   loadMore: () => void;
   onOpenPlaylistMenu: (track: Song, index: number) => void;
 }
 
 const SongList: React.FC<SongListProps> = (props) => {
-  const { songs, searchMeta, loadMore, onOpenPlaylistMenu } = props
-  const { currentSong, play } = usePlayer();
+  const { songs, searchMeta, loadMore, onOpenPlaylistMenu, onPlay } = props
+  const { currentSong } = usePlayer();
   const { loaderRef } = useInfiniteScroll(() => loadMore());
 
   const grid = {
@@ -63,7 +64,7 @@ const SongList: React.FC<SongListProps> = (props) => {
           return (
             <div
               className={`min-w-fit grid ${grid.s} ${grid.sm} ${grid.md} ${grid.lg} gap-4 px-4 py-2 items-center sm:rounded hover:bg-white/5 transition-colors group cursor-pointer duration-200 relative`}
-              onClick={() => play(songs, i, { ...searchMeta, playlistId: '', totalDuration: 0 })}
+              onClick={() => onPlay(i)}
               key={track.id}
             >
               <div className={`${isCurrentPlayingNow ? 'text-primary' : 'text-[#adaaaa]'} sm:flex hidden text-sm font-medium items-center`}>

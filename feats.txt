@@ -15,6 +15,12 @@ AI FEATURES:
 
   📌 add context menus
 
+  📌 add playback history list
+    Create a new 'Recently Played' view state that keeps track of the user's playback history and allows quick access to previous tracks.
+  
+  📌 implement crossfade settings
+    Add a new settings section in the Sidebar or Header to allow users to configure song crossfade duration and quality settings.
+    
 
     
 
