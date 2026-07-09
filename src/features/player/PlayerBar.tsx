@@ -228,7 +228,7 @@ export const PlayerBar: React.FC = () => {
             className="flex-1 rounded-full relative cursor-pointer overflow-visible py-1.5 transition-all"
           >
             {/* The actual slider line container */}
-            <div className="absolute top-1/2 left-0 -translate-y-1/2 w-full h-1 bg-white/10 rounded-full overflow-hidden">
+            <div className="absolute top-1/2 left-0 -translate-y-1/2 w-full h-1 bg-white/30 rounded-full overflow-hidden">
               {hoverTime !== null && progressRef.current && (
                 <div
                   style={{
@@ -298,7 +298,7 @@ export const PlayerBar: React.FC = () => {
           className="py-1.5 flex items-center gap-2 w-24 group px-1 rounded-full"
         >
           <div className="flex-1 rounded-full relative cursor-pointer">
-            <div className="absolute top-1/2 left-0 -translate-y-1/2 w-full h-1 bg-white/10 rounded-full overflow-hidden">
+            <div className="absolute top-1/2 left-0 -translate-y-1/2 w-full h-1 bg-white/30 rounded-full overflow-hidden">
               <div
                 style={{ width: `${volumePercent}%` }}
                 className="h-full bg-white group-hover:bg-primary transition-colors"

@@ -64,11 +64,11 @@ const MobilePlayer = () => {
 
   return (
     <>
-      <footer
+      <div
         style={{
           background: `linear-gradient(to bottom, ${currentPlaylist.bgColor} 100%, ${currentPlaylist.gradientColor} 100%)`
         }}
-        className={`${playerBg} mx-2 w-[calc(100%-8px*2)] rounded-md h-fit overflow-hidden z-100 md:max-w-3xl fixed bottom-8 left-0 google-sans-flex-font`}
+        className={`${playerBg} mx-2 w-[calc(100%-8px*2)] rounded-md h-fit overflow-hidden z-100 md:max-w-3xl fixed bottom-16 left-0 google-sans-flex-font`}
       >
         <div
           onClick={() => setIsExpanded(true)}
@@ -101,6 +101,16 @@ const MobilePlayer = () => {
           </div>
 
           <button
+            className="ml-auto mr-1 text-white p-1 transition-colors duration-200 cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsLiked(!isLiked);
+            }}
+          >
+            <HeartIcon className={isLiked ? 'fill-primary stroke-0' : ''} size={25} />
+          </button>
+
+          <button
             onClick={(e) => {
               e.stopPropagation();
               togglePlay();
@@ -122,7 +132,7 @@ const MobilePlayer = () => {
             className="h-full bg-white rounded-full pointer-events-none transition-all duration-75"
           />
         </div>
-      </footer>
+      </div>
 
       <div
         style={{

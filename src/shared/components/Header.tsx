@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Bell, Users, User, Search, Sparkles, XIcon, GlobeIcon, CircleUserRoundIcon, SettingsIcon, LaptopMinimalIcon, LogOutIcon, UploadIcon, MusicIcon, DownloadIcon, LibraryIcon } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Bell, Users, User, Search, Sparkles, XIcon, GlobeIcon, CircleUserRoundIcon, SettingsIcon, LaptopMinimalIcon, LogOutIcon, UploadIcon, MusicIcon, DownloadIcon, LibraryIcon, Headphones } from 'lucide-react';
 import useAuth from '../../features/auth/hooks/useAuth';
 import { routes } from '../utils/routes';
+import { getDeviceType } from '../utils/getDeviceType';
 
 interface HeaderProps {
   onExplorePremiumClick?: () => void;
@@ -14,6 +15,9 @@ export const Header: React.FC<HeaderProps> = ({ onExplorePremiumClick }) => {
   const [isActive, setIsActive] = useState(false);
 
   const { user, isAdmin, dispatch, showProfile, logout } = useAuth();
+  const device = getDeviceType();
+  const isDesktop = device === 'desktop';
+
   const navigate = useNavigate();
 
   const onCloseDropdown = () => {
@@ -28,52 +32,60 @@ export const Header: React.FC<HeaderProps> = ({ onExplorePremiumClick }) => {
     >
       <div className="flex items-center gap-4 max-w-140 md:w-[60%] w-[80%]">
         <div className="flex gap-2">
+          <Link
+            to={routes.home}
+            className="text-white"
+          >
+            <Headphones />
+          </Link>
           <button
             onClick={() => navigate(routes.home)}
-            className="w-8 h-8 flex items-center justify-center rounded-full bg-black/40 text-[#adaaaa] hover:text-white hover:bg-black/60 transition-all cursor-pointer"
+            className="w-8 h-8 hidden items-center justify-center rounded-full bg-black/40 text-[#adaaaa] hover:text-white hover:bg-black/60 transition-all cursor-pointer"
             title="Inicio"
           >
             <ChevronLeft size={20} />
           </button>
           <button
-            className="sm:flex hidden w-8 h-8 items-center justify-center rounded-full bg-black/40 text-[#adaaaa] opacity-50 cursor-not-allowed"
+            className="hidden w-8 h-8 items-center justify-center rounded-full bg-black/40 text-[#adaaaa] opacity-50 cursor-not-allowed"
             disabled
           >
             <ChevronRight size={20} />
           </button>
         </div>
 
-        <div className="relative group sm:ml-4 animate-fade-in w-full">
-          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-[#adaaaa] group-focus-within:text-white">
-            <Search size={18} />
-          </div>
+        {isDesktop && (
+          <div className="relative group sm:ml-4 animate-fade-in w-full">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-[#adaaaa] group-focus-within:text-white">
+              <Search size={18} />
+            </div>
 
-          <input
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="bg-[#262626] border-none rounded-full py-3 pl-12 pr-22 w-full text-sm font-medium focus:ring-2 focus:ring-white/20 text-white placeholder:text-[#adaaaa] transition-all outline-none"
-            placeholder="¿Qué quieres escuchar?"
-            type="text"
-          />
+            <input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="bg-[#262626] border-none rounded-full py-3 pl-12 pr-22 w-full text-sm font-medium focus:ring-2 focus:ring-white/20 text-white placeholder:text-[#adaaaa] transition-all outline-none"
+              placeholder="¿Qué quieres escuchar?"
+              type="text"
+            />
 
-          {searchQuery && (
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="cursor-pointer absolute right-14 top-1/2 -translate-y-1/2 text-[10px] text-[#adaaaa] hover:text-white rounded"
+              >
+                <XIcon />
+              </button>
+            )}
+
+            <div className="w-px h-6 rounded-[1px] bg-[#adaaaa] absolute right-12 top-1/2 -translate-y-1/2" />
+
             <button
-              onClick={() => setSearchQuery('')}
-              className="cursor-pointer absolute right-14 top-1/2 -translate-y-1/2 text-[10px] text-[#adaaaa] hover:text-white rounded"
+              onClick={() => navigate(routes.search)}
+              className="cursor-pointer absolute right-4 top-1/2 -translate-y-1/2 text-[11px] text-[#adaaaa] hover:text-white rounded"
             >
-              <XIcon />
+              <GlobeIcon size={22} />
             </button>
-          )}
-
-          <div className="w-px h-6 rounded-[1px] bg-[#adaaaa] absolute right-12 top-1/2 -translate-y-1/2" />
-
-          <button
-            onClick={() => navigate(routes.search)}
-            className="cursor-pointer absolute right-4 top-1/2 -translate-y-1/2 text-[11px] text-[#adaaaa] hover:text-white rounded"
-          >
-            <GlobeIcon size={22} />
-          </button>
-        </div>
+          </div>
+        )}
       </div>
 
       {/* RIGHT: User Actions & CTA */}

@@ -14,6 +14,8 @@ import MenuItem from '../../../shared/components/MenuItem';
 import PlaylistItem from './PlaylistItem';
 import Loader from '../../../shared/components/Loader';
 import { useInfiniteScroll } from '../../../shared/hooks/useInfiniteScroll';
+import { getDeviceType } from '../../../shared/utils/getDeviceType';
+import { STYLES } from '../../../shared/utils/styles';
 
 interface LibraryProps {
   isPage?: boolean;
@@ -89,13 +91,16 @@ export const Library = (props: LibraryProps) => {
     lg: 'lg:grid-cols-[minmax(200px,2fr)_1fr_1fr_minmax(180px,1fr)]'
   }
 
+  const device = getDeviceType();
+  const isDesktop = device === 'desktop';
+
   return (
     <aside
       onClick={() => !query && setIsSearch(false)}
       className={`${isCollapsed ? 'w-18' : isExpanded ? 'w-full' : 'w-72'} ${isExpanded ? 'flex' : 'md:flex hidden'} rounded-lg h-full overflow-hidden flex-col bg-[#131313] border-none select-none shrink-0 transition-all duration-300 ease-in-out relative`}
       id="spotify-sidebar"
     >
-      <div className="rounded-lg min-h-[calc(100dvh-64px-88px)] max-h-[calc(100dvh-64px-88px)]">
+      <div className={`rounded-lg ${STYLES.minHeightMain} ${STYLES.maxHeightMain}`}>
         <header className="p-4 text-[#adaaaa] relative">
           <div className={`${isCollapsed ? 'flex-col gap-4' : 'flex-row'} flex items-center justify-between`}>
             {!isExpanded && (
@@ -120,9 +125,10 @@ export const Library = (props: LibraryProps) => {
             {!isCollapsed &&
               <button
                 onClick={() => setIsExpanded(true)}
+                className={`${!isExpanded ? 'cursor-pointer' : ''}`}
                 type="button"
               >
-                <h3 className="cursor-pointer text-white font-black text-nowrap">
+                <h3 className="text-white font-black text-nowrap">
                   Tu biblioteca
                 </h3>
               </button>
@@ -269,7 +275,12 @@ export const Library = (props: LibraryProps) => {
           }
         </header>
 
-        <nav className={`${isCollapsed ? 'h-[calc(100dvh-64px-88px-100px)]' : isExpanded ? `min-[520px]:h-[calc(100dvh-64px-88px-116px)] h-[calc(100dvh-64px-88px-156px)]` : 'h-[calc(100dvh-64px-88px-116px)]'} overflow-y-auto overflow-x-hidden relative`}>
+        <nav
+          style={{
+            height: !isDesktop ? `calc(100dvh - 64px - 52px - 62px - ${window.innerWidth >= 520 ? 116 : 156}px)` : ''
+          }}
+          className={`${isCollapsed ? 'h-[calc(100dvh-64px-88px-100px)]' : isExpanded ? `min-[520px]:h-[calc(100dvh-64px-88px-116px)] h-[calc(100dvh-64px-88px-156px)]` : 'h-[calc(100dvh-64px-88px-116px)]'} overflow-y-auto overflow-x-hidden relative ${!isDesktop ? 'hide-scrollbar' : ''}`}
+        >
           {(isExpanded && layout !== 'grid') && (
             <ul className={`sm:grid hidden ${grid.sm} ${grid.md} ${grid.lg} gap-3 bg-[#131313] text-[13px] text-[#adaaaa] border-b border-white/10 px-4 sticky top-0 z-10`}>
               <li className="py-2 line-clamp-1 font-semibold">

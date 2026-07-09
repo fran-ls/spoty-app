@@ -16,6 +16,7 @@ import { routes } from "../utils/routes";
 import YTDropAppLayout from "../../yt_drop/components/layout/YTDropAppLayout";
 import MobilePlayer from "../../features/player/MobilePlayer";
 import { getDeviceType } from "../utils/getDeviceType";
+import MobileTabs from "./MobileTabs";
 
 const AppLayout = ({ children }: { children: React.ReactNode }) => {
   const { pathname } = useLocation();
@@ -60,13 +61,13 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
     <div className="h-screen bg-black font-sans text-on-surface antialiased selection:bg-primary selection:text-black">
       <Header onExplorePremiumClick={() => setIsPremiumOpen(true)} />
 
-      <div className="px-2 flex gap-2 select-none rounded-lg">
+      <div className={`${isDesktop ? 'px-2' : ''} flex gap-2 select-none rounded-lg`}>
         {(currentPath !== routes.library) && (
           <Library />
         )}
 
-        <main className="w-full rounded-lg bg-[#131313] overflow-hidden">
-          <div className={`${STYLES.maxHeightMain} ${STYLES.minHeightMain} flex-1 overflow-y-auto ${window.innerWidth >= 640 ? '' : 'hide-scrollbar'}`}>
+        <main className={`${isDesktop ? 'rounded-lg' : ''} w-full bg-[#131313] overflow-hidden`}>
+          <div className={`${STYLES.maxHeightMain} ${STYLES.minHeightMain} flex-1 overflow-y-auto ${isDesktop ? '' : 'hide-scrollbar'}`}>
             {children}
           </div>
         </main>
@@ -74,7 +75,12 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
         <QueueList />
       </div>
 
-      {!isDesktop ? <MobilePlayer /> : <PlayerBar />}
+      {isDesktop ? <PlayerBar /> : (
+        <>
+          <MobilePlayer />
+          <MobileTabs />
+        </>
+      )}
 
       <UserProfile />
 
