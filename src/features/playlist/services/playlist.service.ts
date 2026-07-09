@@ -122,7 +122,9 @@ class PlaylistService {
   async getPlaylist(id: string, include?: PlaylistInclude) {
     return await apiFetch<Playlist>(async () => {
       const r = await api.get(`/playlists/${id}`, {
-        params: include ? include : undefined,
+        params: {
+          include: include ? JSON.stringify(include) : undefined
+        },
         headers: {
           'Authorization': `Bearer ${tokenService.getToken()}`
         }

@@ -127,7 +127,6 @@ const Footer: React.FC<FooterProps> = (props) => {
               searchTracks(value);
             }}
             value={query}
-            autoFocus={true}
             className="w-full ml-2"
             placeholder="Buscar canción"
             type="text"

@@ -13,13 +13,11 @@ import PlaylistSongs from '../components/PlaylistSongs';
 import { usePlayer } from '../../../shared/context/PlayerContext';
 import usePlaylist from '../hooks/usePlaylist';
 import PlaylistMenu, { type PlaylistMenuAction } from '../components/PlaylistMenu';
-import useAuth from '../../auth/hooks/useAuth';
 import SmartImage from '../../../shared/components/SmartImage';
 import TrackModal from '../../song/components/TrackModal';
 
 const PlaylistPage: React.FC = () => {
   const { playlistId } = useParams();
-  const { user } = useAuth();
   const { isPlaying, queueMeta, play, togglePlay, setCurrentPlaylist } = usePlayer();
   const {
     isPlay, isPublic, playlistSongs, searchMeta, gradientColor, bgColor, playlist,
@@ -39,7 +37,7 @@ const PlaylistPage: React.FC = () => {
 
   const coverInputRef = useRef<HTMLInputElement>(null);
   const cover = form.fileUrl || form.cover;
-  const username = user?.username?.split(' ')[0] || 'Username';
+  const username = playlist?.user?.username?.split(' ')[0] || 'Username';
   const isTrackCount = playlistMeta.total === 0 || playlistMeta.total > 1;
 
   function playlistMenuActions(action: PlaylistMenuAction | 'open') {
