@@ -1,18 +1,16 @@
 import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { ChevronDownIcon, EllipsisVerticalIcon, HeartIcon, Music2Icon, MusicIcon, PauseIcon, PlayIcon, Share2Icon } from "lucide-react";
+import { ChevronDownIcon, EllipsisVerticalIcon, HeartIcon, ListMusicIcon, Music2Icon, MusicIcon, PauseIcon, PlayIcon, Share2Icon } from "lucide-react";
 import SmartImage from "../../shared/components/SmartImage";
 import { usePlayer } from "../../shared/context/PlayerContext";
 import songService from "../song/services/song.service";
 import { formatTime } from "../../shared/utils/formatTime";
 import { getDeviceType } from "../../shared/utils/getDeviceType";
 import { RepeatIcon, ShuffleIcon, SkipForwardIcon } from "../../shared/components/Icons";
+import MobileQueue from "./MobileQueue";
 
 const MobilePlayer = () => {
-  const {
-    currentPlaylist, currentSong, progress, duration, isPlaying,
-    seek, next, prev, togglePlay
-  } = usePlayer();
+  const { currentPlaylist, currentSong, progress, duration, isPlaying, seek, next, prev, togglePlay } = usePlayer();
 
   const progressRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<HTMLDivElement>(null);
@@ -20,11 +18,12 @@ const MobilePlayer = () => {
   const playerWrap = playerRef.current;
 
   const [isExpanded, setIsExpanded] = useState(false);
-  const [isMenu, setIsMenu] = useState(false);
+  const [isOpenModal, setIsOpenModal] = useState(false);
+  const [isMobileQueue, setIsMobileQueue] = useState(false);
 
   const [isLiked, setIsLiked] = useState(false);
-  const isRepeat: boolean = false;
-  const isShuffle: boolean = false;
+  const [isRepeat, setIsRepeat] = useState(false);
+  const [isShuffle, setIsShuffle] = useState(false);
 
   const handleProgressSeek = (clientX: number) => {
     if (!currentSong || !progressEl) return;
@@ -53,6 +52,19 @@ const MobilePlayer = () => {
     window.addEventListener('pointerup', handleMouseUp);
   }
 
+  const toggleLikeTrack = async () => {
+    if (!currentSong || !currentSong.id) return;
+    setIsLiked(!isLiked);
+  }
+
+  const toggleShuffle = () => {
+    setIsShuffle(!isShuffle);
+  }
+
+  const toggleRepeat = () => {
+    setIsRepeat(!isRepeat);
+  }
+
   const progressPercent = Math.min(100, (progress / duration) * 100);
   const songCover = currentSong ? songService.songCoverUrl(currentSong.id, currentSong.cover) : '';
 
@@ -62,13 +74,17 @@ const MobilePlayer = () => {
   const device = getDeviceType();
   const isDesktop = device === 'desktop';
 
+  const colors = {
+    icon: 'text-white/40'
+  }
+
   return (
     <>
       <div
         style={{
           background: `linear-gradient(to bottom, ${currentPlaylist.bgColor} 100%, ${currentPlaylist.gradientColor} 100%)`
         }}
-        className={`${playerBg} mx-2 w-[calc(100%-8px*2)] rounded-md h-fit overflow-hidden z-100 md:max-w-3xl fixed bottom-16 left-0 google-sans-flex-font`}
+        className={`${playerBg} mx-2 w-[calc(100%-8px*2)] rounded-md h-fit overflow-hidden z-100 md:max-w-3xl fixed bottom-14 left-0 google-sans-flex-font`}
       >
         <div
           onClick={() => setIsExpanded(true)}
@@ -76,6 +92,14 @@ const MobilePlayer = () => {
         >
           <div className="flex items-center gap-2">
             <SmartImage
+              styles={{
+                imgWrap: {
+                  ...(!songCover && {
+                    boxShadow: '0 0 25px rgb(0, 0, 0, 0.25)',
+                    background: 'transparent'
+                  })
+                }
+              }}
               wrapClassName="min-w-9 w-9 h-9 bg-[#262626] rounded overflow-hidden shrink-0 group relative cursor-pointer"
               className="aspect-square w-full h-full object-cover transition-transform duration-300"
               url={songCover}
@@ -86,13 +110,13 @@ const MobilePlayer = () => {
 
             <div>
               <h1
-                className="text-sm font-bold text-white w-full line-clamp-1"
+                className="text-[13px] font-bold text-white w-full line-clamp-1"
                 title={currentSong?.title}
               >
                 {currentSong?.title || 'Tema'}
               </h1>
               <span
-                className="font-medium block text-xs text-[#adaaaa] truncate"
+                className="font-medium block text-xs text-white/95 truncate"
                 title={currentSong?.artist?.name}
               >
                 {currentSong?.artist?.name || 'Artista'}
@@ -101,10 +125,10 @@ const MobilePlayer = () => {
           </div>
 
           <button
-            className="ml-auto mr-1 text-white p-1 transition-colors duration-200 cursor-pointer"
+            className="ml-auto mr-1 text-white/70 p-1 transition-colors duration-200 cursor-pointer"
             onClick={(e) => {
               e.stopPropagation();
-              setIsLiked(!isLiked);
+              toggleLikeTrack();
             }}
           >
             <HeartIcon className={isLiked ? 'fill-primary stroke-0' : ''} size={25} />
@@ -147,7 +171,10 @@ const MobilePlayer = () => {
       >
         <div className="p-3 pb-4 w-full flex items-center justify-between gap-3">
           <button
-            onClick={() => setIsExpanded(false)}
+            onClick={() => {
+              setIsExpanded(false);
+              setIsMobileQueue(false);
+            }}
             className="ml-auto p-2 text-white hover:text-white transition-colors duration-200 cursor-pointer"
           >
             <ChevronDownIcon size={28} />
@@ -159,7 +186,7 @@ const MobilePlayer = () => {
             {currentSong?.title || 'Tema'}
           </h2>
           <button
-            onClick={() => setIsMenu(true)}
+            onClick={() => setIsOpenModal(true)}
             className="ml-auto p-2 text-white hover:text-white transition-colors duration-200 cursor-pointer"
           >
             <EllipsisVerticalIcon className="rotate-90" size={24} />
@@ -170,10 +197,15 @@ const MobilePlayer = () => {
           styles={{
             imgWrap: {
               width: playerImgWidth || '100%',
-              height: playerImgWidth || '100%'
+              height: playerImgWidth || '100%',
+              ...(!songCover && {
+                borderRadius: '20px',
+                boxShadow: '0 0 25px rgb(0, 0, 0, 0.25)',
+                background: 'transparent'
+              })
             }
           }}
-          wrapClassName="sm:w-84 sm:h-84 mx-3 w-[calc(100vw-12px*2)] h-[calc(100vw-12px*2)] bg-[#262626] overflow-hidden shadow-2xl shrink-0 group relative cursor-pointer"
+          wrapClassName="sm:w-84 sm:h-84 mx-3 w-[calc(100vw-12px*2)] h-[calc(100vw-12px*2)] bg-[#262626] overflow-hidden shadow-2xl shrink-0 group relative"
           className="aspect-square w-full h-full object-cover transition-transform duration-300"
           url={songCover}
           icon={(
@@ -197,7 +229,7 @@ const MobilePlayer = () => {
             </span>
           </div>
           <button
-            onClick={() => setIsLiked(!isLiked)}
+            onClick={toggleLikeTrack}
             className="p-1 w-fit h-fit text-[#adaaaa] hover:text-white transition-colors duration-200 cursor-pointer"
             title="Me gusta"
           >
@@ -242,8 +274,8 @@ const MobilePlayer = () => {
           <div className="relative w-full flex items-center justify-between gap-4">
             <div className="w-full flex items-center gap-2">
               <button
-                // onClick={toggleShuffle}
-                className={`h-fit transition-colors duration-200 cursor-pointer relative ${isShuffle ? 'text-primary' : 'text-white/40 hover:text-white'}`}
+                onClick={toggleShuffle}
+                className={`h-fit transition-colors duration-100 cursor-pointer relative ${isShuffle ? 'text-primary' : `${colors.icon} hover:text-white`}`}
                 title="Habilitar la reproducción aleatoria"
               >
                 <ShuffleIcon size={30} />
@@ -254,7 +286,7 @@ const MobilePlayer = () => {
 
               <button
                 onClick={prev}
-                className="ml-auto p-2 text-white/40 hover:text-white transition-colors duration-200 cursor-pointer"
+                className={`ml-auto p-2 hover:text-white transition-colors duration-200 cursor-pointer ${colors.icon}`}
                 title="Anterior"
               >
                 <SkipForwardIcon className="-rotate-180" />
@@ -276,28 +308,43 @@ const MobilePlayer = () => {
             <div className="w-full flex items-center gap-2">
               <button
                 onClick={next}
-                className="mr-auto p-2 text-white/40 hover:text-white transition-colors duration-200 cursor-pointer"
+                className={`mr-auto p-2 hover:text-white transition-colors duration-200 cursor-pointer ${colors.icon}`}
                 title="Siguiente"
               >
                 <SkipForwardIcon />
               </button>
 
               <button
-                // onClick={toggleRepeat}
-                className={`h-fit transition-colors duration-200 cursor-pointer relative ${isRepeat ? 'text-primary' : 'text-white/40 hover:text-white'}`}
+                onClick={toggleRepeat}
+                className={`h-fit transition-colors duration-100 cursor-pointer relative ${isRepeat ? 'text-primary' : `${colors.icon} hover:text-white`}`}
                 title="Activar repetir"
               >
                 <RepeatIcon className="mb-0.5" size={26} />
                 {isRepeat && (
-                  <span className="absolute -bottom-px left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full" />
+                  <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full" />
                 )}
               </button>
             </div>
           </div>
         </div>
+
+        <button
+          onClick={() => setIsMobileQueue(true)}
+          className="text-white p-1 mt-5 ml-4"
+          type="button"
+        >
+          <ListMusicIcon />
+        </button>
       </div>
 
-      {isMenu && (
+      <MobileQueue
+        playerWrap={playerWrap}
+        isExpanded={isExpanded}
+        isMobileQueue={isMobileQueue}
+        setIsMobileQueue={setIsMobileQueue}
+      />
+
+      {isOpenModal && (
         <div
           style={{
             width: playerWrap ? playerWrap.offsetWidth : '100%'
@@ -306,7 +353,16 @@ const MobilePlayer = () => {
         >
           <div className="mt-12 flex items-center gap-4">
             <SmartImage
-              wrapClassName="w-16 h-16 bg-[#262626] overflow-hidden shadow-2xl shrink-0 group relative cursor-pointer"
+              styles={{
+                imgWrap: {
+                  ...(!songCover && {
+                    boxShadow: '0 0 25px rgb(0, 0, 0, 0.25)',
+                    background: currentPlaylist.bgColor,
+                    borderRadius: '6px'
+                  })
+                }
+              }}
+              wrapClassName="w-15 h-15 bg-[#262626] overflow-hidden shadow-2xl shrink-0 group relative cursor-pointer"
               className="aspect-square w-full h-full object-cover transition-transform duration-300"
               url={songCover}
               icon={(
@@ -316,13 +372,13 @@ const MobilePlayer = () => {
 
             <div className="flex flex-col">
               <h1
-                className="text-lg font-bold text-white hover:underline cursor-pointer truncate"
+                className="text-base font-bold text-white hover:underline cursor-pointer truncate"
                 title={currentSong?.title}
               >
                 {currentSong?.title || 'Tema'}
               </h1>
               <span
-                className="font-medium text-sm text-[#adaaaa] hover:text-white hover:underline cursor-pointer truncate"
+                className="font-medium text-xs text-[#adaaaa] hover:text-white hover:underline cursor-pointer truncate"
                 title={currentSong?.artist?.name}
               >
                 {currentSong?.artist?.name || 'Artista'}
@@ -332,7 +388,7 @@ const MobilePlayer = () => {
 
           <button
             className="flex items-center gap-3 text-white w-fit h-fit transition-colors duration-200 cursor-pointer"
-            onClick={() => setIsLiked(!isLiked)}
+            onClick={toggleLikeTrack}
           >
             <HeartIcon className={isLiked ? 'fill-primary stroke-0' : ''} size={24} />
             <span className="font-semibold">Me gusta</span>
@@ -350,7 +406,7 @@ const MobilePlayer = () => {
           </Link>
 
           <button
-            onClick={() => setIsMenu(false)}
+            onClick={() => setIsOpenModal(false)}
             className="mx-auto mt-auto flex items-center gap-2 text-white w-fit h-fit transition-colors duration-200 cursor-pointer"
           >
             <span className="font-semibold">Cerrar</span>

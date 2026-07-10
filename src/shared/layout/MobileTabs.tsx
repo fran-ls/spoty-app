@@ -14,11 +14,11 @@ const MobileTabs = () => {
         onClick={() => setTab('home')}
       >
         {tab === 'home'
-          ? <House3Icon size={30} />
-          : <House2Icon fill="#ffffff" size={30} />
+          ? <House3Icon size={25} />
+          : <House2Icon fill="#ffffff" size={25} />
         }
 
-        <span className="mx-auto text-xs">Inicio</span>
+        <span className="mx-auto text-[10px]">Inicio</span>
       </Link>
 
       <Link
@@ -27,11 +27,11 @@ const MobileTabs = () => {
         onClick={() => setTab('search')}
       >
         {tab === 'search'
-          ? <SearchFilledIcon className="mb-px mr-px" fill="#ffffff" size={29} />
-          : <SearchIcon stroke="#ffffff" size={30} />
+          ? <SearchFilledIcon className="mb-px mr-px" fill="#ffffff" size={24} />
+          : <SearchIcon stroke="#ffffff" size={25} />
         }
 
-        <span className={`mx-auto text-xs block ${tab === 'search' ? 'mt--[5px]' : 'mb--[3px]'}`}>Buscar</span>
+        <span className={`mx-auto text-[10px] block ${tab === 'search' ? 'mt--[5px]' : 'mb--[3px]'}`}>Buscar</span>
       </Link>
 
       <Link
@@ -40,11 +40,11 @@ const MobileTabs = () => {
         onClick={() => setTab('library')}
       >
         {tab === 'library'
-          ? <BookshelfFilledIcon fill="#ffffff" size={30} />
-          : <BookshelfIcon fill="#ffffff" size={30} />
+          ? <BookshelfFilledIcon fill="#ffffff" size={25} />
+          : <BookshelfIcon fill="#ffffff" size={25} />
         }
 
-        <span className="mx-auto text-xs">Tu biblioteca</span>
+        <span className="mx-auto text-[10px]">Tu biblioteca</span>
       </Link>
     </footer>
   )

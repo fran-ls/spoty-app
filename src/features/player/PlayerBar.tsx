@@ -1,18 +1,18 @@
 import React, { useRef, useState } from 'react';
 import {
   Volume2, VolumeX, MusicIcon, HeartIcon, ShuffleIcon, PauseIcon,
-  PlayIcon, RepeatIcon, ListIcon, RadioIcon, LaptopIcon,
+  PlayIcon, ListIcon, RadioIcon, LaptopIcon,
 } from 'lucide-react';
 import { usePlayer } from '../../shared/context/PlayerContext';
 import { formatTime } from '../../shared/utils/formatTime';
 import songService from '../song/services/song.service';
 import SmartImage from '../../shared/components/SmartImage';
-import { SkipForwardIcon } from '../../shared/components/Icons';
+import { RepeatIcon, SkipForwardIcon } from '../../shared/components/Icons';
 
 export const PlayerBar: React.FC = () => {
   const {
     currentSong, progress, duration, isPlaying, volume, isMuted, isQueue,
-    seek, next, prev, togglePlay, setVolume, toggleMute, setIsQueue
+    seek, next, prev, togglePlay, setVolume, setIsMuted, toggleMute, setIsQueue
   } = usePlayer();
 
   const progressRef = useRef<HTMLDivElement>(null);
@@ -22,11 +22,11 @@ export const PlayerBar: React.FC = () => {
   const [hoverX, setHoverX] = useState<number>(0);
   const [isDragging, setIsDragging] = useState<boolean>(false);
 
-  const isRepeat: boolean = false;
-  const isShuffle: boolean = false;
-  const isLiked: boolean = true;
+  const [isLiked, setIsLiked] = useState(false);
+  const [isRepeat, setIsRepeat] = useState(false);
+  const [isShuffle, setIsShuffle] = useState(false);
 
-  const handleProgressSeek = (clientX: number) => {
+  const progressSeek = (clientX: number) => {
     if (!currentSong || !progressRef.current) return;
     const rect = progressRef.current.getBoundingClientRect();
     const x = clientX - rect.left;
@@ -39,10 +39,10 @@ export const PlayerBar: React.FC = () => {
   const handleProgressMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!currentSong) return;
     setIsDragging(true);
-    handleProgressSeek(e.clientX);
+    progressSeek(e.clientX);
 
     const handleMouseMove = (moveEvent: MouseEvent) => {
-      handleProgressSeek(moveEvent.clientX);
+      progressSeek(moveEvent.clientX);
 
       if (progressRef.current) {
         const rect = progressRef.current.getBoundingClientRect();
@@ -87,6 +87,7 @@ export const PlayerBar: React.FC = () => {
     const width = rect.width;
     const clickRatio = Math.max(0, Math.min(1, clickX / width));
     setVolume(clickRatio);
+    if (clickRatio) setIsMuted(false);
   }
 
   const handleVolumeChange = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -103,6 +104,19 @@ export const PlayerBar: React.FC = () => {
 
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('mouseup', handleMouseUp);
+  }
+
+  const toggleLikeTrack = async () => {
+    if (!currentSong || !currentSong.id) return;
+    setIsLiked(!isLiked);
+  }
+
+  const toggleShuffle = () => {
+    setIsShuffle(!isShuffle);
+  }
+
+  const toggleRepeat = () => {
+    setIsRepeat(!isRepeat);
   }
 
   const progressPercent = Math.min(100, (progress / duration) * 100);
@@ -126,7 +140,7 @@ export const PlayerBar: React.FC = () => {
           className="w-full h-full object-cover transition-transform duration-300"
           url={songCover}
           icon={(
-            <MusicIcon className="text-white absolute top-1/2 left-1/2 -translate-1/2 music-icon" />
+            <MusicIcon className="text-white absolute top-1/2 left-1/2 -translate-1/2" />
           )}
         />
 
@@ -147,7 +161,7 @@ export const PlayerBar: React.FC = () => {
               </span>
             </div>
             <button
-              // onClick={() => toggleLikeTrack(currentSong?.id)}
+              onClick={toggleLikeTrack}
               className={`shrink-0 transition-transform duration-150 active:scale-75 hover:scale-115 cursor-pointer ${isLiked ? 'text-primary' : 'text-[#adaaaa] hover:text-white'}`}
             >
               <HeartIcon size={16} fill={isLiked ? '#72fe8f' : 'transparent'} />
@@ -161,7 +175,7 @@ export const PlayerBar: React.FC = () => {
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <button
-              // onClick={toggleShuffle}
+              onClick={toggleShuffle}
               className={`p-2 transition-colors duration-200 cursor-pointer relative ${isShuffle ? 'text-primary' : 'text-[#adaaaa] hover:text-white'}`}
               title="Habilitar la reproducción aleatoria"
             >
@@ -202,11 +216,11 @@ export const PlayerBar: React.FC = () => {
             </button>
 
             <button
-              // onClick={toggleRepeat}
-              className={`p-2 transition-colors duration-200 cursor-pointer relative ${isRepeat ? 'text-primary' : 'text-[#adaaaa] hover:text-white'}`}
+              onClick={toggleRepeat}
+              className={`w-8 h-8 p-2 transition-colors duration-200 cursor-pointer relative ${isRepeat ? 'text-primary' : 'text-[#adaaaa] hover:text-white'}`}
               title="Activar repetir"
             >
-              <RepeatIcon size={16} />
+              <RepeatIcon className="absolute top-1/2 left-1/2 -translate-1/2" size={18} />
               {isRepeat && (
                 <span className="absolute -bottom-px left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full" />
               )}
@@ -240,7 +254,7 @@ export const PlayerBar: React.FC = () => {
 
               <div
                 style={{ width: `${progressPercent}%` }}
-                className="absolute h-full bg-primary rounded-full transition-colors group-hover:bg-[#63ef82] z-10"
+                className="absolute h-full bg-white rounded-full transition-colors group-hover:bg-primary z-10"
               />
             </div>
 
@@ -286,9 +300,9 @@ export const PlayerBar: React.FC = () => {
         <button
           onClick={toggleMute}
           className="text-[#adaaaa] hover:text-white transition-all cursor-pointer"
-          title={isMuted || !volume ? 'No silenciar' : 'Silenciar'}
+          title={(isMuted || !volume) ? 'No silenciar' : 'Silenciar'}
         >
-          {isMuted || volume === 0 ? <VolumeX size={18} /> : <Volume2 size={18} />}
+          {(isMuted || !volume) ? <VolumeX size={18} /> : <Volume2 size={18} />}
         </button>
 
         {/* Volume Slider */}

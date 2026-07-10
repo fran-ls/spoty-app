@@ -12,6 +12,7 @@ interface PlayerContextType {
   progress: number;
   duration: number;
   volume: number;
+  prevVolume: number;
   isMuted: boolean;
   isQueue: boolean;
   queue: Song[];
@@ -26,6 +27,7 @@ interface PlayerContextType {
   playQueueSong: (track: Song, index: number) => void;
   setQueue: React.Dispatch<React.SetStateAction<Song[]>>;
   setVolume: React.Dispatch<React.SetStateAction<number>>;
+  setPrevVolume: React.Dispatch<React.SetStateAction<number>>;
   setIsPlaying: React.Dispatch<React.SetStateAction<boolean>>;
   setIsMuted: React.Dispatch<React.SetStateAction<boolean>>;
   setIsQueue: React.Dispatch<React.SetStateAction<boolean>>;
@@ -39,6 +41,7 @@ export const PlayerContext = createContext<PlayerContextType>({
   progress: 0,
   duration: 0,
   volume: 1,
+  prevVolume: 1,
   isMuted: false,
   isQueue: true,
   isPlaying: false,
@@ -74,6 +77,7 @@ export const PlayerContext = createContext<PlayerContextType>({
   setIsMuted: () => { },
   toggleMute: () => { },
   setVolume: () => { },
+  setPrevVolume: () => { },
   setQueueMeta: () => { },
   setIsQueue: () => { },
   setQueue: () => { },
@@ -115,27 +119,26 @@ export const PlayerProvider = ({ children }: any) => {
   });
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audio = audioRef.current;
 
   const playQueueSong = async (track: Song, index: number) => {
-    if (!audioRef.current) return;
-
+    if (!audio) return;
     setCurrentIndex(index);
     setCurrentSong(track);
 
-    audioRef.current.src = songService.streamUrl(track.id, track.fileUrl);
-    audioRef.current.play();
-
+    audio.src = songService.streamUrl(track.id, track.fileUrl);
+    audio.play();
     setIsPlaying(true);
   }
 
   const seek = (time: number) => {
-    if (!audioRef.current) return;
-    audioRef.current.currentTime = time;
+    if (!audio) return;
+    audio.currentTime = time;
     setProgress(time);
   }
 
   const play = (tracks: Song[], index: number, meta: PlaylistMeta) => {
-    if (!audioRef.current) return;
+    if (!audio) return;
     const track = tracks[index];
     setQueue(tracks);
     setQueueMeta(meta);
@@ -143,13 +146,13 @@ export const PlayerProvider = ({ children }: any) => {
   }
 
   const togglePlay = () => {
-    if (!audioRef.current || !currentSong) return;
+    if (!audio || !currentSong) return;
 
     if (isPlaying) {
-      audioRef.current.pause();
+      audio.pause();
       setIsPlaying(false);
     } else {
-      audioRef.current.play();
+      audio.play();
       setIsPlaying(true);
     }
   }
@@ -167,9 +170,9 @@ export const PlayerProvider = ({ children }: any) => {
       setIsPlaying(true);
     }
 
-    if (audioRef.current) {
-      audioRef.current.src = songService.streamUrl(track.id, track.fileUrl);
-      audioRef.current.play();
+    if (audio) {
+      audio.src = songService.streamUrl(track.id, track.fileUrl);
+      audio.play();
     }
   }
 
@@ -186,9 +189,9 @@ export const PlayerProvider = ({ children }: any) => {
       setIsPlaying(true);
     }
 
-    if (audioRef.current) {
-      audioRef.current.src = songService.streamUrl(track.id, track.fileUrl);
-      audioRef.current.play();
+    if (audio) {
+      audio.src = songService.streamUrl(track.id, track.fileUrl);
+      audio.play();
     }
   }
 
@@ -204,16 +207,10 @@ export const PlayerProvider = ({ children }: any) => {
   }
 
   useMemo(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = volume;
+    if (audio) {
+      audio.volume = volume;
     }
   }, [volume]);
-
-  // useEffect(() => {
-  //   if (audioRef.current) {
-  //     audioRef.current.volume = volume;
-  //   }
-  // }, [volume]);
 
   return (
     <PlayerContext.Provider
@@ -223,6 +220,7 @@ export const PlayerProvider = ({ children }: any) => {
         queue, setQueue,
         isPlaying, setIsPlaying,
         volume, setVolume,
+        prevVolume, setPrevVolume,
         isMuted, setIsMuted,
         isQueue, setIsQueue,
         queueMeta, setQueueMeta,
@@ -237,15 +235,9 @@ export const PlayerProvider = ({ children }: any) => {
 
       <audio
         ref={audioRef}
-        onTimeUpdate={() => {
-          if (!audioRef.current) return;
-          setProgress(audioRef.current.currentTime);
-        }}
-        onLoadedMetadata={() => {
-          if (!audioRef.current) return;
-          setDuration(audioRef.current.duration);
-        }}
-        onEnded={next} // 🔥 autoplay siguiente,
+        onTimeUpdate={() => audio && setProgress(audio.currentTime)}
+        onLoadedMetadata={() => audio && setDuration(audio.duration)}
+        onEnded={next} // 🔥 autoplay siguiente
         crossOrigin="anonymous"
       />
     </PlayerContext.Provider>
