@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from "react";
-import { ListIcon, MusicIcon, RotateCcwIcon, SearchIcon, UserIcon, XIcon } from "lucide-react";
+import { MusicIcon, RotateCcwIcon, SearchIcon, UserIcon, XIcon } from "lucide-react";
 import type { Artist, Playlist } from "../../types/upload.types";
 import type { Playlist as SongfyPlaylist } from "../../../features/playlist/playlist.types";
 import { useAppCtx } from "../../../shared/context/AppContext";
