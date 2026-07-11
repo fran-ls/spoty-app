@@ -74,8 +74,8 @@ const DownloadPage = () => {
   const [playlist, setPlaylist] = useState<Playlist>({
     name: '',
     cover: '',
-    bgColor: '#00aaff',
-    gradientColor: '#0084ff',
+    bgColor: '#3b3b3b',
+    gradientColor: '#111111',
     file: null,
     coverUrl: ''
   });
@@ -347,7 +347,7 @@ const DownloadPage = () => {
               {format === 'audio' ? (
                 <Select
                   option={(p) => setQuality(p.value)}
-                  activeIndex={2}
+                  activeIndex={1}
                   label="Bitrate"
                   wrapId="audio-quality-group"
                   className="select-audio"

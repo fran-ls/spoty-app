@@ -1,8 +1,15 @@
-import { useRef } from "react";
-import { XIcon } from "lucide-react";
+import { useMemo, useRef, useState } from "react";
+import { ListIcon, MusicIcon, RotateCcwIcon, SearchIcon, UserIcon, XIcon } from "lucide-react";
 import type { Artist, Playlist } from "../../types/upload.types";
+import type { Playlist as SongfyPlaylist } from "../../../features/playlist/playlist.types";
 import { useAppCtx } from "../../../shared/context/AppContext";
 import { config } from "../../../shared/data/config.data";
+import useArtist from "../../../features/artist/hooks/useArtist";
+import SmartImage from "../../../shared/components/SmartImage";
+import artistService from "../../../features/artist/services/artist.service";
+import SearchWidget from "./SearchWidget";
+import playlistService from "../../../features/playlist/services/playlist.service";
+import type { SearchMeta } from "../../../shared/types/common.types";
 
 interface UploadSidebarProps {
   artist: Artist;
@@ -13,6 +20,21 @@ interface UploadSidebarProps {
 }
 
 const UploadSidebar = ({ artist, playlist, setArtist, setPlaylist, onSave }: UploadSidebarProps) => {
+  const { artists, artistMeta, searchArtists } = useArtist();
+  const [playlistMeta, setPlaylistMeta] = useState<SearchMeta>({
+    page: 0,
+    limit: 10,
+    total: 0,
+    totalPages: 0,
+    totalDuration: 0,
+    hasNextPage: false,
+    hasPrevPage: false
+  });
+  const [playlists, setPlaylists] = useState<SongfyPlaylist[]>([]);
+
+  const [isArtistSearch, setIsArtistSearch] = useState(false);
+  const [isPlaylistSearch, setIsPlaylistSearch] = useState(false);
+
   const artistInputRef = useRef<HTMLInputElement>(null);
   const playlistInputRef = useRef<HTMLInputElement>(null);
   const color1InputRef = useRef<HTMLInputElement>(null);
@@ -20,12 +42,15 @@ const UploadSidebar = ({ artist, playlist, setArtist, setPlaylist, onSave }: Upl
 
   const { isSettingsModal, setIsSettingsModal } = useAppCtx();
 
-  const stops = [
-    { color: playlist.bgColor, pos: 0 },
-    { color: playlist.gradientColor, pos: 50 },
-    { color: '#131313', pos: 100 }
-  ]
+  const colors = {
+    bg: '#3b3b3b',
+    gradient: '#111111'
+  }
 
+  const stops = useMemo(() => ([
+    { color: playlist.bgColor, pos: 50 },
+    { color: playlist.gradientColor, pos: 100 }
+  ]), [playlist]);
   const sorted = [...stops].sort((a, b) => a.pos - b.pos);
   const gradientDirection = 'to bottom';
   const gradientStops = sorted.map((s) => `${s.color} ${s.pos}%`).join(", ");
@@ -47,6 +72,43 @@ const UploadSidebar = ({ artist, playlist, setArtist, setPlaylist, onSave }: Upl
     document.body.style.paddingRight = `${scrollbarWidth}`;
   }
 
+  async function searchPlaylists(filters?: Record<string, any>) {
+    const q = {
+      limit: 10,
+      page: 0,
+      ...filters
+    }
+
+    const { data } = await playlistService.searchPlaylists(q);
+
+    if (!data) return;
+
+    setPlaylistMeta(data.meta);
+
+    if (q.page > 1) {
+      setPlaylists((prev) => [...prev, ...data.items]);
+      return;
+    }
+
+    setPlaylists(data.items);
+  }
+
+  const loadMoreArtists = async (query: string, page: number) => {
+    await searchArtists({
+      name: query,
+      limit: 10,
+      page
+    });
+  }
+
+  const loadMorePlaylists = async (query: string, page: number) => {
+    await searchPlaylists({
+      name: query,
+      limit: 10,
+      page
+    });
+  }
+
   return (
     <>
       <div
@@ -56,6 +118,9 @@ const UploadSidebar = ({ artist, playlist, setArtist, setPlaylist, onSave }: Upl
       />
 
       <aside
+        style={{
+          overflow: 'hidden'
+        }}
         className={`${isSettingsModal ? 'open' : ''} config-panel`}
         id="config-panel"
         role="dialog"
@@ -81,10 +146,32 @@ const UploadSidebar = ({ artist, playlist, setArtist, setPlaylist, onSave }: Upl
             <div className="cp-section-header">
               <div className="cp-section-dot artist"></div>
               <span className="cp-section-label">Artista</span>
+              <button
+                onClick={() => setArtist({
+                  name: '',
+                  bio: '',
+                  image: '',
+                  file: null,
+                  imageUrl: ''
+                })}
+                style={{
+                  padding: '2px',
+                  color: 'var(--muted)',
+                  marginLeft: 'auto'
+                }}
+                className="cursor-pointer"
+                type="button"
+              >
+                <RotateCcwIcon size={16} />
+              </button>
             </div>
             <div className="cp-fields">
               <div className="artist-group">
                 <div
+                  style={{
+                    position: 'relative',
+                    borderRadius: '100%'
+                  }}
                   className="img-drop field-group"
                   id="artist-drop"
                   title="Seleccionar imagen"
@@ -114,9 +201,15 @@ const UploadSidebar = ({ artist, playlist, setArtist, setPlaylist, onSave }: Upl
                     <img
                       onClick={() => artistInputRef.current?.click()}
                       style={{
-                        display: artist.image ? 'block' : 'none'
+                        borderRadius: 0,
+                        display: artist.image ? 'block' : 'none',
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        border: 0
                       }}
                       className="img-preview"
+                      crossOrigin="anonymous"
                       src={artist.image}
                       id="artist-preview"
                       alt="Vista previa artista"
@@ -137,9 +230,24 @@ const UploadSidebar = ({ artist, playlist, setArtist, setPlaylist, onSave }: Upl
                 </div>
 
                 <div className="field-group artist-name">
-                  <label className="field-label">Nombre</label>
+                  <div className="flex items-center justify-between gap-2">
+                    <label className="field-label">Nombre</label>
+                    <button
+                      onClick={() => setIsArtistSearch(true)}
+                      style={{
+                        color: 'var(--muted)'
+                      }}
+                      className="cursor-pointer text-[9px] p-0.5"
+                      title="Buscar artista"
+                      type="button"
+                    >
+                      <SearchIcon size={14} />
+                    </button>
+                  </div>
+
                   <input
                     onChange={(e) => setArtist({ ...artist, name: e.target.value })}
+                    value={artist.name}
                     placeholder="Nombre del artista"
                     className="field-input"
                     id="artist-name"
@@ -149,10 +257,11 @@ const UploadSidebar = ({ artist, playlist, setArtist, setPlaylist, onSave }: Upl
               </div>
 
               <div className="field-group">
-                <label className="field-label">URL Imagen</label>
+                <label className="field-label">Portada URL</label>
                 <input
                   onChange={(e) => setArtist({ ...artist, imageUrl: e.target.value })}
-                  placeholder="https://image.jpg"
+                  value={artist.imageUrl}
+                  placeholder="https://cover.jpg"
                   className="field-input"
                   id="image-url"
                   type="text"
@@ -163,6 +272,7 @@ const UploadSidebar = ({ artist, playlist, setArtist, setPlaylist, onSave }: Upl
                 <label className="field-label">Biografía</label>
                 <textarea
                   onChange={(e) => setArtist({ ...artist, bio: e.target.value })}
+                  value={artist.bio}
                   placeholder="Breve descripción del artista…"
                   className="field-textarea"
                   id="artist-bio"
@@ -175,6 +285,25 @@ const UploadSidebar = ({ artist, playlist, setArtist, setPlaylist, onSave }: Upl
             <div className="cp-section-header">
               <div className="cp-section-dot playlist"></div>
               <span className="cp-section-label">Playlist</span>
+              <button
+                onClick={() => setPlaylist({
+                  name: '',
+                  cover: '',
+                  bgColor: '#3b3b3b',
+                  gradientColor: '#111111',
+                  file: null,
+                  coverUrl: ''
+                })}
+                style={{
+                  padding: '2px',
+                  color: 'var(--muted)',
+                  marginLeft: 'auto'
+                }}
+                className="cursor-pointer"
+                type="button"
+              >
+                <RotateCcwIcon size={16} />
+              </button>
             </div>
             <div className="cp-fields">
               <div className="playlist-group">
@@ -208,9 +337,11 @@ const UploadSidebar = ({ artist, playlist, setArtist, setPlaylist, onSave }: Upl
                     <img
                       onClick={() => playlistInputRef.current?.click()}
                       style={{
+                        border: 0,
                         display: playlist.cover ? 'block' : 'none'
                       }}
                       className="img-preview"
+                      crossOrigin="anonymous"
                       src={playlist.cover}
                       id="playlist-preview"
                       alt="Portada"
@@ -231,9 +362,23 @@ const UploadSidebar = ({ artist, playlist, setArtist, setPlaylist, onSave }: Upl
                 </div>
 
                 <div className="field-group playlist-name">
-                  <label className="field-label">Nombre</label>
+                  <div className="flex items-center justify-between gap-2">
+                    <label className="field-label">Nombre</label>
+                    <button
+                      onClick={() => setIsPlaylistSearch(true)}
+                      style={{
+                        color: 'var(--muted)'
+                      }}
+                      className="cursor-pointer text-[9px] p-0.5"
+                      title="Buscar playlist"
+                      type="button"
+                    >
+                      <SearchIcon size={14} />
+                    </button>
+                  </div>
                   <input
                     onChange={(e) => setPlaylist({ ...playlist, name: e.target.value })}
+                    value={playlist.name}
                     placeholder="Nombre de la playlist"
                     className="field-input"
                     id="pl-name"
@@ -246,6 +391,7 @@ const UploadSidebar = ({ artist, playlist, setArtist, setPlaylist, onSave }: Upl
                 <label className="field-label">URL Portada</label>
                 <input
                   onChange={(e) => setPlaylist({ ...playlist, coverUrl: e.target.value })}
+                  value={playlist.coverUrl}
                   placeholder="https://cover.jpg"
                   className="field-input"
                   id="cover-url"
@@ -254,7 +400,24 @@ const UploadSidebar = ({ artist, playlist, setArtist, setPlaylist, onSave }: Upl
               </div>
 
               <div className="field-group">
-                <label className="field-label">Colores del gradiente</label>
+                <div className="flex items-center justify-between gap-2">
+                  <label className="field-label">Color de Fondo</label>
+                  <button
+                    onClick={() => setPlaylist({
+                      ...playlist,
+                      bgColor: colors.bg,
+                      gradientColor: colors.gradient
+                    })}
+                    style={{
+                      padding: '2px',
+                      color: 'var(--muted)'
+                    }}
+                    className="cursor-pointer"
+                    type="button"
+                  >
+                    <RotateCcwIcon size={16} />
+                  </button>
+                </div>
                 <div className="color-row">
                   <div className="color-group">
                     <div
@@ -270,7 +433,10 @@ const UploadSidebar = ({ artist, playlist, setArtist, setPlaylist, onSave }: Upl
                         {playlist.bgColor}
                       </span>
                       <input
-                        onChange={(e) => setPlaylist({ ...playlist, bgColor: e.target.value })}
+                        onChange={(e) => setPlaylist({
+                          ...playlist,
+                          bgColor: e.target.value
+                        })}
                         value={playlist.bgColor}
                         ref={color1InputRef}
                         id="cp1"
@@ -293,7 +459,10 @@ const UploadSidebar = ({ artist, playlist, setArtist, setPlaylist, onSave }: Upl
                         {playlist.gradientColor}
                       </span>
                       <input
-                        onChange={(e) => setPlaylist({ ...playlist, gradientColor: e.target.value })}
+                        onChange={(e) => setPlaylist({
+                          ...playlist,
+                          gradientColor: e.target.value
+                        })}
                         value={playlist.gradientColor}
                         ref={color2InputRef}
                         type="color"
@@ -331,6 +500,73 @@ const UploadSidebar = ({ artist, playlist, setArtist, setPlaylist, onSave }: Upl
             Guardar
           </button>
         </div>
+
+        <SearchWidget
+          keys={{
+            label: 'name',
+            value: 'id',
+            sub: 'id'
+          }}
+          bgColor="#111119"
+          label="Buscar artista"
+          open={isArtistSearch}
+          items={artists}
+          meta={artistMeta}
+          isLoadMore={artistMeta.hasNextPage}
+          loadMore={loadMoreArtists}
+          onClose={() => setIsArtistSearch(false)}
+          payload={({ label, item }) => {
+            const image = artistService.artistImage(item?.id, item?.image);
+            setArtist({
+              ...artist,
+              name: label,
+              imageUrl: image,
+              bio: item?.bio,
+              image
+            });
+          }}
+          loadIcon={({ id, image }) => (
+            <SmartImage
+              wrapClassName="bg-white/5 text-gray-400 w-9 h-9 rounded-full border border-white/5 overflow-hidden shrink-0"
+              url={artistService.artistImage(id, image)}
+              icon={<UserIcon size={16} />}
+            />
+          )}
+        />
+
+        <SearchWidget
+          keys={{
+            label: 'name',
+            value: 'id',
+            sub: 'user.username'
+          }}
+          bgColor="#111119"
+          label="Buscar lista"
+          open={isPlaylistSearch}
+          items={playlists}
+          meta={playlistMeta}
+          isLoadMore={playlistMeta.hasNextPage}
+          loadMore={loadMorePlaylists}
+          onClose={() => setIsPlaylistSearch(false)}
+          payload={({ label, item }) => {
+            const cover = playlistService.playlistCover(item?.id, item?.cover);
+            setPlaylist({
+              ...playlist,
+              name: label,
+              coverUrl: cover,
+              bgColor: item?.bgColor,
+              gradientColor: item?.gradientColor,
+              cover
+            });
+          }}
+          loadIcon={({ id, cover }) => (
+            <SmartImage
+              wrapClassName="bg-white/5 text-gray-400 w-9 h-9 rounded-md border border-white/5 overflow-hidden shrink-0"
+              url={playlistService.playlistCover(id, cover)}
+              icon={<MusicIcon size={16} />}
+            />
+          )}
+        />
       </aside>
     </>
   )
