@@ -3,6 +3,7 @@ import { SearchIcon } from "lucide-react";
 import type { Artist } from "../artist/artist.types";
 import type { Album } from "../artist/album.types";
 import type { Playlist } from "../playlist/playlist.types";
+import type { Track } from "../song/song.types";
 import SearchPlaylistList from "../playlist/components/SearchPlaylistList";
 import SearchTrackList from "../song/components/SearchTrackList";
 import SearchAlbumList from "../artist/components/SearchAlbumList";
@@ -11,14 +12,14 @@ import SearchArtistList from "../artist/components/SearchArtistList";
 export type FilterKind = 'all' | 'artists' | 'albums' | 'tracks' | 'playlists';
 
 interface SearchPanelProps {
-  triggerViewArtist: (artist: Artist) => void;
   triggerViewAlbum: (album: Album) => void;
+  triggerViewTrack: (track: Track) => void;
+  triggerViewArtist: (artist: Artist) => void;
   triggerViewPlaylist: (playlist: Playlist) => void;
-  setActiveAlbum: React.Dispatch<React.SetStateAction<Album | null>>;
 }
 
 const SearchPanel = (props: SearchPanelProps) => {
-  const { setActiveAlbum, triggerViewArtist, triggerViewAlbum, triggerViewPlaylist } = props;
+  const { triggerViewArtist, triggerViewAlbum, triggerViewPlaylist, triggerViewTrack } = props;
 
   const [searchQuery, setSearchQuery] = useState('');
   const [searchFilterType, setSearchFilterType] = useState<FilterKind>('all');
@@ -59,7 +60,7 @@ const SearchPanel = (props: SearchPanelProps) => {
           <SearchTrackList
             query={searchQuery}
             filter={searchFilterType}
-            triggerViewTrack={() => { }}
+            triggerViewTrack={triggerViewTrack}
           />
         )}
 
@@ -84,7 +85,6 @@ const SearchPanel = (props: SearchPanelProps) => {
             query={searchQuery}
             filter={searchFilterType}
             triggerViewAlbum={triggerViewAlbum}
-            setActiveAlbum={setActiveAlbum}
           />
         )}
       </div>

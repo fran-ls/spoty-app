@@ -17,8 +17,10 @@ import SearchPanel from '../../search/SearchPanel';
 import useArtist from '../../artist/hooks/useArtist';
 import useAlbum from '../../artist/hooks/useAlbum';
 import albumService from '../../artist/services/album.service';
+import TrackDetail from './TrackDetail';
+import type { Track } from '../song.types';
 
-export type PanelMode = 'create-artist' | 'create-album' | 'view-artist' | 'view-album' | 'view-playlist';
+export type PanelMode = 'create-artist' | 'create-album' | 'view-artist' | 'view-album' | 'view-playlist' | 'view-track';
 
 export const UploadPanel: React.FC = () => {
   const { dispatch } = useAuth();
@@ -31,6 +33,7 @@ export const UploadPanel: React.FC = () => {
   const [isPanel2Open, setIsPanel2Open] = useState(false);
 
   const [activeArtist, setActiveArtist] = useState<Artist | null>(null);
+  const [activeTrack, setActiveTrack] = useState<Track | null>(null);
   const [activeAlbum, setActiveAlbum] = useState<Album | null>(null);
   const [activePlaylist, setActivePlaylist] = useState<Playlist | null>(null);
 
@@ -77,6 +80,17 @@ export const UploadPanel: React.FC = () => {
     onOpenPanel2();
   }
 
+  const triggerViewTrack = (track: Track) => {
+    if (!track) {
+      setIsPanel2Open(false);
+      return;
+    }
+
+    setPanel2Mode('view-track');
+    setActiveTrack(track);
+    onOpenPanel2();
+  }
+
   const onClosePanel2 = () => {
     setIsPanel1Open(true);
     setIsPanel2Open(false);
@@ -119,6 +133,11 @@ export const UploadPanel: React.FC = () => {
     setActiveAlbum(null);
     setIsPanel2Open(false);
     setAlbums((prev) => prev.filter((a) => a.id !== albumId));
+    return true;
+  }
+
+  async function onRemoveTrack() {
+    setActiveTrack(null);
     return true;
   }
 
@@ -233,7 +252,7 @@ export const UploadPanel: React.FC = () => {
 
             {activeTab === 'search' && (
               <SearchPanel
-                setActiveAlbum={setActiveAlbum}
+                triggerViewTrack={triggerViewTrack}
                 triggerViewAlbum={triggerViewAlbum}
                 triggerViewArtist={triggerViewArtist}
                 triggerViewPlaylist={triggerViewPlaylist}
@@ -271,6 +290,7 @@ export const UploadPanel: React.FC = () => {
                       {panel2Mode === 'view-artist' && 'Artista'}
                       {panel2Mode === 'view-album' && 'Álbum'}
                       {panel2Mode === 'view-playlist' && 'Playlist'}
+                      {panel2Mode === 'view-track' && 'Pista'}
                     </span>
                   </div>
                   <button
@@ -315,6 +335,14 @@ export const UploadPanel: React.FC = () => {
                   {panel2Mode === 'view-playlist' &&
                     <PlaylistDetail
                       activePlaylist={activePlaylist}
+                      onClose={onClosePanel2}
+                    />
+                  }
+
+                  {panel2Mode === 'view-track' &&
+                    <TrackDetail
+                      activeTrack={activeTrack}
+                      onRemove={onRemoveTrack}
                       onClose={onClosePanel2}
                     />
                   }

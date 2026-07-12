@@ -14,6 +14,7 @@ export interface AudioPlayerState {
 
 interface AudioPlayerProps {
   file: File | null;
+  title?: string;
   url: string;
   unstyled?: boolean;
   playBtnClassName?: string;
@@ -21,7 +22,7 @@ interface AudioPlayerProps {
 }
 
 export const AudioPlayer: React.FC<AudioPlayerProps> = (props) => {
-  const { file, url, unstyled = false, playBtnClassName = '', setPlayer } = props;
+  const { title = '', file, url, unstyled = false, playBtnClassName = '', setPlayer } = props;
 
   const audioRef = useRef<HTMLAudioElement>(null);
   const progressRef = useRef<HTMLDivElement>(null);
@@ -133,7 +134,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = (props) => {
   }
 
   const togglePlay = () => {
-    if (!audio || !file) return;
+    if (!audio || !url) return;
 
     play();
 
@@ -176,7 +177,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = (props) => {
       setProgress(0);
       setTimeout(() => { setDuration(audio.duration); }, 1500);
     }
-  }, [file]);
+  }, [url]);
 
   useMemo(() => setPlayer && setPlayer({
     isPlaying, isPause,
@@ -204,9 +205,9 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = (props) => {
             <div className="text-[#adaaaa] text-[10px] flex items-center justify-between">
               <span
                 className="text-xs line-clamp-1 select-text"
-                title={file?.name}
+                title={file?.name || title}
               >
-                {file?.name}
+                {file?.name || title}
               </span>
               <div className="flex items-center gap-1 font-medium">
                 <span className="text-right select-none">
