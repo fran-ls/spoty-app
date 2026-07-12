@@ -1,21 +1,17 @@
-import type { Album, AlbumDTO, AlbumFilters } from "../album.types";
+import type { Album, AlbumDTO, AlbumFilters, AlbumInclude } from "../album.types";
 import type { SearchResponse } from "../../../shared/types/common.types";
 import { api, apiFetch } from "../../../shared/utils/api";
 import { tokenService } from "../../auth/services/token.service";
 import { envs } from "../../../shared/utils/envs";
 
 class AlbumService {
-  async searchAlbums(filters?: AlbumFilters) {
-    const params: Record<string, any> = {}
-
-    for (const f in filters) {
-      const v = (filters as any)[f];
-      if (v) params[f] = v;
-    }
-
+  async searchAlbums(filters?: AlbumFilters, include?: AlbumInclude) {
     return await apiFetch<SearchResponse<Album[]>>(() => (
       api.get(`/albums/search`, {
-        params: filters ? params : undefined,
+        params: {
+          ...(filters && filters),
+          include: include ? JSON.stringify(include) : undefined
+        },
         headers: {
           'Authorization': `Bearer ${tokenService.getToken()}`
         }

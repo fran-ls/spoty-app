@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Album, AlbumFilters } from "../album.types";
+import type { Album, AlbumFilters, AlbumInclude } from "../album.types";
 import type { SearchMeta } from "../../../shared/types/common.types";
 import albumService from "../services/album.service";
 
@@ -14,20 +14,21 @@ const useAlbum = () => {
     hasPrevPage: false
   });
 
-  async function searchAlbums(filters?: AlbumFilters) {
+  async function searchAlbums(filters?: AlbumFilters, include?: AlbumInclude) {
     const page = filters?.page ?? 0;
 
-    const { data } = await albumService.searchAlbums(filters);
-    if (!data) return;
+    const { data } = await albumService.searchAlbums(filters, include);
+    if (!data) return data;
 
     setAlbumMeta(data.meta);
 
     if (page > 1) {
       setAlbums((prev) => [...prev, ...data.items]);
-      return;
+      return data;
     }
 
     setAlbums(data.items);
+    return data;
   }
 
   return {

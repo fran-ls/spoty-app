@@ -1,3 +1,4 @@
+import type { IncludeArgs } from "../../shared/types/common.types";
 import type { Song } from "../song/song.types";
 import type { Artist } from "./artist.types";
 
@@ -27,8 +28,9 @@ export interface AlbumFilters {
   limit?: number;
   order?: 'asc' | 'desc';
   orderBy?: 'title' | 'createdAt';
-  include?: {
-    artist?: boolean;
-    songs?: boolean;
-  }
+}
+
+export interface AlbumInclude {
+  artist?: IncludeArgs;
+  songs?: IncludeArgs;
 }
