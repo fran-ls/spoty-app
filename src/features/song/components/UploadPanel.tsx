@@ -91,6 +91,14 @@ export const UploadPanel: React.FC = () => {
     onOpenPanel2();
   }
 
+  const onClosePanel1 = () => {
+    dispatch({
+      type: 'upload',
+      payload: { isActive: false }
+    });
+    setIsPanel2Open(false);
+  }
+
   const onClosePanel2 = () => {
     setIsPanel1Open(true);
     setIsPanel2Open(false);
@@ -148,10 +156,7 @@ export const UploadPanel: React.FC = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        onClick={() => dispatch({
-          type: 'upload',
-          payload: { isActive: false }
-        })}
+        onClick={onClosePanel1}
         className="absolute inset-0 bg-black/80 backdrop-blur-sm"
         id="upload-backdrop"
       />
@@ -183,10 +188,7 @@ export const UploadPanel: React.FC = () => {
             </div>
 
             <button
-              onClick={() => dispatch({
-                type: 'upload',
-                payload: { isActive: false }
-              })}
+              onClick={onClosePanel1}
               className="p-1.5 rounded-lg hover:bg-white/5 text-gray-400 hover:text-white transition-all cursor-pointer"
               title="Cerrar creador"
             >

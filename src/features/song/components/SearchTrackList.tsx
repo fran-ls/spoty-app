@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { ChevronRightIcon, MusicIcon } from "lucide-react";
-import type { Track, TrackFilters } from "../song.types";
+import type { Track, TrackFilters, TrackInclude } from "../song.types";
 import type { FilterKind } from "../../search/SearchPanel";
 import songService from "../services/song.service";
 import SmartImage from "../../../shared/components/SmartImage";
@@ -24,14 +24,18 @@ const SearchTrackList = ({ query, filter, triggerViewTrack }: SearchTrackListPro
     limit: 10,
     page: 0
   }
+  const trackInclude: TrackInclude = {
+    album: 'id title',
+    artist: 'id name image'
+  }
 
   const { loaderRef } = useInfiniteScroll(() => {
     if (!isLoadMore) return;
-    searchTracks({ ...filters, page: page + 1 });
+    searchTracks({ ...filters, page: page + 1 }, trackInclude);
     setPage(page + 1);
   });
 
-  useEffect(() => { setTimeout(() => searchTracks(filters), 300) }, [query]);
+  useEffect(() => { setTimeout(() => searchTracks(filters, trackInclude), 300) }, [query]);
 
   return (
     <div className="space-y-2 pt-2">

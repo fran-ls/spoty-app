@@ -1,4 +1,4 @@
-import type { PaginationQuery } from "../../shared/types/common.types";
+import type { IncludeArgs, PaginationQuery } from "../../shared/types/common.types";
 import type { Album } from "../artist/album.types";
 import type { Artist } from "../artist/artist.types";
 
@@ -10,7 +10,7 @@ export interface Song {
   duration: number;
   artistId: string;
   albumId?: string | null;
-  createdAt: Date;
+  createdAt?: any;
   artist?: Artist | null;
   album?: Album | null;
 }
@@ -50,7 +50,7 @@ export interface Track {
   duration: number;
   artistId: string;
   albumId?: string | null;
-  createdAt: Date;
+  createdAt?: any;
   artist?: Artist | null;
   album?: Album | null;
 }
@@ -87,12 +87,6 @@ export type TrackFilters = Partial<Track> & PaginationQuery & {
 }
 
 export interface TrackInclude {
-  artist?: string | string[] | boolean | {
-    kind?: 'select' | 'omit';
-    fields?: string | string[];
-  };
-  album?: string | string[] | boolean | {
-    kind?: 'select' | 'omit';
-    fields?: string | string[];
-  };
+  artist?: IncludeArgs;
+  album?: IncludeArgs;
 }
