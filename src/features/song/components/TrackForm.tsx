@@ -284,8 +284,20 @@ const TrackForm = (props: TrackFormProps) => {
               type="text"
               value={form.cover || ''}
               onChange={(e) => onFormChange('cover', e.target.value)}
-              required
               placeholder="https://portada.jpg"
+              className="text-[13px] w-full bg-[#181818] border border-white/5 rounded-xl py-3 px-4 text-xs font-medium focus:ring-1 focus:ring-primary focus:border-primary text-white placeholder:text-gray-600 outline-none transition-all"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-[10px] uppercase font-mono tracking-wider font-bold text-gray-400">
+              Audio URL
+            </label>
+            <input
+              type="text"
+              value={form.fileUrl || ''}
+              onChange={(e) => onFormChange('fileUrl', e.target.value)}
+              placeholder="https://audio.mp3"
               className="text-[13px] w-full bg-[#181818] border border-white/5 rounded-xl py-3 px-4 text-xs font-medium focus:ring-1 focus:ring-primary focus:border-primary text-white placeholder:text-gray-600 outline-none transition-all"
             />
           </div>

@@ -12,11 +12,10 @@ interface SearchAlbumListProps {
   query: string;
   filter: FilterKind;
   triggerViewAlbum: (album: Album) => void;
-  setActiveAlbum: React.Dispatch<React.SetStateAction<Album | null>>;
 }
 
 const SearchAlbumList = (props: SearchAlbumListProps) => {
-  const { query, filter, triggerViewAlbum, setActiveAlbum } = props;
+  const { query, filter, triggerViewAlbum } = props;
   const { albums, albumMeta, searchAlbums } = useAlbum();
   const isLoadMore = albumMeta.hasNextPage && filter === 'albums';
 
@@ -56,10 +55,7 @@ const SearchAlbumList = (props: SearchAlbumListProps) => {
           {albums.map(album => (
             <div
               key={album.id}
-              onClick={() => {
-                triggerViewAlbum(album);
-                setActiveAlbum(album);
-              }}
+              onClick={() => triggerViewAlbum(album)}
               className="bg-[#161616] hover:bg-white/5 border border-white/5 p-2 rounded-xl flex items-center justify-between cursor-pointer transition-all group"
             >
               <div className="flex items-center gap-3 overflow-hidden">
