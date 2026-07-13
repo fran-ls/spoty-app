@@ -23,19 +23,16 @@ const SearchAlbumList = (props: SearchAlbumListProps) => {
   const filters: AlbumFilters = {
     title: query.trim(),
     limit: 10,
-    page: 1,
-    include: {
-      artist: true
-    }
+    page: 1
   }
 
   const { loaderRef } = useInfiniteScroll(() => {
     if (!isLoadMore) return;
-    searchAlbums({ ...filters, page: page + 1 });
+    searchAlbums({ ...filters, page: page + 1 }, { artist: true });
     setPage(page + 1);
   });
 
-  useEffect(() => { setTimeout(() => searchAlbums(filters), 300) }, [query]);
+  useEffect(() => { setTimeout(() => searchAlbums(filters, { artist: true }), 300) }, [query]);
 
   return (
     <div className="space-y-2 pt-2">
