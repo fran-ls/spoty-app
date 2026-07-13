@@ -28,7 +28,6 @@ const DownloadTable = ({ items, meta, isLoading, error, loadMore, onDelete }: Do
         <table id="hist-table">
           <thead>
             <tr>
-              <th className="td-thumb"></th>
               <th>
                 Título <span className="sort-arrow" id="arr-title">↕</span>
               </th>
@@ -64,29 +63,32 @@ const DownloadTable = ({ items, meta, isLoading, error, loadMore, onDelete }: Do
 
               return (
                 <tr key={item.id}>
-                  <td className="td-thumb aspect-video min-w-25" style={{
-                    minWidth: 100
-                  }}>
-                    {
-                      item.thumbnail
-                        ?
-                        <img
-                          className="thumb-img"
-                          src={item.thumbnail}
-                          onError={({ currentTarget }) => {
-                            currentTarget.style.visibility = 'hidden';
-                          }}
-                          loading="lazy"
-                        />
-                        : <div className="thumb-img" />
-                    }
-                  </td>
                   <td className="td-title">
-                    <div className="title-text" title={item.title || ""}>
-                      <div>{item.title || "Sin título"}</div>
+                    <div className="d-thumb aspect-video">
+                      {
+                        item.thumbnail
+                          ?
+                          <img
+                            className="thumb-img"
+                            src={item.thumbnail}
+                            onError={({ currentTarget }) => {
+                              currentTarget.style.visibility = 'hidden';
+                            }}
+                            loading="lazy"
+                          />
+                          : <div className="thumb-img" />
+                      }
                     </div>
-                    <div className="url-text" title={item.url || ""}>
-                      <div>{item.url || ""}</div>
+                    <div>
+                      <div
+                        className="title-text"
+                        title={item.title}
+                      >
+                        {item.title || "Sin título"}
+                      </div>
+                      <div className="url-text" title={item.url || ""}>
+                        {item.url || ""}
+                      </div>
                     </div>
                   </td>
                   <td className="td-fmt">

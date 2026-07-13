@@ -129,9 +129,6 @@
 }
 
 .yt-drop .hist-item {
-  display: flex;
-  align-items: center;
-  gap: 14px;
   background: var(--bg2);
   border: 1px solid var(--border);
   border-radius: var(--r-sm);
@@ -169,7 +166,6 @@
 
 .yt-drop .h-title {
   width: 100%;
-  max-width: calc(100% - 56px - 103px);
   line-height: 1.25;
   overflow: hidden;
   display: -webkit-box;
@@ -224,9 +220,10 @@
 .yt-drop .hist-url {
   font-size: .68rem;
   color: var(--muted);
-  white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
   font-family: var(--mono);
   margin-top: 2px;
 }
@@ -256,13 +253,9 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  right: 0;
   padding: 5px;
   border-radius: 5px;
-  background: var(--bg2);
+  background: transparent;
   color: #fff;
   font-family: var(--ff);
   font-size: .78rem;
@@ -270,7 +263,7 @@
   border: none;
   cursor: pointer;
   transition: .2s all ease;
-  white-space: nowrap;
+  margin-left: auto;
 }
 
 .yt-drop .dl-btn svg {
@@ -302,5 +295,11 @@
 
   @media (width>=580px) {
     margin-left: auto;
+  }
+}
+
+@media (width<520px) {
+  .yt-drop .hist-badge-t {
+    display: none;
   }
 }

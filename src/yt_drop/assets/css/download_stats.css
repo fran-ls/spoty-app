@@ -475,8 +475,9 @@
   border-bottom: none;
 }
 
-.yt-drop .td-thumb {
-  width: 70px;
+.yt-drop .d-thumb {
+  width: 68px;
+  min-width: 68px;
 }
 
 .yt-drop .thumb-img {
@@ -489,7 +490,10 @@
 }
 
 .yt-drop .td-title {
-  max-width: 260px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 380px;
 }
 
 .yt-drop .title-text {

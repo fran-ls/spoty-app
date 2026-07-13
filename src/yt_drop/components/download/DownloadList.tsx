@@ -1,9 +1,8 @@
 import { useRef, useState } from "react";
-import { InfoIcon, XIcon } from "lucide-react";
+import { InfoIcon, Link2Icon, XIcon } from "lucide-react";
 import type { Download, PaginationMeta } from "../../types/download.types";
 import { useInfiniteScroll } from "../../hooks/useInfiniteScroll";
-import { fmtDuration } from "../../helpers/formats";
-import { QUALITIES } from "../../data/qualities.data";
+import { fmtDuration, fmtSize } from "../../helpers/formats";
 import downloadService from "../../services/download.service";
 import { DownloadIcon } from "../shared/Icons";
 import { getFmtDate } from "../../../shared/utils/getFormatDate";
@@ -32,17 +31,23 @@ const DownloadList = ({ items, meta, loadMore }: DownloadListProps) => {
   }
 
   function getMeta(item: Download) {
-    const q = item.quality;
-    const fmt = item.format;
+    const isAudio = item.format === 'audio';
+    const size = fmtSize(item.sizeBytes);
     const date = getFmtDate(item.createdAt, 'dd MMM yyyy').replaceAll(' ', '/');
     const duration = fmtDuration(item.duration);
-    const quality = (QUALITIES as any)[fmt]?.[q];
-    const qlity = quality ? `${item.quality} ${quality}` : 'No calidad';
-    const meta = `${date} · ${duration} ${quality ? ` · ${qlity}` : ''}`;
-    return meta;
+    const quality = `${item.quality}${isAudio ? 'kbps' : 'p'}`;
+    const meta = `${size} • ${quality} • ${duration}`;
+    return {
+      isAudio,
+      size,
+      date,
+      duration,
+      quality,
+      meta
+    }
   }
 
-  const size = window.innerWidth <= 600;
+  const screenSize = window.innerWidth <= 600;
 
   return (
     <div
@@ -51,99 +56,116 @@ const DownloadList = ({ items, meta, loadMore }: DownloadListProps) => {
       ref={wrapRef}
     >
       {items.map((item, i) => {
-        const meta = getMeta(item);
-        const title = item.title || 'Sin título';
+        const { date, meta } = getMeta(item);
+        const title = item.title || '';
 
         return (
-          <div
-            style={{
-              flexDirection: size ? 'column' : 'row'
-            }}
+          <article
             className="hist-item"
             key={`idx-${i}`}
           >
-            <div className="w-full flex gap-3 relative" style={{
-              display: size ? 'flex' : 'none'
-            }}>
-              {item.thumbnail ?
-                <img
-                  style={{
-                    width: '70px',
-                    height: '50px'
-                  }}
-                  className="hist-thumb"
-                  src={item.thumbnail}
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none';
-                  }}
-                />
-                :
-                <div className="hist-thumb"></div>
-              }
+            <div className="flex items-center gap-3.5 w-full">
+              <div>
+                {item.thumbnail ?
+                  <img
+                    className="hist-thumb"
+                    src={item.thumbnail}
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                  :
+                  <div className="hist-thumb"></div>
+                }
+              </div>
 
-              <div className="hist-badge" style={{
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'start'
-              }}>
-                <div className="flex items-center gap-2">
-                  <span className={`badge ${item.format === 'audio' ? 'badge-audio' : 'badge-video'}`}>
-                    {item.format || 'video'}
-                  </span>
-                  <span className={`badge ${item.status === 'success' ? 'badge-ok' : 'badge-error'}`}>
-                    {item.status === 'success' ? 'OK' : 'Error'}
-                  </span>
+              <div className="hist-body">
+                <div className="hist-title">
+                  <h4
+                    style={{
+                      width: 'fit-content',
+                      maxWidth: screenSize ? '100%' : '',
+                      marginBottom: '4px'
+                    }}
+                    className="h-title"
+                    title={title}
+                  >
+                    {title}
+                  </h4>
+
+                  <div
+                    style={{
+                      marginTop: '-4px'
+                    }}
+                    className="hist-badge hist-badge-t"
+                  >
+                    <span className={`badge ${item.format === 'audio' ? 'badge-audio' : 'badge-video'}`}>
+                      {item.format || 'video'}
+                    </span>
+                    <span className={`badge ${item.status === 'success' ? 'badge-ok' : 'badge-error'}`}>
+                      {item.status === 'success' ? 'OK' : 'Error'}
+                    </span>
+                  </div>
+
+                  <button
+                    onClick={() => getInfo(item)}
+                    className="btn-info"
+                    disabled
+                    type="button"
+                  >
+                    <InfoIcon size={20} />
+                  </button>
+
+                  <button
+                    className="dl-btn"
+                    onClick={() => downloadService.download(item)}
+                  >
+                    <DownloadIcon />
+                  </button>
                 </div>
+
                 <div
+                  style={{
+                    marginTop: '-5px'
+                  }}
                   className="hist-meta truncate"
                   title={meta}
                 >
                   {meta}
                 </div>
               </div>
-
-              <button
-                style={{ top: '14px' }}
-                onClick={() => downloadService.download(item)}
-                className="dl-btn"
-              >
-                <DownloadIcon />
-              </button>
             </div>
 
-            <div style={{
-              display: !size ? 'block' : 'none'
-            }}>
-              {item.thumbnail ?
-                <img
-                  className="hist-thumb"
-                  src={item.thumbnail}
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none';
-                  }}
-                />
-                :
-                <div className="hist-thumb"></div>
-              }
-            </div>
-
-            <div className="hist-body" style={{
-              width: size ? '100%' : ''
-            }}>
-              <div className="hist-title">
-                <h4
+            <div
+              style={{ marginTop: '8px' }}
+              className="mt-2 w-full flex-wrap flex items-center justify-between gap-y-2 gap-x-5"
+            >
+              <div className="flex items-center gap-2">
+                <Link2Icon
                   style={{
-                    maxWidth: size ? '100%' : ''
+                    color: 'var(--muted)',
+                    minWidth: 20
                   }}
-                  className="h-title"
-                  title={title}
+                  size={20}
+                />
+                <a
+                  style={{
+                    maxWidth: '100%'
+                  }}
+                  className="hist-url hover:underline hover:text-white"
+                  title={item.url}
+                  href={item.url}
+                  target="_blank"
                 >
-                  {title}
-                </h4>
+                  {item.url}
+                </a>
+              </div>
+              <span className="max-[520px]:hidden hist-meta">
+                {date}
+              </span>
 
-                <div className="hist-badge" style={{
-                  display: !size ? 'flex' : 'none'
-                }}>
+              <div className="min-[520px]:hidden flex flex-1 items-center justify-between gap-2">
+                <div className="hist-badge">
                   <span className={`badge ${item.format === 'audio' ? 'badge-audio' : 'badge-video'}`}>
                     {item.format || 'video'}
                   </span>
@@ -151,45 +173,12 @@ const DownloadList = ({ items, meta, loadMore }: DownloadListProps) => {
                     {item.status === 'success' ? 'OK' : 'Error'}
                   </span>
                 </div>
-
-                <button
-                  onClick={() => getInfo(item)}
-                  className="btn-info"
-                  disabled
-                  type="button"
-                >
-                  <InfoIcon size={20} />
-                </button>
+                <span className="hist-meta">
+                  {date}
+                </span>
               </div>
-              <div
-                style={{
-                  maxWidth: '100%'
-                }}
-                className="hist-url"
-                title={item.url}
-              >
-                {item.url}
-              </div>
-              <div
-                style={{
-                  display: !size ? 'block' : 'none'
-                }}
-                className="hist-meta truncate"
-                title={meta}
-              >
-                {meta}
-              </div>
-              <button
-                style={{
-                  display: !size ? 'block' : 'none'
-                }}
-                onClick={() => downloadService.download(item)}
-                className="dl-btn"
-              >
-                <DownloadIcon />
-              </button>
             </div>
-          </div>
+          </article>
         )
       })}
 
