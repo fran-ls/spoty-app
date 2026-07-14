@@ -6,7 +6,7 @@ import LibraryPage from "../features/library/pages/LibraryPage";
 import PlaylistPage from "../features/playlist/pages/PlaylistPage";
 import SongPage from "../features/song/pages/SongPage";
 import { routes } from "../shared/utils/routes";
-import SearchPlaylists from "../features/playlist/pages/SearchPlaylists";
+import SearchPlaylistPage from "../features/playlist/pages/SearchPlaylistPage";
 import YTDropHomePage from "../yt_drop/pages/HomePage";
 import DownloadPage from "../yt_drop/pages/DownloadPage";
 import DownloadStatPage from "../yt_drop/pages/DownloadStatPage";
@@ -16,7 +16,7 @@ const AppRoutes = () => {
     <AppLayout>
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path={routes.search} element={<SearchPlaylists />} />
+        <Route path={routes.search} element={<SearchPlaylistPage />} />
         <Route path={routes.library} element={<LibraryPage />} />
         <Route path={routes.playlists} element={<PlaylistPage />} />
         <Route path={`${routes.playlists}/:playlistId`} element={<PlaylistPage />} />

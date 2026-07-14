@@ -155,6 +155,20 @@ class PlaylistService {
     ));
   }
 
+  async searchPublicPlaylists(filters?: PlaylistFilters, include?: PlaylistInclude) {
+    return await apiFetch<SearchResponse<Playlist[]>>(() => (
+      api.get(`/playlists/u/search`, {
+        params: {
+          ...filters,
+          include: include ? JSON.stringify(include) : undefined
+        },
+        headers: {
+          'Authorization': `Bearer ${tokenService.getToken()}`
+        }
+      })
+    ));
+  }
+
   async newPlaylist(playlist: PlaylistDTO, force = false) {
     const formData = new FormData();
 

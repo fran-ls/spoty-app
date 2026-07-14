@@ -1,20 +1,24 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Bell, Users, User, Search, Sparkles, XIcon, GlobeIcon, CircleUserRoundIcon, SettingsIcon, LaptopMinimalIcon, LogOutIcon, UploadIcon, MusicIcon, DownloadIcon, LibraryIcon, Headphones } from 'lucide-react';
 import useAuth from '../../features/auth/hooks/useAuth';
 import { routes } from '../utils/routes';
 import { getDeviceType } from '../utils/getDeviceType';
+import { useAppCtx } from '../context/AppContext';
 
 interface HeaderProps {
   onExplorePremiumClick?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({ onExplorePremiumClick }) => {
+  const { user, isAdmin, dispatch, showProfile, logout } = useAuth();
+  const { searchQuery, setSearchQuery } = useAppCtx();
+  const location = useLocation();
+  const pathname = location.pathname;
+
   const [showUserDropdown, setShowUserDropdown] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const [isActive, setIsActive] = useState(false);
 
-  const { user, isAdmin, dispatch, showProfile, logout } = useAuth();
   const device = getDeviceType();
   const isDesktop = device === 'desktop';
 
@@ -23,6 +27,21 @@ export const Header: React.FC<HeaderProps> = ({ onExplorePremiumClick }) => {
   const onCloseDropdown = () => {
     setShowUserDropdown(false);
     setIsActive(false);
+  }
+
+  const onQueryChange = (e: React.ChangeEvent<HTMLInputElement, HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+
+    if (pathname === routes.search) {
+      navigate(!value.trim() ? pathname : `${pathname}?q=${value.trim()}`);
+    }
+  }
+
+  const onPressKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key.toLowerCase() === 'enter') {
+      navigate(!searchQuery.trim() ? routes.search : `${routes.search}?q=${searchQuery.trim()}`);
+    }
   }
 
   return (
@@ -61,7 +80,8 @@ export const Header: React.FC<HeaderProps> = ({ onExplorePremiumClick }) => {
 
             <input
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={onQueryChange}
+              onKeyDown={onPressKey}
               className="bg-[#262626] border-none rounded-full py-3 pl-12 pr-22 w-full text-sm font-medium focus:ring-2 focus:ring-white/20 text-white placeholder:text-[#adaaaa] transition-all outline-none"
               placeholder="¿Qué quieres escuchar?"
               type="text"
@@ -69,7 +89,10 @@ export const Header: React.FC<HeaderProps> = ({ onExplorePremiumClick }) => {
 
             {searchQuery && (
               <button
-                onClick={() => setSearchQuery('')}
+                onClick={() => {
+                  setSearchQuery('');
+                  navigate(pathname);
+                }}
                 className="cursor-pointer absolute right-14 top-1/2 -translate-y-1/2 text-[10px] text-[#adaaaa] hover:text-white rounded"
               >
                 <XIcon />
