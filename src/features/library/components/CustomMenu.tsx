@@ -1,21 +1,23 @@
 import { CheckIcon, LayoutGridIcon, ListIcon, TextAlignJustify } from "lucide-react";
-import type { PlaylistLayout, PlaylistOrder } from "../../playlist/playlist.types";
+import { PlaylistLayout, PlaylistOrderBy, PlaylistOrderK } from "../library.types";
+import { PLAYLIST_LAYOUT_LABEL, PLAYLIST_SORT_LABEL } from "../data/library.data";
 
-export type OrderItem = {
+export type CustomMenuOrderItem = {
   label: string;
-  value: PlaylistOrder;
+  value: PlaylistOrderBy;
+  k: PlaylistOrderK;
 }
 
-type LayoutItem = {
+type CustomMenuLayoutItem = {
   label: string;
   value: PlaylistLayout;
   icon: React.ReactElement;
 }
 
 interface CustomMenuProps {
-  order: OrderItem;
+  order: CustomMenuOrderItem;
   layout: PlaylistLayout;
-  onSort: (value: OrderItem) => void;
+  onSort: (value: CustomMenuOrderItem) => void;
   onLayout: (value: PlaylistLayout) => void;
   onClose: () => void;
 }
@@ -23,35 +25,37 @@ interface CustomMenuProps {
 const CustomMenu = (props: CustomMenuProps) => {
   const { order, layout, onSort, onLayout, onClose } = props;
 
-  const sortItems: OrderItem[] = [
+  const sortItems: CustomMenuOrderItem[] = [
     {
-      label: 'Recientes',
-      value: 'recent'
+      label: PLAYLIST_SORT_LABEL.RECENT,
+      value: PlaylistOrderBy.RECENT,
+      k: PlaylistOrderK.RECENT
     },
     {
-      label: 'Orden alfabético',
-      value: 'name'
-    },
+      label: PLAYLIST_SORT_LABEL.NAME,
+      value: PlaylistOrderBy.NAME,
+      k: PlaylistOrderK.NAME
+    }
   ];
 
-  const layoutItems: LayoutItem[] = [
+  const layoutItems: CustomMenuLayoutItem[] = [
     {
-      label: 'Lista compacta',
-      value: 'compact-list',
+      label: PLAYLIST_LAYOUT_LABEL.COMPACT_LIST,
+      value: PlaylistLayout.COMPACT_LIST,
       icon: (
         <TextAlignJustify className="w-5 h-5" />
       )
     },
     {
-      label: 'Lista predeterminada',
-      value: 'list',
+      label: PLAYLIST_LAYOUT_LABEL.LIST,
+      value: PlaylistLayout.LIST,
       icon: (
         <ListIcon className="w-5 h-5" />
       )
     },
     {
-      label: 'Cuadrícula',
-      value: 'grid',
+      label: PLAYLIST_LAYOUT_LABEL.GRID,
+      value: PlaylistLayout.GRID,
       icon: (
         <LayoutGridIcon className="w-5 h-5" />
       )

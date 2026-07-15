@@ -1,21 +1,23 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PlusIcon, SearchIcon, ListIcon, XIcon, PauseIcon, PlayIcon, PanelTopCloseIcon, PanelTopOpenIcon, LayoutGridIcon, TextAlignJustify, Minimize2Icon, GlobeIcon, LockIcon, GlobeLockIcon } from 'lucide-react';
-import type { PlaylistFilters, PlaylistLayout, PlaylistVisibility } from '../../playlist/playlist.types';
+import type { PlaylistFilters } from '../../playlist/playlist.types';
+import { PlaylistLayout, PlaylistOrderBy, PlaylistVisibility } from '../library.types';
 import { usePlayer } from '../../../shared/context/PlayerContext';
 import { routes } from '../../../shared/utils/routes';
-import CustomMenu, { type OrderItem } from './CustomMenu';
+import CustomMenu from './CustomMenu';
 import playlistService from '../../playlist/services/playlist.service';
 import useAuth from '../../auth/hooks/useAuth';
 import usePlaylist from '../../playlist/hooks/usePlaylist';
 import SmartImage from '../../../shared/components/SmartImage';
-import PlaylistSongItem from './PlaylistSongItem';
 import MenuItem from '../../../shared/components/MenuItem';
 import PlaylistItem from './PlaylistItem';
 import Loader from '../../../shared/components/Loader';
 import { useInfiniteScroll } from '../../../shared/hooks/useInfiniteScroll';
 import { getDeviceType } from '../../../shared/utils/getDeviceType';
 import { STYLES } from '../../../shared/utils/styles';
+import useUserLibrary from '../hooks/useUserLibrary';
+import libraryService from '../services/library.service';
 
 interface LibraryProps {
   isPage?: boolean;
@@ -24,39 +26,42 @@ interface LibraryProps {
 }
 
 export const Library = (props: LibraryProps) => {
+  const { isAdmin, user } = useAuth();
+  const { playlists, playlistMeta, getUserPlaylists } = usePlaylist();
+  const { isPlaying, queueMeta, togglePlay } = usePlayer();
+  const {
+    library, layout, orderBy, systemPlaylists, getUserLibrary,
+    onLayoutChange, onSortBy, onSizeChange, getSystemPlaylists
+  } = useUserLibrary();
+
   const [isCollapsed, setIsCollapsed] = useState(props.isCollapsed ?? false);
   const [isExpanded, setIsExpanded] = useState(props.isExpanded ?? false);
-
   const [isVisibilityMenu, setIsVisibilityMenu] = useState(false);
   const [visibility, setVisibility] = useState<PlaylistVisibility | ''>('');
 
   const [page, setPage] = useState(0);
+  const [query, setQuery] = useState('');
   const [isSearch, setIsSearch] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
 
-  const [query, setQuery] = useState('');
-  const [order, setOrder] = useState<OrderItem>({
-    label: 'Recientes',
-    value: 'recent'
-  });
-  const [layout, setLayout] = useState<PlaylistLayout>('list');
-
-  const { isAdmin, user } = useAuth();
-  const { playlists, playlistMeta, getUserPlaylists } = usePlaylist();
-  const { isPlaying, queueMeta, togglePlay } = usePlayer();
+  const orderKind = orderBy.value === PlaylistOrderBy.RECENT ? 'desc' : 'asc';
 
   const filters: PlaylistFilters = {
     page: 0,
     name: query.trim(),
-    orderBy: order.value === 'recent' ? 'createdAt' : order.value,
-    order: order.value === 'recent' ? 'desc' : 'asc',
-    ...(visibility && { isPublic: visibility === 'public' })
+    orderBy: orderBy.k,
+    order: orderKind,
+    ...(visibility && { isPublic: visibility === PlaylistVisibility.PUBLIC })
   }
 
   const { loaderRef } = useInfiniteScroll(async () => {
-    if (playlistMeta.hasNextPage) {
-      await getUserPlaylists(user!.id, { ...filters, page: page + 1 }, { user: false });
+    if (playlistMeta.hasNextPage && user?.id) {
+      await getUserPlaylists(
+        user.id,
+        { ...filters, page: page + 1 },
+        undefined
+      );
       setPage(page + 1);
     }
   });
@@ -81,11 +86,29 @@ export const Library = (props: LibraryProps) => {
   }
 
   useEffect(() => {
-    setTimeout(() => getUserPlaylists(user!.id, { ...filters, page: 0 }, { user: false }), 300);
+    user?.id && getUserLibrary(user.id).then((data) => {
+      if (!data || props.isPage) return;
+      setIsCollapsed(data.isCollapsed);
+      setIsExpanded(data.isExpanded);
+    })
+  }, [user]);
+
+  useEffect(() => {
     setPage(0);
-  }, [query, order, visibility]);
+
+    setTimeout(() => {
+      user?.id && getUserPlaylists(
+        user.id,
+        { ...filters, page: 0 },
+        undefined
+      )
+
+      isAdmin && getSystemPlaylists(filters);
+    }, 300);
+  }, [query, orderBy, visibility]);
 
   const grid = {
+    s: 'min-[420px]:grid-cols-[minmax(200px,2fr)_70px]',
     sm: 'sm:grid-cols-[minmax(200px,2fr)_1fr]',
     md: 'md:grid-cols-[minmax(200px,2fr)_1fr_1fr]',
     lg: 'lg:grid-cols-[minmax(200px,2fr)_1fr_1fr_minmax(180px,1fr)]'
@@ -105,7 +128,11 @@ export const Library = (props: LibraryProps) => {
           <div className={`${isCollapsed ? 'flex-col gap-4' : 'flex-row'} flex items-center justify-between`}>
             {!isExpanded && (
               <button
-                onClick={() => setIsCollapsed(!isCollapsed)}
+                onClick={() => {
+                  const collapsed = !isCollapsed;
+                  setIsCollapsed(collapsed);
+                  onSizeChange(library.id, collapsed, false);
+                }}
                 className="p-2 rounded-lg text-[#adaaaa] hover:text-white cursor-pointer transition-colors duration-100"
                 title={isCollapsed ? "Abre Tu biblioteca" : "Contraer Tu biblioteca"}
               >
@@ -124,7 +151,11 @@ export const Library = (props: LibraryProps) => {
 
             {!isCollapsed &&
               <button
-                onClick={() => setIsExpanded(true)}
+                onClick={() => {
+                  const expanded = true;
+                  setIsExpanded(true);
+                  onSizeChange(library.id, false, expanded);
+                }}
                 className={`${!isExpanded ? 'cursor-pointer' : ''}`}
                 type="button"
               >
@@ -136,6 +167,9 @@ export const Library = (props: LibraryProps) => {
 
             <div className="flex items-center gap-2">
               <button
+                onMouseEnter={() => {
+                  libraryService.newUserLibrary({ userId: user!.id })
+                }}
                 onClick={onSavePlaylist}
                 className={`${isExpanded ? 'p-2 px-4' : 'p-2'} hover:bg-white/10 cursor-pointer bg-[#1f1f1f] text-sm font-medium rounded-full gap-2 flex items-center transition-colors duration-100`}
                 title="Crea una lista"
@@ -152,7 +186,11 @@ export const Library = (props: LibraryProps) => {
 
               {(isExpanded && !props.isPage) && (
                 <button
-                  onClick={() => setIsExpanded(false)}
+                  onClick={() => {
+                    const expanded = false;
+                    setIsExpanded(expanded);
+                    onSizeChange(library.id, isCollapsed, expanded);
+                  }}
                   className="p-2 rounded-full text-[#adaaaa] hover:bg-white/10 hover:text-white cursor-pointer transition-colors duration-100"
                   title="Contraer Tu biblioteca"
                 >
@@ -202,13 +240,13 @@ export const Library = (props: LibraryProps) => {
                       {(!isSearch || isExpanded) &&
                         <span className="font-semibold">
                           {visibility === '' && 'Visibilidad'}
-                          {visibility === 'public' && 'Pública'}
-                          {visibility === 'private' && 'Privada'}
+                          {visibility === PlaylistVisibility.PUBLIC && 'Pública'}
+                          {visibility === PlaylistVisibility.PRIVATE && 'Privada'}
                         </span>
                       }
 
-                      {visibility === 'public' && <GlobeIcon size={18} />}
-                      {visibility === 'private' && <LockIcon size={18} />}
+                      {visibility === PlaylistVisibility.PUBLIC && <GlobeIcon size={18} />}
+                      {visibility === PlaylistVisibility.PRIVATE && <LockIcon size={18} />}
                       {visibility === '' && <GlobeLockIcon size={18} />}
                     </button>
 
@@ -232,13 +270,13 @@ export const Library = (props: LibraryProps) => {
                           label: 'Privada',
                           action: 'close',
                           icon: <LockIcon size={20} />,
-                          onAction: () => setVisibility('private')
+                          onAction: () => setVisibility(PlaylistVisibility.PRIVATE)
                         },
                         {
                           label: 'Pública',
                           action: 'close',
                           icon: <GlobeIcon size={20} />,
-                          onAction: () => setVisibility('public')
+                          onAction: () => setVisibility(PlaylistVisibility.PUBLIC)
                         }
                       ]}
                     />
@@ -252,21 +290,21 @@ export const Library = (props: LibraryProps) => {
                 >
                   {(!isSearch || isExpanded) &&
                     <span className="font-semibold text-nowrap">
-                      {order.label}
+                      {orderBy.label}
                     </span>
                   }
 
-                  {layout === 'list' && <ListIcon className="w-5 h-5" />}
-                  {layout === 'compact-list' && <TextAlignJustify className="w-5 h-5" />}
-                  {layout === 'grid' && <LayoutGridIcon className="w-5 h-5" />}
+                  {layout === PlaylistLayout.LIST && <ListIcon className="w-5 h-5" />}
+                  {layout === PlaylistLayout.COMPACT_LIST && <TextAlignJustify className="w-5 h-5" />}
+                  {layout === PlaylistLayout.GRID && <LayoutGridIcon className="w-5 h-5" />}
                 </button>
 
                 {isOpen &&
                   <CustomMenu
-                    order={order}
+                    order={orderBy}
                     layout={layout}
-                    onSort={(value) => setOrder(value)}
-                    onLayout={(value) => setLayout(value)}
+                    onSort={(value) => onSortBy(library.id, value, orderKind)}
+                    onLayout={(value) => onLayoutChange(library.id, value)}
                     onClose={() => setIsOpen(false)}
                   />
                 }
@@ -281,7 +319,7 @@ export const Library = (props: LibraryProps) => {
           }}
           className={`${isCollapsed ? 'h-[calc(100dvh-64px-88px-100px)]' : isExpanded ? `min-[520px]:h-[calc(100dvh-64px-88px-116px)] h-[calc(100dvh-64px-88px-156px)]` : 'h-[calc(100dvh-64px-88px-116px)]'} overflow-y-auto overflow-x-hidden relative ${!isDesktop ? 'hide-scrollbar' : ''}`}
         >
-          {(isExpanded && layout !== 'grid') && (
+          {(isExpanded && layout !== PlaylistLayout.GRID) && (
             <ul className={`sm:grid hidden ${grid.sm} ${grid.md} ${grid.lg} gap-3 bg-[#131313] text-[13px] text-[#adaaaa] border-b border-white/10 px-4 sticky top-0 z-10`}>
               <li className="py-2 line-clamp-1 font-semibold">
                 Título
@@ -301,34 +339,41 @@ export const Library = (props: LibraryProps) => {
             </ul>
           )}
 
-          <ul className={`${isCollapsed ? 'pl-0 pb-5' : 'pl-2 pb-2'} w-full absolute top-0 left-0 ${(layout === 'grid' && !isCollapsed) ? 'grid' : ''} ${!isExpanded ? 'grid-cols-2' : 'grid-cols-[repeat(auto-fit,136px)]'} ${(isExpanded && layout !== 'grid') ? 'sm:mt-10' : ''}`}>
+          <ul className={`${isCollapsed ? 'pl-0 pb-5' : 'pl-2 pb-2'} w-full absolute top-0 left-0 ${(layout === PlaylistLayout.GRID && !isCollapsed) ? 'grid' : ''} ${!isExpanded ? 'grid-cols-2' : 'grid-cols-[repeat(auto-fit,136px)]'} ${(isExpanded && layout !== PlaylistLayout.GRID) ? 'sm:mt-10' : ''}`}>
             {isAdmin && (
-              <li
-                onClick={() => {
-                  setIsExpanded(false);
-                  navigate(routes.songs);
-                }}
-                className={`${isCollapsed ? 'justify-center' : isExpanded ? `justify-start ${grid.sm} ${grid.md} ${grid.lg} gap-3` : ''} grid p-2 cursor-pointer text-[#adaaaa] hover:bg-[#1f1f1f] rounded-md`}
-              >
-                {isCollapsed && (
-                  <SmartImage
-                    wrapClassName="min-w-12 rounded"
-                    iconClassName="text-primary"
-                    url={null}
-                  />
-                )}
+              systemPlaylists.map((playlist, i) => (
+                <li
+                  onClick={() => {
+                    setIsExpanded(false);
+                    onSizeChange(library.id, isCollapsed, false);
+                    navigate(routes.songs);
+                  }}
+                  className={`${isCollapsed ? 'justify-center' : isExpanded ? `justify-start ${grid.sm} ${grid.md} ${grid.lg} gap-3` : ''} grid p-2 cursor-pointer text-[#adaaaa] hover:bg-[#1f1f1f] rounded-md`}
+                  key={playlist.id}
+                >
+                  {isCollapsed && (
+                    <SmartImage
+                      wrapClassName="min-w-12 rounded"
+                      iconClassName="text-primary"
+                      url={null}
+                    />
+                  )}
 
-                {!isCollapsed && (
-                  <PlaylistSongItem
-                    isExpanded={isExpanded}
-                    isCollapsed={isCollapsed}
-                    layout={layout}
-                    queueMeta={queueMeta}
-                    user={user!}
-                  />
-                )}
-              </li>
-            )}
+
+                  {!isCollapsed && (
+                    <PlaylistItem
+                      isPlaying={isPlaying && queueMeta.playlistId === playlist.id}
+                      isHover={hoverIndex !== null && hoverIndex === i}
+                      playlist={playlist}
+                      isExpanded={isExpanded}
+                      queueMeta={queueMeta}
+                      layout={layout}
+                      user={user!}
+                      togglePlay={togglePlay}
+                    />
+                  )}
+                </li>
+              )))}
 
             {playlists.map((playlist, i) => {
               const cover = playlistService.playlistCover(playlist.id, playlist.cover);
@@ -337,9 +382,10 @@ export const Library = (props: LibraryProps) => {
                 <li
                   onClick={() => {
                     setIsExpanded(false);
+                    onSizeChange(library.id, isCollapsed, false);
                     navigate(`${routes.playlists}/${playlist.id}`);
                   }}
-                  className={`${isCollapsed ? 'justify-center' : isExpanded ? `justify-start ${grid.sm} ${grid.md} ${grid.lg} gap-3` : ''} grid p-2 cursor-pointer text-[#adaaaa] hover:bg-[#1f1f1f] rounded-md ${layout === 'compact-list' ? 'sm:grid-cols-1 grid-cols-[minmax(200px,2fr)_1fr]' : 'grid'}`}
+                  className={`${isCollapsed ? 'justify-center' : isExpanded ? `justify-start ${grid.s} ${grid.sm} ${grid.md} ${grid.lg} gap-3` : ''} grid p-2 cursor-pointer text-[#adaaaa] hover:bg-[#1f1f1f] rounded-md ${layout === PlaylistLayout.COMPACT_LIST ? 'sm:grid-cols-1 grid-cols-[minmax(200px,2fr)_1fr]' : 'grid'}`}
                   onPointerEnter={() => setHoverIndex(i)}
                   onPointerLeave={() => setHoverIndex(null)}
                   key={playlist.id}

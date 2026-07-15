@@ -1,5 +1,6 @@
-import type { Playlist, PlaylistLayout, PlaylistMeta } from "../../playlist/playlist.types";
+import type { Playlist, PlaylistMeta } from "../../playlist/playlist.types";
 import type { User } from "../../auth/auth.types";
+import { PlaylistLayout } from "../library.types";
 import SmartImage from "../../../shared/components/SmartImage";
 
 interface PlaylistItemProps {
@@ -18,7 +19,7 @@ const PlaylistSongItem = ({ layout, user, queueMeta, isExpanded }: PlaylistItemP
 
   return (
     <>
-      {(layout === 'list') && (
+      {(layout === PlaylistLayout.LIST) && (
         <>
           <div className="flex items-center gap-3">
             <SmartImage
@@ -51,7 +52,7 @@ const PlaylistSongItem = ({ layout, user, queueMeta, isExpanded }: PlaylistItemP
         </>
       )}
 
-      {(layout === 'compact-list') && (
+      {(layout === PlaylistLayout.COMPACT_LIST) && (
         <>
           <div className="text-[13px] font-semibold flex items-center gap-1 w-full text-[#adaaaa]">
             <h4
@@ -70,7 +71,7 @@ const PlaylistSongItem = ({ layout, user, queueMeta, isExpanded }: PlaylistItemP
         </>
       )}
 
-      {(layout === 'grid') && (
+      {(layout === PlaylistLayout.GRID) && (
         <div className="w-28 text-[13px] font-semibold p-1">
           <SmartImage
             wrapClassName="w-28 h-28 rounded-md text-[#adaaaa]"

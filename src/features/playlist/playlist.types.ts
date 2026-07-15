@@ -1,10 +1,6 @@
-import type { PaginationMeta, PaginationQuery } from "../../shared/types/common.types";
+import type { IncludeArgs, PaginationMeta, PaginationQuery } from "../../shared/types/common.types";
 import type { User } from "../auth/auth.types";
 import type { Song, SongCover } from "../song/song.types";
-
-export type PlaylistLayout = 'compact-list' | 'list' | 'grid';
-export type PlaylistOrder = 'recent' | 'name';
-export type PlaylistVisibility = 'private' | 'public';
 
 export interface Playlist {
   id: string;
@@ -67,28 +63,11 @@ export type PlaylistFormAction = 'set-state' | 'select-file' | 'save';
 export type PlaylistFilters = Partial<Playlist> & PaginationQuery;
 
 export interface PlaylistInclude {
-  user?: string | string[] | boolean | {
-    kind?: 'select' | 'omit';
-    fields?: string | string[];
-  };
-  songs?: boolean;
-}
-
-export interface PlaylistInclude {
-  user?: string | string[] | boolean | {
-    kind?: 'select' | 'omit';
-    fields?: string | string[];
-  };
-  songs?: boolean;
+  user?: IncludeArgs;
+  songs?: IncludeArgs;
 }
 
 export interface PlaylistSongInclude {
-  playlist?: string | string[] | boolean | {
-    kind?: 'select' | 'omit';
-    fields?: string | string[];
-  };
-  song?: string | string[] | boolean | {
-    kind?: 'select' | 'omit';
-    fields?: string | string[];
-  };
+  playlist?: IncludeArgs;
+  song?: IncludeArgs;
 }

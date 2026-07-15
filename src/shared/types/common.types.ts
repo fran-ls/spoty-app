@@ -3,6 +3,7 @@ export type IncludeArgs = string | string[] | boolean | {
   fields?: string | string[];
 }
 
+
 export interface PaginationMeta {
   total: number;
   page: number;
@@ -11,6 +12,15 @@ export interface PaginationMeta {
   hasNextPage: boolean;
   hasPrevPage: boolean;
 }
+
+export interface PaginationQuery {
+  id?: string;
+  page?: number;
+  limit?: number;
+  orderBy?: string;
+  order?: 'asc' | 'desc'
+}
+
 
 export type SearchMeta = PaginationMeta & {
   totalDuration?: number;
@@ -21,15 +31,16 @@ export type SearchResponse<T> = {
   meta: SearchMeta;
 }
 
+
 export interface IToast {
   title: string;
   message: string;
 }
 
-export interface PaginationQuery {
-  id?: string;
-  page?: number;
-  limit?: number;
-  orderBy?: string;
-  order?: 'asc' | 'desc'
-}
+
+export const OrderKind = {
+  ASC: 'asc',
+  DESC: 'desc'
+} as const
+
+export type OrderKind = (typeof OrderKind)[keyof typeof OrderKind]
