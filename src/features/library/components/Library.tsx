@@ -108,18 +108,18 @@ export const Library = (props: LibraryProps) => {
   }
 
   useEffect(() => {
-    const isPage = props.isPage
-
-    if (!isPage && user?.id) getUserLibrary(user.id).then((data) => {
-      data && setLibraryStatus({
-        collapsed: data.isCollapsed,
-        expanded: data.isExpanded
-      });
-    })
+    if (!props.isPage) {
+      user?.id && getUserLibrary(user.id).then((data) => {
+        data && setLibraryStatus({
+          collapsed: data.isCollapsed,
+          expanded: data.isExpanded
+        });
+      })
+    }
     else {
       setLibraryStatus({
         collapsed: false,
-        expanded: true
+        expanded: props.isExpanded ?? true
       });
     }
   }, [user]);
@@ -190,13 +190,13 @@ export const Library = (props: LibraryProps) => {
 
   useEffect(() => {
     const verticalScroll = hasScroll(navRef.current!).vertical;
-    setNavVerticalScroll(!verticalScroll);
-  }, [query]);
+    setNavVerticalScroll(verticalScroll);
+  }, [playlists]);
 
   return (
     <aside
       onClick={() => !query && setIsSearch(false)}
-      className={`${isCollapsed ? 'w-18' : isExpanded ? 'w-full' : 'w-72'} ${(isExpanded || props.isPage) ? 'flex' : 'md:flex hidden'} rounded-lg h-full overflow-hidden flex-col bg-[#131313] border-none select-none shrink-0 transition-all duration-300 ease-in-out relative`}
+      className={`${isCollapsed ? 'w-18' : isExpanded ? 'w-full' : 'w-72'} ${props.isPage ? 'flex' : 'md:flex hidden'} rounded-lg h-full overflow-hidden flex-col bg-[#131313] border-none select-none shrink-0 transition-all duration-300 ease-in-out relative`}
       id="spotify-sidebar"
     >
       <div className={`rounded-lg ${STYLES.minHeightMain} ${STYLES.maxHeightMain}`}>
@@ -292,7 +292,7 @@ export const Library = (props: LibraryProps) => {
           </div>
 
           {!isCollapsed &&
-            <div className={`min-[520px]:flex-row flex-col mt-4 text-[#adaaaa] flex items-center justify-between gap-5 relative`}>
+            <div className="min-[520px]:flex-row flex-col mt-4 text-[#adaaaa] flex items-center justify-between gap-5 relative">
               <div
                 onClick={(e) => {
                   e.stopPropagation();
