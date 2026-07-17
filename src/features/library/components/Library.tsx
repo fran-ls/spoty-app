@@ -16,6 +16,7 @@ import { STYLES } from '../../../shared/utils/styles';
 import useUserLibrary from '../hooks/useUserLibrary';
 import { useAppCtx } from '../../../shared/context/AppContext';
 import Playlists from './Playlists';
+import { hasScroll } from '../../../shared/utils/scroll';
 
 export type Grid = {
   li: {
@@ -59,6 +60,9 @@ export const Library = (props: LibraryProps) => {
   const [hoverId, setHoverId] = useState('');
 
   const ulRef = useRef<HTMLUListElement>(null);
+  const navRef = useRef<HTMLElement>(null);
+  const navEl = navRef.current;
+  const [navVerticalScroll, setNavVerticalScroll] = useState(false);
 
   const [gridImgSize, setGridImgSize] = useState(0);
 
@@ -103,13 +107,20 @@ export const Library = (props: LibraryProps) => {
   }
 
   useEffect(() => {
-    user?.id && getUserLibrary(user.id).then((data) => {
-      if (!data || props.isPage) return;
-      setLibraryStatus({
+    const isPage = props.isPage
+
+    if (!isPage && user?.id) getUserLibrary(user.id).then((data) => {
+      data && setLibraryStatus({
         collapsed: data.isCollapsed,
         expanded: data.isExpanded
       });
     })
+    else {
+      setLibraryStatus({
+        collapsed: false,
+        expanded: true
+      });
+    }
   }, [user]);
 
   useEffect(() => {
@@ -176,14 +187,26 @@ export const Library = (props: LibraryProps) => {
     return () => window.removeEventListener('resize', handleResize);
   }, [layout, libraryStatus]);
 
+  useEffect(() => {
+    const verticalScroll = hasScroll(navRef.current!).vertical;
+    setNavVerticalScroll(!verticalScroll);
+  }, [query]);
+
   return (
     <aside
       onClick={() => !query && setIsSearch(false)}
-      className={`${isCollapsed ? 'w-18' : isExpanded ? 'w-full' : 'w-72'} ${isExpanded ? 'flex' : 'md:flex hidden'} rounded-lg h-full overflow-hidden flex-col bg-[#131313] border-none select-none shrink-0 transition-all duration-300 ease-in-out relative`}
+      className={`${isCollapsed ? 'w-18' : isExpanded ? 'w-full' : 'w-72'} ${(isExpanded || props.isPage) ? 'flex' : 'md:flex hidden'} rounded-lg h-full overflow-hidden flex-col bg-[#131313] border-none select-none shrink-0 transition-all duration-300 ease-in-out relative`}
       id="spotify-sidebar"
     >
       <div className={`rounded-lg ${STYLES.minHeightMain} ${STYLES.maxHeightMain}`}>
-        <header className="p-4 text-[#adaaaa] relative">
+        <header
+          style={{
+            ...((!isExpanded && navEl && navEl.scrollTop > 0) && {
+              boxShadow: '0 6px 10px #0009'
+            })
+          }}
+          className="p-4 text-[#adaaaa] relative transition-shadow duration-75"
+        >
           <div className={`${isCollapsed ? 'flex-col gap-4' : 'flex-row'} flex items-center justify-between`}>
             {!isExpanded && (
               <button
@@ -385,6 +408,7 @@ export const Library = (props: LibraryProps) => {
             height: !isDesktop ? `calc(100dvh - 64px - 52px - 62px - ${window.innerWidth >= 520 ? 116 : 156}px)` : ''
           }}
           className={`${isCollapsed ? 'h-[calc(100dvh-64px-88px-100px)]' : isExpanded ? `min-[520px]:h-[calc(100dvh-64px-88px-116px)] h-[calc(100dvh-64px-88px-156px)]` : 'h-[calc(100dvh-64px-88px-116px)]'} overflow-y-auto overflow-x-hidden relative ${!isDesktop ? 'hide-scrollbar' : ''}`}
+          ref={navRef}
         >
           {(isExpanded && !layoutKind.grid) && (
             <ul className={`sm:grid hidden ${grid.li.s} ${grid.li.sm} ${grid.li.md} ${grid.li.lg} gap-3 bg-[#131313] text-[13px] text-[#adaaaa] border-b border-white/10 px-4 sticky top-0 z-10`}>
@@ -407,6 +431,11 @@ export const Library = (props: LibraryProps) => {
           )}
 
           <ul
+            style={{
+              ...((!navVerticalScroll && !isCollapsed) && {
+                paddingRight: '8px'
+              })
+            }}
             className={`${isCollapsed ? 'pl-0 pb-5' : 'pl-2 pb-2'} w-full absolute top-0 left-0 ${(layoutKind.grid && !isCollapsed) ? 'grid' : ''} ${!isExpanded ? 'grid-cols-2' : `${grid.ul.s} ${grid.ul.md} ${grid.ul.lg} ${grid.ul['2xl']}`} ${(isExpanded && !layoutKind.grid) ? 'sm:mt-10' : ''}`}
             ref={ulRef}
           >
