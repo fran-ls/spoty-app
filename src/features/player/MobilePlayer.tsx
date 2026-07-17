@@ -169,172 +169,176 @@ const MobilePlayer = () => {
         className={`sm:max-w-100 ${playerBg} overflow-x-hidden overflow-y-auto w-full z-100 fixed bottom-0 left-0 transition-all duration-200 ${!isDesktop ? 'hide-scrollbar' : ''}`}
         ref={playerRef}
       >
-        <div className="p-3 pb-4 w-full flex items-center justify-between gap-3">
-          <button
-            onClick={() => {
-              setIsExpanded(false);
-              setIsMobileQueue(false);
-            }}
-            className="ml-auto p-2 text-white hover:text-white transition-colors duration-200 cursor-pointer"
-          >
-            <ChevronDownIcon size={28} />
-          </button>
-          <h2
-            className={`${!currentSong?.title ? 'uppercase' : ''} text-xs w-full text-center font-bold text-white hover:underline cursor-pointer truncate`}
-            title={currentSong?.title}
-          >
-            {currentSong?.title || 'Tema'}
-          </h2>
-          <button
-            onClick={() => setIsOpenModal(true)}
-            className="ml-auto p-2 text-white hover:text-white transition-colors duration-200 cursor-pointer"
-          >
-            <EllipsisVerticalIcon className="rotate-90" size={24} />
-          </button>
-        </div>
-
-        <SmartImage
-          styles={{
-            imgWrap: {
-              width: playerImgWidth || '100%',
-              height: playerImgWidth || '100%',
-              ...(!songCover && {
-                borderRadius: '20px',
-                boxShadow: '0 0 25px rgb(0, 0, 0, 0.25)',
-                background: 'transparent'
-              })
-            }
-          }}
-          wrapClassName="sm:w-84 sm:h-84 mx-3 w-[calc(100vw-12px*2)] h-[calc(100vw-12px*2)] bg-[#262626] overflow-hidden shadow-2xl shrink-0 group relative"
-          className="aspect-square w-full h-full object-cover transition-transform duration-300"
-          url={songCover}
-          icon={(
-            <MusicIcon className="w-1/4 h-1/4 text-white absolute top-1/2 left-1/2 -translate-1/2" />
-          )}
-        />
-
-        <div className="px-5 my-8 w-full flex items-center justify-between gap-2">
-          <div className="flex flex-col">
-            <h1
-              className="text-lg font-bold text-white hover:underline cursor-pointer truncate"
+        <div className="h-full flex flex-1 flex-col">
+          <div className="p-3 pb-4 w-full flex items-center justify-between gap-3">
+            <button
+              onClick={() => {
+                setIsExpanded(false);
+                setIsMobileQueue(false);
+              }}
+              className="ml-auto p-2 text-white hover:text-white transition-colors duration-200 cursor-pointer"
+            >
+              <ChevronDownIcon size={28} />
+            </button>
+            <h2
+              className={`${!currentSong?.title ? 'uppercase' : ''} text-xs w-full text-center font-bold text-white hover:underline cursor-pointer truncate`}
               title={currentSong?.title}
             >
               {currentSong?.title || 'Tema'}
-            </h1>
-            <span
-              className="font-medium text-sm text-[#adaaaa] hover:text-white hover:underline cursor-pointer truncate"
-              title={currentSong?.artist?.name}
+            </h2>
+            <button
+              onClick={() => setIsOpenModal(true)}
+              className="ml-auto p-2 text-white hover:text-white transition-colors duration-200 cursor-pointer"
             >
-              {currentSong?.artist?.name || 'Artista'}
-            </span>
+              <EllipsisVerticalIcon className="rotate-90" size={24} />
+            </button>
           </div>
-          <button
-            onClick={toggleLikeTrack}
-            className="p-1 w-fit h-fit text-[#adaaaa] hover:text-white transition-colors duration-200 cursor-pointer"
-            title="Me gusta"
-          >
-            <HeartIcon className={isLiked ? 'fill-primary stroke-0' : ''} size={24} />
-          </button>
-        </div>
 
-        {/* Playback Controls */}
-        <div className="px-5 pb-3 font-normal flex flex-col items-center gap-2 w-full">
-          {/* Timeline Slider Progress */}
-          <div className="mb-4 w-full">
-            <div
-              ref={progressRef}
-              onPointerDown={handleProgressMouseDown}
-              className="flex-1 rounded-full relative cursor-pointer overflow-visible py-1.5 transition-all group"
+          <SmartImage
+            styles={{
+              imgWrap: {
+                width: playerImgWidth || '100%',
+                height: playerImgWidth || '100%',
+                ...(!songCover && {
+                  borderRadius: '20px',
+                  boxShadow: '0 0 25px rgb(0, 0, 0, 0.25)',
+                  background: 'transparent'
+                })
+              }
+            }}
+            wrapClassName="sm:w-84 sm:h-84 mx-3 w-[calc(100vw-12px*2)] h-[calc(100vw-12px*2)] bg-[#262626] overflow-hidden shadow-2xl shrink-0 group relative"
+            className="aspect-square w-full h-full object-cover transition-transform duration-300"
+            url={songCover}
+            icon={(
+              <MusicIcon className="w-1/4 h-1/4 text-white absolute top-1/2 left-1/2 -translate-1/2" />
+            )}
+          />
+
+          <div className="px-5 my-8 w-full flex items-center justify-between gap-2">
+            <div className="flex flex-col">
+              <h1
+                className="text-lg font-bold text-white hover:underline cursor-pointer truncate"
+                title={currentSong?.title}
+              >
+                {currentSong?.title || 'Tema'}
+              </h1>
+              <span
+                className="font-medium text-sm text-[#adaaaa] hover:text-white hover:underline cursor-pointer truncate"
+                title={currentSong?.artist?.name}
+              >
+                {currentSong?.artist?.name || 'Artista'}
+              </span>
+            </div>
+            <button
+              onClick={toggleLikeTrack}
+              className="p-1 w-fit h-fit text-[#adaaaa] hover:text-white transition-colors duration-200 cursor-pointer"
+              title="Me gusta"
             >
-              {/* The actual slider line container */}
-              <div className="absolute top-1/2 left-0 -translate-y-1/2 w-full h-1 bg-white/40 rounded-full overflow-hidden">
+              <HeartIcon className={isLiked ? 'fill-primary stroke-0' : ''} size={24} />
+            </button>
+          </div>
+
+          {/* Playback Controls */}
+          <div className="px-5 pb-3 font-normal flex flex-col items-center gap-2 w-full">
+            {/* Timeline Slider Progress */}
+            <div className="mb-4 w-full">
+              <div
+                ref={progressRef}
+                onPointerDown={handleProgressMouseDown}
+                className="flex-1 rounded-full relative cursor-pointer overflow-visible py-1.5 transition-all group"
+              >
+                {/* The actual slider line container */}
+                <div className="absolute top-1/2 left-0 -translate-y-1/2 w-full h-1 bg-white/40 rounded-full overflow-hidden">
+                  <div
+                    style={{ width: `${progressPercent}%` }}
+                    className="absolute h-full bg-white rounded-full transition-colors z-10"
+                  />
+                </div>
+
+                {/* Floating indicator thumb only visible on group-hover */}
                 <div
-                  style={{ width: `${progressPercent}%` }}
-                  className="absolute h-full bg-white rounded-full transition-colors z-10"
+                  style={{ left: `${progressPercent}%` }}
+                  className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 bg-white rounded-full shadow-md transition-opacity pointer-events-none z-20"
                 />
               </div>
 
-              {/* Floating indicator thumb only visible on group-hover */}
-              <div
-                style={{ left: `${progressPercent}%` }}
-                className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 bg-white rounded-full shadow-md transition-opacity pointer-events-none z-20"
-              />
+              <div className="flex items-center justify-between gap-2.5">
+                <span className="text-[12px] text-[#adaaaa] text-right select-none">
+                  {formatTime(progress ?? 0)}
+                </span>
+                <span className="text-[12px] text-[#adaaaa] text-left select-none">
+                  {formatTime(duration ?? 0)}
+                </span>
+              </div>
             </div>
 
-            <div className="flex items-center justify-between gap-2.5">
-              <span className="text-[12px] text-[#adaaaa] text-right select-none">
-                {formatTime(progress ?? 0)}
-              </span>
-              <span className="text-[12px] text-[#adaaaa] text-left select-none">
-                {formatTime(duration ?? 0)}
-              </span>
+            <div className="relative w-full flex items-center justify-between gap-4">
+              <div className="w-full flex items-center gap-2">
+                <button
+                  onClick={toggleShuffle}
+                  className={`h-fit transition-colors duration-100 cursor-pointer relative ${isShuffle ? 'text-primary' : `${colors.icon} hover:text-white`}`}
+                  title="Habilitar la reproducción aleatoria"
+                >
+                  <ShuffleIcon size={30} />
+                  {isShuffle && (
+                    <span className="absolute -bottom-px left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full" />
+                  )}
+                </button>
+
+                <button
+                  onClick={prev}
+                  className={`ml-auto p-2 hover:text-white transition-colors duration-200 cursor-pointer ${colors.icon}`}
+                  title="Anterior"
+                >
+                  <SkipForwardIcon className="-rotate-180" />
+                </button>
+              </div>
+
+              <button
+                onClick={togglePlay}
+                className="bg-white text-black p-4 rounded-full hover:scale-105 active:scale-95 transition-all shadow-md flex items-center justify-center shrink-0 cursor-pointer"
+                title={isPlaying ? "Pausar" : "Reproducir"}
+              >
+                {isPlaying ? (
+                  <PauseIcon size={20} fill="currentColor" className="translate-x-0" />
+                ) : (
+                  <PlayIcon size={20} fill="currentColor" className="translate-x-px" />
+                )}
+              </button>
+
+              <div className="w-full flex items-center gap-2">
+                <button
+                  onClick={next}
+                  className={`mr-auto p-2 hover:text-white transition-colors duration-200 cursor-pointer ${colors.icon}`}
+                  title="Siguiente"
+                >
+                  <SkipForwardIcon />
+                </button>
+
+                <button
+                  onClick={toggleRepeat}
+                  className={`h-fit transition-colors duration-100 cursor-pointer relative ${isRepeat ? 'text-primary' : `${colors.icon} hover:text-white`}`}
+                  title="Activar repetir"
+                >
+                  <RepeatIcon className="mb-0.5" size={26} />
+                  {isRepeat && (
+                    <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full" />
+                  )}
+                </button>
+              </div>
             </div>
           </div>
 
-          <div className="relative w-full flex items-center justify-between gap-4">
-            <div className="w-full flex items-center gap-2">
-              <button
-                onClick={toggleShuffle}
-                className={`h-fit transition-colors duration-100 cursor-pointer relative ${isShuffle ? 'text-primary' : `${colors.icon} hover:text-white`}`}
-                title="Habilitar la reproducción aleatoria"
-              >
-                <ShuffleIcon size={30} />
-                {isShuffle && (
-                  <span className="absolute -bottom-px left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full" />
-                )}
-              </button>
-
-              <button
-                onClick={prev}
-                className={`ml-auto p-2 hover:text-white transition-colors duration-200 cursor-pointer ${colors.icon}`}
-                title="Anterior"
-              >
-                <SkipForwardIcon className="-rotate-180" />
-              </button>
-            </div>
-
+          <div className="flex mt-auto pb-5 px-5">
             <button
-              onClick={togglePlay}
-              className="bg-white text-black p-4 rounded-full hover:scale-105 active:scale-95 transition-all shadow-md flex items-center justify-center shrink-0 cursor-pointer"
-              title={isPlaying ? "Pausar" : "Reproducir"}
+              onClick={() => setIsMobileQueue(true)}
+              className="text-white p-1 ml-auto"
+              type="button"
             >
-              {isPlaying ? (
-                <PauseIcon size={20} fill="currentColor" className="translate-x-0" />
-              ) : (
-                <PlayIcon size={20} fill="currentColor" className="translate-x-px" />
-              )}
+              <ListMusicIcon />
             </button>
-
-            <div className="w-full flex items-center gap-2">
-              <button
-                onClick={next}
-                className={`mr-auto p-2 hover:text-white transition-colors duration-200 cursor-pointer ${colors.icon}`}
-                title="Siguiente"
-              >
-                <SkipForwardIcon />
-              </button>
-
-              <button
-                onClick={toggleRepeat}
-                className={`h-fit transition-colors duration-100 cursor-pointer relative ${isRepeat ? 'text-primary' : `${colors.icon} hover:text-white`}`}
-                title="Activar repetir"
-              >
-                <RepeatIcon className="mb-0.5" size={26} />
-                {isRepeat && (
-                  <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full" />
-                )}
-              </button>
-            </div>
           </div>
         </div>
-
-        <button
-          onClick={() => setIsMobileQueue(true)}
-          className="text-white p-1 mt-5 ml-4"
-          type="button"
-        >
-          <ListMusicIcon />
-        </button>
       </div>
 
       <MobileQueue

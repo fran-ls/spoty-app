@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { XIcon } from "lucide-react";
 import SmartImage from "../../shared/components/SmartImage";
 import songService from "../song/services/song.service";
@@ -6,6 +6,7 @@ import { usePlayer } from "../../shared/context/PlayerContext";
 import Loader from "../../shared/components/Loader";
 import { useInfiniteScroll } from "../../shared/hooks/useInfiniteScroll";
 import playlistService from "../playlist/services/playlist.service";
+import { getDeviceType } from "../../shared/utils/getDeviceType";
 
 interface MobileQueueProps {
   isExpanded: boolean;
@@ -21,8 +22,7 @@ const MobileQueue = (props: MobileQueueProps) => {
     setQueueMeta, setQueue, playQueueSong
   } = usePlayer();
 
-  const ulQueueRef = useRef<HTMLUListElement>(null);
-  const ulQueue = ulQueueRef.current;
+  const [queueScrollTop, setQueueScrollTop] = useState(0);
 
   const [page, setPage] = useState(0);
   const { loaderRef } = useInfiniteScroll(() => {
@@ -31,6 +31,9 @@ const MobileQueue = (props: MobileQueueProps) => {
     getQueueSongs(nextPage);
     setPage(nextPage);
   });
+
+  const device = getDeviceType();
+  const isDesktop = device === 'desktop';
 
   async function getQueueSongs(page: number) {
     if (page <= 1) return;
@@ -53,15 +56,17 @@ const MobileQueue = (props: MobileQueueProps) => {
     <div
       style={{
         transform: `translateY(${(isMobileQueue && isExpanded) ? 0 : 100}%)`,
-        maxWidth: playerWrap?.offsetWidth || '400px'
+        maxWidth: playerWrap?.offsetWidth || '400px',
+        boxShadow: '0 0 10px #0009',
+        background: `linear-gradient(to bottom, ${currentPlaylist.bgColor} 50%, ${currentPlaylist.bgColor} 100%)`
       }}
-      className="transition-all duration-100 bg-[#262626] w-full h-[70dvh] z-100 fixed bottom-0 left-0 rounded-t-3xl overflow-hidden"
+      className="transition-all duration-100 bg-[#131313] w-full h-[70dvh] z-100 fixed bottom-0 left-0 rounded-t-3xl overflow-hidden"
     >
       <div
         style={{
-          boxShadow: ulQueue && ulQueue.scrollTop > 0 ? '0 0 20px #0e0e0e' : ''
+          boxShadow: queueScrollTop ? '0 6px 12px #0005' : ''
         }}
-        className="flex items-center justify-between gap-2 py-4 pt-5 px-5"
+        className="flex items-center justify-between gap-2 py-4 pt-5 px-5 transition-shadow duration-75"
       >
         <h2 className="text-white font-black truncate">
           {currentPlaylist.name || 'Cola'}
@@ -76,8 +81,8 @@ const MobileQueue = (props: MobileQueueProps) => {
       </div>
 
       <ul
-        className="px-3 pb-4 w-full h-full max-h-[calc(100%-64px)] overflow-y-auto hide-scrollbar"
-        ref={ulQueueRef}
+        className={`px-3 pb-4 w-full h-full max-h-[calc(100%-64px)] overflow-y-auto ${!isDesktop ? 'hide-scrollbar' : ''}`}
+        onScroll={(e) => setQueueScrollTop(e.currentTarget.scrollTop)}
       >
         {queue.map((track, i) => {
           const cover = songService.songCoverUrl(track.id, track.cover);
@@ -86,6 +91,12 @@ const MobileQueue = (props: MobileQueueProps) => {
             <li
               className={`p-2 cursor-pointer text-[#adaaaa] hover:bg-[#1f1f1f] gap-3 flex items-center`}
               onClick={() => playQueueSong(track, i)}
+              onPointerOver={(e) => {
+                e.currentTarget.style.background = '#ffffff2f';
+              }}
+              onPointerOut={(e) => {
+                e.currentTarget.style.background = '';
+              }}
               data-id={track.id}
               key={track.id}
             >
@@ -96,9 +107,9 @@ const MobileQueue = (props: MobileQueueProps) => {
                     minWidth: '40px',
                     height: '40px',
                     borderRadius: '4px',
+                    boxShadow: '0 0 12px rgb(0, 0, 0, 0.25)',
                     ...(!cover && {
-                      background: 'transparent',
-                      boxShadow: '0 0 12px rgb(0, 0, 0, 0.25)'
+                      background: 'transparent'
                     })
                   }
                 }}

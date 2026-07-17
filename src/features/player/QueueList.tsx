@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { XIcon, PauseIcon, PlayIcon, PanelTopCloseIcon } from 'lucide-react';
 import { usePlayer } from '../../shared/context/PlayerContext';
 import Loader from '../../shared/components/Loader';
@@ -6,6 +6,7 @@ import { useInfiniteScroll } from '../../shared/hooks/useInfiniteScroll';
 import playlistService from '../playlist/services/playlist.service';
 import songService from '../song/services/song.service';
 import SmartImage from '../../shared/components/SmartImage';
+import { hasScroll } from '../../shared/utils/scroll';
 
 export const QueueList: React.FC = () => {
   const {
@@ -24,8 +25,12 @@ export const QueueList: React.FC = () => {
 
   const isCollapsed = isQueue;
 
-  const [hoverIndex, setHoverIndex] = useState<number | null>(null);
+  const [queueScrollTop, setQueueScrollTop] = useState(0);
+  const [hoverId, setHoverId] = useState('');
   const [isHoverQueue, setIsHoverQueue] = useState(false);
+
+  const navRef = useRef<HTMLElement>(null);
+  const [navVerticalScroll, setNavVerticalScroll] = useState(false);
 
   async function getQueueSongs(page: number) {
     if (page <= 1) return;
@@ -52,13 +57,25 @@ export const QueueList: React.FC = () => {
     }
   }, [currentIndex]);
 
+  useEffect(() => {
+    const verticalScroll = hasScroll(navRef.current!).vertical;
+    setNavVerticalScroll(verticalScroll);
+  }, [queue, isCollapsed]);
+
   return (
     <aside
       className={`${isCollapsed ? 'w-18' : 'w-72'} rounded-lg hidden md:flex h-full overflow-hidden flex-col bg-[#131313] border-none select-none shrink-0 transition-all duration-300 ease-in-out relative`}
       id="spotify-sidebar"
     >
       <div className="rounded-lg min-h-[calc(100vh-64px-88px)] max-h-[calc(100vh-64px-88px)]">
-        <header className={`p-4 text-[#adaaaa] relative`}>
+        <header
+          style={{
+            ...(queueScrollTop && {
+              boxShadow: '0 6px 10px #0009'
+            })
+          }}
+          className="p-4 text-[#adaaaa] relative transition-shadow duration-75"
+        >
           <div className={`${isCollapsed ? 'flex-col gap-4' : 'flex-row'} flex items-center justify-between`}>
             {!isCollapsed &&
               <h3 className="text-white font-black text-nowrap">
@@ -84,26 +101,35 @@ export const QueueList: React.FC = () => {
         </header>
 
         <nav
+          className={`${isCollapsed ? 'h-[calc(100vh-64px-88px-64px)]' : 'h-[calc(100vh-64px-88px-64px)]'} ${isHoverQueue ? '' : 'hide---scrollbar'} overflow-y-auto overflow-x-hidden relative sidebar-queue`}
+          onScroll={(e) => setQueueScrollTop(e.currentTarget.scrollTop)}
           onMouseEnter={() => setIsHoverQueue(true)}
           onMouseLeave={() => setIsHoverQueue(false)}
-          className={`${isCollapsed ? 'h-[calc(100vh-64px-88px-64px)]' : 'h-[calc(100vh-64px-88px-64px)]'} ${isHoverQueue ? '' : 'hide---scrollbar'} overflow-y-auto overflow-x-hidden relative sidebar-queue`}
+          ref={navRef}
         >
-          <ul className={`${isCollapsed ? 'pl-0 pb-0' : 'pl-2 pb-2'} w-full absolute top-0 left-0`}>
+          <ul
+            style={{
+              ...((!navVerticalScroll && !isCollapsed) && {
+                paddingRight: '8px'
+              })
+            }}
+            className={`${isCollapsed ? 'pl-0 pb-0' : 'pl-2 pb-2'} w-full absolute top-0 left-0`}
+          >
             {queue.map((track, i) => {
               const cover = songService.songCoverUrl(track.id, track.cover);
 
               return (
                 <li
-                  onPointerEnter={() => setHoverIndex(i)}
-                  onPointerLeave={() => setHoverIndex(null)}
-                  className={`${isCollapsed ? 'justify-center' : 'justify-start'} p-2 cursor-pointer text-[#adaaaa] hover:bg-[#1f1f1f] rounded-md gap-3 flex items-center queue-item`}
+                  onPointerEnter={() => setHoverId(track.id)}
+                  onPointerLeave={() => setHoverId('')}
+                  className={`${isCollapsed ? 'justify-center' : 'justify-start'} p-2 cursor-pointer text-[#adaaaa] hover:bg-[#1f1f1f] rounded-md gap-3 flex items-center`}
                   data-id={track.id}
                   key={track.id}
                 >
                   <div className="min-w-12 w-12 h-12 bg-[#262626] rounded relative overflow-hidden hover:badge:bg-blue-500">
                     <SmartImage url={cover} />
 
-                    {(hoverIndex !== null && hoverIndex === i && currentSong?.id !== track.id) &&
+                    {(hoverId !== null && hoverId === track.id && currentSong?.id !== track.id) &&
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -120,7 +146,7 @@ export const QueueList: React.FC = () => {
                       </button>
                     }
 
-                    {(currentSong?.id === track.id && hoverIndex === i) &&
+                    {(currentSong?.id === track.id && hoverId === track.id) &&
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
