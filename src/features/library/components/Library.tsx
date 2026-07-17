@@ -1,23 +1,36 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PlusIcon, SearchIcon, ListIcon, XIcon, PauseIcon, PlayIcon, PanelTopCloseIcon, PanelTopOpenIcon, LayoutGridIcon, TextAlignJustify, Minimize2Icon, GlobeIcon, LockIcon, GlobeLockIcon } from 'lucide-react';
+import { PlusIcon, SearchIcon, ListIcon, XIcon, PanelTopCloseIcon, PanelTopOpenIcon, LayoutGridIcon, TextAlignJustify, Minimize2Icon, GlobeIcon, LockIcon, GlobeLockIcon } from 'lucide-react';
 import type { PlaylistFilters } from '../../playlist/playlist.types';
-import { PlaylistLayout, PlaylistOrderBy, PlaylistVisibility } from '../library.types';
-import { usePlayer } from '../../../shared/context/PlayerContext';
+import { PlaylistLayout, PlaylistOrderBy, PlaylistVisibility, type LayoutKind } from '../library.types';
 import { routes } from '../../../shared/utils/routes';
 import CustomMenu from './CustomMenu';
 import playlistService from '../../playlist/services/playlist.service';
 import useAuth from '../../auth/hooks/useAuth';
 import usePlaylist from '../../playlist/hooks/usePlaylist';
-import SmartImage from '../../../shared/components/SmartImage';
 import MenuItem from '../../../shared/components/MenuItem';
-import PlaylistItem from './PlaylistItem';
 import Loader from '../../../shared/components/Loader';
 import { useInfiniteScroll } from '../../../shared/hooks/useInfiniteScroll';
 import { getDeviceType } from '../../../shared/utils/getDeviceType';
 import { STYLES } from '../../../shared/utils/styles';
 import useUserLibrary from '../hooks/useUserLibrary';
-import libraryService from '../services/library.service';
+import { useAppCtx } from '../../../shared/context/AppContext';
+import Playlists from './Playlists';
+
+export type Grid = {
+  li: {
+    s: string;
+    sm: string;
+    md: string;
+    lg: string;
+  };
+  ul: {
+    s: string;
+    md: string;
+    lg: string;
+    '2xl': string;
+  };
+}
 
 interface LibraryProps {
   isPage?: boolean;
@@ -28,14 +41,14 @@ interface LibraryProps {
 export const Library = (props: LibraryProps) => {
   const { isAdmin, user } = useAuth();
   const { playlists, playlistMeta, getUserPlaylists } = usePlaylist();
-  const { isPlaying, queueMeta, togglePlay } = usePlayer();
   const {
     library, layout, orderBy, systemPlaylists, getUserLibrary,
     onLayoutChange, onSortBy, onSizeChange, getSystemPlaylists
   } = useUserLibrary();
 
-  const [isCollapsed, setIsCollapsed] = useState(props.isCollapsed ?? false);
-  const [isExpanded, setIsExpanded] = useState(props.isExpanded ?? false);
+  const { libraryStatus, setLibraryStatus } = useAppCtx();
+  const { collapsed: isCollapsed, expanded: isExpanded } = libraryStatus;
+
   const [isVisibilityMenu, setIsVisibilityMenu] = useState(false);
   const [visibility, setVisibility] = useState<PlaylistVisibility | ''>('');
 
@@ -43,7 +56,13 @@ export const Library = (props: LibraryProps) => {
   const [query, setQuery] = useState('');
   const [isSearch, setIsSearch] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const [hoverIndex, setHoverIndex] = useState<number | null>(null);
+  const [hoverId, setHoverId] = useState('');
+
+  const ulRef = useRef<HTMLUListElement>(null);
+
+  const [gridImgSize, setGridImgSize] = useState(0);
+
+  const navigate = useNavigate();
 
   const orderKind = orderBy.value === PlaylistOrderBy.RECENT ? 'desc' : 'asc';
 
@@ -52,7 +71,9 @@ export const Library = (props: LibraryProps) => {
     name: query.trim(),
     orderBy: orderBy.k,
     order: orderKind,
-    ...(visibility && { isPublic: visibility === PlaylistVisibility.PUBLIC })
+    ...(visibility && {
+      isPublic: visibility === PlaylistVisibility.PUBLIC
+    })
   }
 
   const { loaderRef } = useInfiniteScroll(async () => {
@@ -66,8 +87,6 @@ export const Library = (props: LibraryProps) => {
     }
   });
 
-  const navigate = useNavigate();
-
   const onSavePlaylist = async () => {
     const { data } = await playlistService.newPlaylist({
       name: '',
@@ -80,16 +99,16 @@ export const Library = (props: LibraryProps) => {
       file: null
     }, true);
 
-    if (data?.id) {
-      navigate(`${routes.playlists}/${data.id}`);
-    }
+    data?.id && navigate(`${routes.playlists}/${data.id}`);
   }
 
   useEffect(() => {
     user?.id && getUserLibrary(user.id).then((data) => {
       if (!data || props.isPage) return;
-      setIsCollapsed(data.isCollapsed);
-      setIsExpanded(data.isExpanded);
+      setLibraryStatus({
+        collapsed: data.isCollapsed,
+        expanded: data.isExpanded
+      });
     })
   }, [user]);
 
@@ -107,15 +126,55 @@ export const Library = (props: LibraryProps) => {
     }, 300);
   }, [query, orderBy, visibility]);
 
-  const grid = {
-    s: 'min-[420px]:grid-cols-[minmax(200px,2fr)_70px]',
-    sm: 'sm:grid-cols-[minmax(200px,2fr)_1fr]',
-    md: 'md:grid-cols-[minmax(200px,2fr)_1fr_1fr]',
-    lg: 'lg:grid-cols-[minmax(200px,2fr)_1fr_1fr_minmax(180px,1fr)]'
+  const grid: Grid = {
+    li: {
+      s: 'min-[420px]:grid-cols-[minmax(200px,2fr)_70px]',
+      sm: 'sm:grid-cols-[minmax(200px,2fr)_70px]',
+      md: 'md:grid-cols-[minmax(200px,2fr)_1fr_1fr]',
+      lg: 'lg:grid-cols-[minmax(200px,2fr)_1fr_1fr_minmax(180px,1fr)]',
+    },
+    ul: {
+      s: 'grid-cols-[repeat(auto-fill,minmax(136px,1fr))]',
+      md: 'md:grid-cols-[repeat(auto-fill,minmax(136px,1fr))]',
+      lg: 'lg:grid-cols-[repeat(auto-fill,minmax(160px,1fr))]',
+      '2xl': '2xl:grid-cols-[repeat(auto-fill,minmax(160px,1fr))]'
+    }
+  }
+
+  const layoutKind: LayoutKind = {
+    list: layout === PlaylistLayout.LIST,
+    grid: layout === PlaylistLayout.GRID,
+    compactList: layout === PlaylistLayout.COMPACT_LIST
   }
 
   const device = getDeviceType();
   const isDesktop = device === 'desktop';
+
+  function getImgSize(isFirstLoad = false) {
+    const ul = ulRef.current;
+    if (!ul) return;
+
+    const screenWidth = window.innerWidth - 8 - (8 * 2);
+    const wrapWidth = isFirstLoad ? screenWidth : ul.offsetWidth - 8;
+    const initGridWidth = window.innerWidth >= 1024 ? 160 : 136;
+    const cols = Math.floor(wrapWidth / initGridWidth);
+    const gridWidth = wrapWidth / cols;
+    const size = gridWidth - 12 * 2;
+    setGridImgSize(size);
+  }
+
+  useEffect(() => {
+    const handleResize = () => getImgSize();
+
+    if (layout === PlaylistLayout.GRID && libraryStatus.expanded) {
+      getImgSize(true);
+      window.addEventListener('resize', handleResize);
+    }
+    else {
+      window.removeEventListener('resize', handleResize);
+    }
+    return () => window.removeEventListener('resize', handleResize);
+  }, [layout, libraryStatus]);
 
   return (
     <aside
@@ -130,8 +189,12 @@ export const Library = (props: LibraryProps) => {
               <button
                 onClick={() => {
                   const collapsed = !isCollapsed;
-                  setIsCollapsed(collapsed);
-                  onSizeChange(library.id, collapsed, false);
+                  const expanded = false;
+                  setLibraryStatus({
+                    collapsed,
+                    expanded
+                  });
+                  onSizeChange(library.id, collapsed, expanded);
                 }}
                 className="p-2 rounded-lg text-[#adaaaa] hover:text-white cursor-pointer transition-colors duration-100"
                 title={isCollapsed ? "Abre Tu biblioteca" : "Contraer Tu biblioteca"}
@@ -152,9 +215,13 @@ export const Library = (props: LibraryProps) => {
             {!isCollapsed &&
               <button
                 onClick={() => {
+                  const collapsed = false;
                   const expanded = true;
-                  setIsExpanded(true);
-                  onSizeChange(library.id, false, expanded);
+                  setLibraryStatus({
+                    collapsed,
+                    expanded
+                  });
+                  onSizeChange(library.id, collapsed, expanded);
                 }}
                 className={`${!isExpanded ? 'cursor-pointer' : ''}`}
                 type="button"
@@ -167,9 +234,6 @@ export const Library = (props: LibraryProps) => {
 
             <div className="flex items-center gap-2">
               <button
-                onMouseEnter={() => {
-                  libraryService.newUserLibrary({ userId: user!.id })
-                }}
                 onClick={onSavePlaylist}
                 className={`${isExpanded ? 'p-2 px-4' : 'p-2'} hover:bg-white/10 cursor-pointer bg-[#1f1f1f] text-sm font-medium rounded-full gap-2 flex items-center transition-colors duration-100`}
                 title="Crea una lista"
@@ -188,7 +252,10 @@ export const Library = (props: LibraryProps) => {
                 <button
                   onClick={() => {
                     const expanded = false;
-                    setIsExpanded(expanded);
+                    setLibraryStatus({
+                      ...libraryStatus,
+                      expanded
+                    });
                     onSizeChange(library.id, isCollapsed, expanded);
                   }}
                   className="p-2 rounded-full text-[#adaaaa] hover:bg-white/10 hover:text-white cursor-pointer transition-colors duration-100"
@@ -207,7 +274,7 @@ export const Library = (props: LibraryProps) => {
                   e.stopPropagation();
                   setIsSearch(true);
                 }}
-                className={`${(isSearch || isExpanded) ? 'w-full bg-[#1f1f1f] rounded' : 'w-8 h-8 rounded-full'} sm:max-w-100 z-5 transition-all duration-100 hover:bg-[#1f1f1f] px-2 py-1.5 text-sm cursor-pointer flex items-center`}
+                className={`${(isSearch || isExpanded) ? 'w-full bg-[#2a2a2a] rounded' : 'w-8 h-8 rounded-full cursor-pointer'} h-8 min-[520px]:max-w-48 z-5 hover:bg-[#2a2a2a] transition-all duration-100 px-2 py-1.5 text-sm flex items-center`}
               >
                 <SearchIcon className="min-w-4 w-4 h-4" />
 
@@ -215,8 +282,8 @@ export const Library = (props: LibraryProps) => {
                   <input
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    className="w-full ml-2"
-                    placeholder={!isExpanded ? "Buscar" : "Buscar en Tu biblioteca"}
+                    className="placeholder-[#adaaaa] text-white text-[13px] w-full ml-2"
+                    placeholder="Buscar en Tu biblioteca"
                     type="text"
                   />
                 }
@@ -294,9 +361,9 @@ export const Library = (props: LibraryProps) => {
                     </span>
                   }
 
-                  {layout === PlaylistLayout.LIST && <ListIcon className="w-5 h-5" />}
-                  {layout === PlaylistLayout.COMPACT_LIST && <TextAlignJustify className="w-5 h-5" />}
-                  {layout === PlaylistLayout.GRID && <LayoutGridIcon className="w-5 h-5" />}
+                  {layoutKind.list && <ListIcon className="w-5 h-5" />}
+                  {layoutKind.compactList && <TextAlignJustify className="w-5 h-5" />}
+                  {layoutKind.grid && <LayoutGridIcon className="w-5 h-5" />}
                 </button>
 
                 {isOpen &&
@@ -319,8 +386,8 @@ export const Library = (props: LibraryProps) => {
           }}
           className={`${isCollapsed ? 'h-[calc(100dvh-64px-88px-100px)]' : isExpanded ? `min-[520px]:h-[calc(100dvh-64px-88px-116px)] h-[calc(100dvh-64px-88px-156px)]` : 'h-[calc(100dvh-64px-88px-116px)]'} overflow-y-auto overflow-x-hidden relative ${!isDesktop ? 'hide-scrollbar' : ''}`}
         >
-          {(isExpanded && layout !== PlaylistLayout.GRID) && (
-            <ul className={`sm:grid hidden ${grid.sm} ${grid.md} ${grid.lg} gap-3 bg-[#131313] text-[13px] text-[#adaaaa] border-b border-white/10 px-4 sticky top-0 z-10`}>
+          {(isExpanded && !layoutKind.grid) && (
+            <ul className={`sm:grid hidden ${grid.li.s} ${grid.li.sm} ${grid.li.md} ${grid.li.lg} gap-3 bg-[#131313] text-[13px] text-[#adaaaa] border-b border-white/10 px-4 sticky top-0 z-10`}>
               <li className="py-2 line-clamp-1 font-semibold">
                 Título
               </li>
@@ -339,101 +406,47 @@ export const Library = (props: LibraryProps) => {
             </ul>
           )}
 
-          <ul className={`${isCollapsed ? 'pl-0 pb-5' : 'pl-2 pb-2'} w-full absolute top-0 left-0 ${(layout === PlaylistLayout.GRID && !isCollapsed) ? 'grid' : ''} ${!isExpanded ? 'grid-cols-2' : 'grid-cols-[repeat(auto-fit,136px)]'} ${(isExpanded && layout !== PlaylistLayout.GRID) ? 'sm:mt-10' : ''}`}>
+          <ul
+            className={`${isCollapsed ? 'pl-0 pb-5' : 'pl-2 pb-2'} w-full absolute top-0 left-0 ${(layoutKind.grid && !isCollapsed) ? 'grid' : ''} ${!isExpanded ? 'grid-cols-2' : `${grid.ul.s} ${grid.ul.md} ${grid.ul.lg} ${grid.ul['2xl']}`} ${(isExpanded && !layoutKind.grid) ? 'sm:mt-10' : ''}`}
+            ref={ulRef}
+          >
             {isAdmin && (
-              systemPlaylists.map((playlist, i) => (
-                <li
-                  onClick={() => {
-                    setIsExpanded(false);
-                    onSizeChange(library.id, isCollapsed, false);
-                    navigate(routes.songs);
-                  }}
-                  className={`${isCollapsed ? 'justify-center' : isExpanded ? `justify-start ${grid.sm} ${grid.md} ${grid.lg} gap-3` : ''} grid p-2 cursor-pointer text-[#adaaaa] hover:bg-[#1f1f1f] rounded-md`}
-                  key={playlist.id}
-                >
-                  {isCollapsed && (
-                    <SmartImage
-                      wrapClassName="min-w-12 rounded"
-                      iconClassName="text-primary"
-                      url={null}
-                    />
-                  )}
+              <Playlists
+                grid={grid}
+                layoutKind={layoutKind}
+                gridImgSize={gridImgSize}
+                playlists={systemPlaylists}
+                hoverId={hoverId}
+                setHoverId={setHoverId}
+                onPlaylistClick={(playlist) => {
+                  const expanded = false;
+                  setLibraryStatus({
+                    ...libraryStatus,
+                    expanded
+                  });
+                  onSizeChange(library.id, isCollapsed, expanded);
+                  navigate(`${routes.playlists}/${playlist.id}`);
+                }}
+              />
+            )}
 
-
-                  {!isCollapsed && (
-                    <PlaylistItem
-                      isPlaying={isPlaying && queueMeta.playlistId === playlist.id}
-                      isHover={hoverIndex !== null && hoverIndex === i}
-                      playlist={playlist}
-                      isExpanded={isExpanded}
-                      queueMeta={queueMeta}
-                      layout={layout}
-                      user={user!}
-                      togglePlay={togglePlay}
-                    />
-                  )}
-                </li>
-              )))}
-
-            {playlists.map((playlist, i) => {
-              const cover = playlistService.playlistCover(playlist.id, playlist.cover);
-
-              return (
-                <li
-                  onClick={() => {
-                    setIsExpanded(false);
-                    onSizeChange(library.id, isCollapsed, false);
-                    navigate(`${routes.playlists}/${playlist.id}`);
-                  }}
-                  className={`${isCollapsed ? 'justify-center' : isExpanded ? `justify-start ${grid.s} ${grid.sm} ${grid.md} ${grid.lg} gap-3` : ''} grid p-2 cursor-pointer text-[#adaaaa] hover:bg-[#1f1f1f] rounded-md ${layout === PlaylistLayout.COMPACT_LIST ? 'sm:grid-cols-1 grid-cols-[minmax(200px,2fr)_1fr]' : 'grid'}`}
-                  onPointerEnter={() => setHoverIndex(i)}
-                  onPointerLeave={() => setHoverIndex(null)}
-                  key={playlist.id}
-                >
-                  {isCollapsed && (
-                    <div className="min-w-12 w-12 h-12 bg-[#262626] rounded relative overflow-hidden hover:badge:bg-blue-500">
-                      <SmartImage url={cover} />
-
-                      {hoverIndex !== null && hoverIndex === i &&
-                        <button
-                          onClick={() => {
-                            if (queueMeta.playlistId === playlist.id) togglePlay();
-                          }}
-                          className="text-white badge w-full h-full absolute top-0 left-0 bg-black/50 flex items-center justify-center"
-                          type="button"
-                        >
-                          {(isPlaying && queueMeta.playlistId === playlist.id) ?
-                            <PauseIcon
-                              className="min-w-5 w-5 h-5"
-                              fill="currentColor"
-                              stroke="0"
-                            /> :
-                            <PlayIcon
-                              className="min-w-5.5 w-5.5 h-5.5"
-                              fill="currentColor"
-                              stroke="0"
-                            />
-                          }
-                        </button>
-                      }
-                    </div>
-                  )}
-
-                  {!isCollapsed &&
-                    <PlaylistItem
-                      isPlaying={isPlaying && queueMeta.playlistId === playlist.id}
-                      isHover={hoverIndex !== null && hoverIndex === i}
-                      playlist={{ ...playlist, cover }}
-                      isExpanded={isExpanded}
-                      queueMeta={queueMeta}
-                      layout={layout}
-                      user={user!}
-                      togglePlay={togglePlay}
-                    />
-                  }
-                </li>
-              )
-            })}
+            <Playlists
+              grid={grid}
+              layoutKind={layoutKind}
+              gridImgSize={gridImgSize}
+              playlists={playlists}
+              hoverId={hoverId}
+              setHoverId={setHoverId}
+              onPlaylistClick={(playlist) => {
+                const expanded = false;
+                setLibraryStatus({
+                  ...libraryStatus,
+                  expanded
+                });
+                onSizeChange(library.id, isCollapsed, expanded);
+                navigate(`${routes.playlists}/${playlist.id}`);
+              }}
+            />
 
             {playlistMeta.hasNextPage &&
               <li

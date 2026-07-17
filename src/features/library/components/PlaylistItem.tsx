@@ -1,38 +1,49 @@
-import { PauseIcon, PlayIcon } from "lucide-react";
-import type { Playlist, PlaylistMeta } from "../../playlist/playlist.types";
-import { PlaylistLayout } from "../library.types";
+import { MusicIcon, PauseIcon, PlayIcon } from "lucide-react";
+import type { Playlist } from "../../playlist/playlist.types";
+import type { LayoutKind } from "../library.types";
 import type { User } from "../../auth/auth.types";
 import SmartImage from "../../../shared/components/SmartImage";
 import { getFmtDate } from "../../../shared/utils/getFormatDate";
 
 interface PlaylistItemProps {
-  isExpanded: boolean;
+  gridImgSize: number;
   isHover: boolean;
+  isExpanded: boolean;
   isPlaying: boolean;
+  isCurrent: boolean;
   playlist: Playlist;
-  layout: PlaylistLayout;
-  queueMeta: PlaylistMeta;
+  layout: LayoutKind;
   user: User;
   togglePlay: () => void;
 }
 
 const PlaylistItem = (props: PlaylistItemProps) => {
-  const { isExpanded, playlist, layout, user, queueMeta, isHover, isPlaying, togglePlay } = props;
+  const { gridImgSize, isExpanded, playlist, layout, user, isCurrent, isHover, isPlaying, togglePlay } = props;
+
   const createdAt = getFmtDate(playlist.createdAt, '').split(' ')[0].replaceAll('/', ' ');
+  const trackCount = playlist?.trackCount || 0;
+  const manyTracks = trackCount === 0 || trackCount > 1;
+
+  const bgIcon = "#333333";
 
   return (
     <>
-      {(layout === PlaylistLayout.LIST) && (
+      {layout.list && (
         <>
           <div className="flex items-center gap-3">
-            <div className="min-w-12 w-12 h-12 bg-[#262626] rounded relative overflow-hidden hover:badge:bg-blue-500">
-              <SmartImage url={playlist.cover} />
+            <div className="min-w-12 w-12 h-12 rounded relative overflow-hidden hover:badge:bg-blue-500">
+              <SmartImage
+                styles={{
+                  imgWrap: {
+                    background: bgIcon
+                  }
+                }}
+                url={playlist.cover}
+              />
 
               {isHover &&
                 <button
-                  onClick={() => {
-                    if (queueMeta.playlistId === playlist.id) togglePlay();
-                  }}
+                  onClick={() => isCurrent && togglePlay()}
                   className="text-white badge w-full h-full absolute top-0 left-0 bg-black/50 flex items-center justify-center"
                   type="button"
                 >
@@ -54,7 +65,7 @@ const PlaylistItem = (props: PlaylistItemProps) => {
 
             <div>
               <h4
-                className={`${queueMeta.playlistId === playlist.id ? 'text-primary' : 'text-white'} line-clamp-1 w-full mt-1 text-[15px] font-semibold`}
+                className={`${isCurrent ? 'text-primary' : 'text-white'} line-clamp-1 w-full mt-1 text-[15px] font-semibold`}
                 title={playlist.name}
               >
                 {playlist.name}
@@ -72,17 +83,22 @@ const PlaylistItem = (props: PlaylistItemProps) => {
           {isExpanded && (
             <TrItem
               layout={layout}
-              playlist={{ ...playlist, createdAt }}
+              manyTracks={manyTracks}
+              playlist={{
+                ...playlist,
+                createdAt,
+                trackCount
+              }}
             />
           )}
         </>
       )}
 
-      {(layout === PlaylistLayout.COMPACT_LIST) && (
+      {layout.compactList && (
         <>
           <div className="text-[13px] font-semibold flex items-center gap-1 w-full">
             <h4
-              className={`${queueMeta.playlistId === playlist.id ? 'text-primary' : 'text-white'} line-clamp-1 text-[15px] font-semibold`}
+              className={`${isCurrent ? 'text-primary' : 'text-white'} line-clamp-1 text-[15px] font-semibold`}
               title={playlist.name}
             >
               {playlist.name}
@@ -94,31 +110,79 @@ const PlaylistItem = (props: PlaylistItemProps) => {
           {isExpanded && (
             <TrItem
               layout={layout}
-              playlist={{ ...playlist, createdAt }}
+              manyTracks={manyTracks}
+              playlist={{
+                ...playlist,
+                createdAt,
+                trackCount
+              }}
             />
           )}
         </>
       )}
 
-      {(layout === PlaylistLayout.GRID) && (
-        <div className="w-28 text-[13px] font-semibold p-1">
+      {layout.grid && (
+        <div className="relative w-full text-[13px] font-semibold p-1">
           <SmartImage
-            wrapClassName="w-28 h-28 rounded-md"
+            styles={{
+              imgWrap: {
+                background: bgIcon,
+                width: '100%',
+                height: 'auto',
+                minWidth: '112px',
+                minHeight: '112px',
+                borderRadius: '6px',
+                boxShadow: '0 8px 24px #00000080',
+                ...(gridImgSize && {
+                  width: gridImgSize,
+                  height: gridImgSize
+                })
+              }
+            }}
+            className="object-cover w-full h-full"
             url={playlist.cover}
+            icon={(
+              <MusicIcon className="w-1/2 h-1/2" />
+            )}
           />
 
+
+          {/* {playlist.cover ? (
+            <div className="rounded-md overflow-hidden">
+              <img
+                className="w-full h-full object-cover"
+                referrerPolicy="no-referrer"
+                crossOrigin="anonymous"
+                src={playlist.cover}
+                alt="cover"
+              />
+            </div>
+          ) : (
+            <div className="flex items-center justify-center">
+              <div
+                style={{ background: bgIcon }}
+                className="rounded-md overflow-hidden w-full h-full flex items-center justify-center"
+              >
+                <MusicIcon className="w-1/2 h-1/2" />
+              </div>
+            </div>
+          )} */}
+
           <h4
-            className={`${queueMeta.playlistId === playlist.id ? 'text-primary' : 'text-white'} mt-2 line-clamp-1 overflow-hidden w-full text-[15px] font-semibold`}
+            className={`${isCurrent ? 'text-primary' : 'text-white'} mt-2 line-clamp-1 overflow-hidden w-full text-[15px] font-semibold`}
             title={playlist.name}
           >
             {playlist.name}
           </h4>
 
-          <div className="flex items-center w-28 text-[#adaaaa]">
+          <div className="flex items-center text-[#adaaaa]">
             <span>Lista</span>
             <span className="mx-1">•</span>
-            <span className="line-clamp-1">
-              {playlist.trackCount} canciones
+            <span
+              className="line-clamp-1"
+              title={`${trackCount} ${manyTracks ? 'canciones' : 'Canción'}`}
+            >
+              {trackCount} {manyTracks ? 'canciones' : 'Canción'}
             </span>
           </div>
         </div>
@@ -129,9 +193,10 @@ const PlaylistItem = (props: PlaylistItemProps) => {
 
 export default PlaylistItem;
 
-const TrItem = ({ layout, playlist }: {
-  layout: PlaylistLayout;
+const TrItem = ({ layout, playlist, manyTracks }: {
+  layout: LayoutKind;
   playlist: Playlist;
+  manyTracks: boolean;
 }) => {
   return (
     <>
@@ -145,19 +210,19 @@ const TrItem = ({ layout, playlist }: {
         {playlist.createdAt}
       </div>
 
-      {layout === PlaylistLayout.LIST && (
+      {layout.list && (
         <div className="sm:hidden min-[420px]:block hidden pr-3 my-auto text-sm font-medium text-nowrap">
           {playlist.isPublic ? 'Pública' : 'Privada'}
         </div>
       )}
 
-      {layout === PlaylistLayout.COMPACT_LIST && (
-        <div className="sm:hidden min-[400px]:grid hidden min-[500px]:justify-items-start justify-items-end min-[500px]:grid-cols-[minmax(80px,1fr)_minmax(140px,1fr)] grid-cols-1 pr-3 gap-3">
-          <div className="min-[400px]:inline-block hidden my-auto text-sm font-medium text-nowrap">
+      {layout.compactList && (
+        <div className="sm:hidden min-[500px]:grid-cols-[minmax(80px,1fr)_minmax(140px,1fr)] min-[420px]:grid hidden min-[500px]:justify-items-start justify-items-end grid-cols-1 pr-3 gap-3">
+          <div className="min-[420px]:inline-block hidden my-auto text-sm font-medium text-nowrap">
             {playlist.isPublic ? 'Pública' : 'Privada'}
           </div>
           <div className="min-[500px]:inline-block hidden my-auto text-sm font-medium text-nowrap">
-            {playlist.trackCount} &nbsp; {(((playlist?.trackCount || 0) === 0) || ((playlist?.trackCount || 0) > 1)) ? 'Canciones' : 'Canción'}
+            {playlist.trackCount} &nbsp; {manyTracks ? 'Canciones' : 'Canción'}
           </div>
         </div>
       )}

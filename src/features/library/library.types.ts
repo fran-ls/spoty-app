@@ -38,6 +38,12 @@ export type PlaylistLayout = (typeof PlaylistLayout)[keyof typeof PlaylistLayout
 
 export type PlaylistLayoutK = keyof typeof PlaylistLayout
 
+export type LayoutKind = {
+  list: boolean;
+  grid: boolean;
+  compactList: boolean;
+}
+
 
 export const PlaylistOrderBy = {
   RECENT: 'RECENT',
@@ -63,3 +69,9 @@ export const PlaylistVisibility = {
 } as const
 
 export type PlaylistVisibility = (typeof PlaylistVisibility)[keyof typeof PlaylistVisibility]
+
+
+export type LibraryStatus = {
+  collapsed: boolean;
+  expanded: boolean;
+}
