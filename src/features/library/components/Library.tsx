@@ -61,8 +61,9 @@ export const Library = (props: LibraryProps) => {
 
   const ulRef = useRef<HTMLUListElement>(null);
   const navRef = useRef<HTMLElement>(null);
-  const navEl = navRef.current;
+
   const [navVerticalScroll, setNavVerticalScroll] = useState(false);
+  const [queueScrollTop, setQueueScrollTop] = useState(0);
 
   const [gridImgSize, setGridImgSize] = useState(0);
 
@@ -201,7 +202,7 @@ export const Library = (props: LibraryProps) => {
       <div className={`rounded-lg ${STYLES.minHeightMain} ${STYLES.maxHeightMain}`}>
         <header
           style={{
-            ...((!isExpanded && navEl && navEl.scrollTop > 0) && {
+            ...((!isExpanded && queueScrollTop) && {
               boxShadow: '0 6px 10px #0009'
             })
           }}
@@ -408,6 +409,7 @@ export const Library = (props: LibraryProps) => {
             height: !isDesktop ? `calc(100dvh - 64px - 52px - 62px - ${window.innerWidth >= 520 ? 116 : 156}px)` : ''
           }}
           className={`${isCollapsed ? 'h-[calc(100dvh-64px-88px-100px)]' : isExpanded ? `min-[520px]:h-[calc(100dvh-64px-88px-116px)] h-[calc(100dvh-64px-88px-156px)]` : 'h-[calc(100dvh-64px-88px-116px)]'} overflow-y-auto overflow-x-hidden relative ${!isDesktop ? 'hide-scrollbar' : ''}`}
+          onScroll={(e) => setQueueScrollTop(e.currentTarget.scrollTop)}
           ref={navRef}
         >
           {(isExpanded && !layoutKind.grid) && (
