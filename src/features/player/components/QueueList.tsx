@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { XIcon, PauseIcon, PlayIcon, PanelTopCloseIcon } from 'lucide-react';
-import { usePlayer } from '../../shared/context/PlayerContext';
-import Loader from '../../shared/components/Loader';
-import { useInfiniteScroll } from '../../shared/hooks/useInfiniteScroll';
-import playlistService from '../playlist/services/playlist.service';
-import songService from '../song/services/song.service';
-import SmartImage from '../../shared/components/SmartImage';
-import { hasScroll } from '../../shared/utils/scroll';
+import { usePlayer } from '../../../shared/context/PlayerContext';
+import Loader from '../../../shared/components/Loader';
+import { useInfiniteScroll } from '../../../shared/hooks/useInfiniteScroll';
+import playlistService from '../../playlist/services/playlist.service';
+import songService from '../../song/services/song.service';
+import SmartImage from '../../../shared/components/SmartImage';
+import { hasScroll } from '../../../shared/utils/scroll';
 
 export const QueueList: React.FC = () => {
   const {
@@ -15,11 +15,10 @@ export const QueueList: React.FC = () => {
   } = usePlayer();
 
   const [page, setPage] = useState(0);
-
-  const { loaderRef } = useInfiniteScroll(() => {
+  const { loaderRef } = useInfiniteScroll(async () => {
     if (page > queueMeta.totalPages) return;
     const nextPage = page + 1;
-    getQueueSongs(nextPage);
+    await getQueueSongs(nextPage);
     setPage(nextPage);
   });
 
@@ -43,7 +42,10 @@ export const QueueList: React.FC = () => {
       return;
     }
 
-    const { data } = await playlistService.getPlaylistSongs(queueMeta.playlistId, { page, limit: 10 });
+    const { data } = await playlistService.getPlaylistSongs(
+      queueMeta.playlistId,
+      { page, limit: 10 }
+    );
     if (!data) return;
     setQueueMeta(data.meta);
     setQueue((prev) => [...prev, ...data.songs]);
@@ -192,6 +194,7 @@ export const QueueList: React.FC = () => {
             })}
 
             {(queue.length > 0 && page < queueMeta.totalPages) && (
+
               <li
                 className="flex items-center justify-center px-6 py-1 overflow-hidden"
                 ref={loaderRef}

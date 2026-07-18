@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import { DiscIcon, FileAudioIcon, ImageUpIcon, Music2Icon, PauseIcon, PlayIcon, PlusCircleIcon, SearchIcon, Trash2Icon, UploadIcon, UserIcon } from "lucide-react";
 import type { Song, SongDTO, SongFileUrls } from "../song.types";
 import { formatTime } from "../../../shared/utils/formatTime";
-import { AudioPlayer, type AudioPlayerState } from "../../player/AudioPlayer";
+import { AudioPlayer, type AudioPlayerState } from "../../player/components/AudioPlayer";
 import ArtistSelect from "../../artist/components/ArtistSelect";
 import AlbumSelect from "../../artist/components/AlbumSelect";
 import songService from "../services/song.service";

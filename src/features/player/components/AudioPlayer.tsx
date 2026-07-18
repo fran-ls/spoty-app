@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from 'react';
 import { PauseIcon, PlayIcon, Volume2, VolumeX } from 'lucide-react';
-import { formatTime } from '../../shared/utils/formatTime';
-import { cn } from '../../shared/utils/tailwindCn';
+import { formatTime } from '../../../shared/utils/formatTime';
+import { cn } from '../../../shared/utils/tailwindCn';
 
 export interface AudioPlayerState {
   progress: number;

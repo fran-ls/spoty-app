@@ -1,16 +1,19 @@
 import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronDownIcon, EllipsisVerticalIcon, HeartIcon, ListMusicIcon, Music2Icon, MusicIcon, PauseIcon, PlayIcon, Share2Icon } from "lucide-react";
-import SmartImage from "../../shared/components/SmartImage";
-import { usePlayer } from "../../shared/context/PlayerContext";
-import songService from "../song/services/song.service";
-import { formatTime } from "../../shared/utils/formatTime";
-import { getDeviceType } from "../../shared/utils/getDeviceType";
-import { RepeatIcon, ShuffleIcon, SkipForwardIcon } from "../../shared/components/Icons";
+import SmartImage from "../../../shared/components/SmartImage";
+import { usePlayer } from "../../../shared/context/PlayerContext";
+import songService from "../../song/services/song.service";
+import { formatTime } from "../../../shared/utils/formatTime";
+import { getDeviceType } from "../../../shared/utils/getDeviceType";
+import { RepeatIcon, ShuffleIcon, SkipForwardIcon } from "../../../shared/components/Icons";
 import MobileQueue from "./MobileQueue";
 
 const MobilePlayer = () => {
-  const { currentPlaylist, currentSong, progress, duration, isPlaying, seek, next, prev, togglePlay } = usePlayer();
+  const {
+    currentPlaylist, currentSong, progress, duration, isPlaying, isRepeat, isShuffle,
+    seek, next, prev, togglePlay, toggleShuffle, toggleRepeat
+  } = usePlayer();
 
   const progressRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<HTMLDivElement>(null);
@@ -22,9 +25,6 @@ const MobilePlayer = () => {
   const [isMobileQueue, setIsMobileQueue] = useState(false);
 
   const [isLiked, setIsLiked] = useState(false);
-  const [isRepeat, setIsRepeat] = useState(false);
-  const [isShuffle, setIsShuffle] = useState(false);
-
   const handleProgressSeek = (clientX: number) => {
     if (!currentSong || !progressEl) return;
     const rect = progressEl.getBoundingClientRect();
@@ -57,14 +57,6 @@ const MobilePlayer = () => {
     setIsLiked(!isLiked);
   }
 
-  const toggleShuffle = () => {
-    setIsShuffle(!isShuffle);
-  }
-
-  const toggleRepeat = () => {
-    setIsRepeat(!isRepeat);
-  }
-
   const progressPercent = Math.min(100, (progress / duration) * 100);
   const songCover = currentSong ? songService.songCoverUrl(currentSong.id, currentSong.cover) : '';
 
@@ -84,7 +76,7 @@ const MobilePlayer = () => {
         style={{
           background: `linear-gradient(to bottom, ${currentPlaylist.bgColor} 100%, ${currentPlaylist.gradientColor} 100%)`
         }}
-        className={`${playerBg} mx-2 w-[calc(100%-8px*2)] rounded-md h-fit overflow-hidden z-100 md:max-w-3xl fixed bottom-14 left-0 google-sans-flex-font`}
+        className={`${playerBg} mx-2 w-[calc(100%-8px*2)] rounded-md h-fit overflow-hidden z-50 md:max-w-3xl fixed bottom-14 left-0 google-sans-flex-font`}
       >
         <div
           onClick={() => setIsExpanded(true)}

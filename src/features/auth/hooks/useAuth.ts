@@ -5,6 +5,7 @@ import { AuthContext } from "../context/AuthContext";
 import { authService } from "../services/auth.service";
 import useToaster from "../../../shared/hooks/useToaster";
 import { routes } from "../../../shared/utils/routes";
+import playerService from "../../player/services/player.service";
 
 const useAuth = () => {
   const [form, setForm] = useState<UserDTO>({
@@ -72,6 +73,8 @@ const useAuth = () => {
 
     const { user, accessToken } = response.data || {};
     if (!user || !accessToken) return;
+
+    await playerService.createPlayer({ userId: user.id });
 
     dispatch({
       type: 'login',

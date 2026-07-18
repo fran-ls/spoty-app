@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { XIcon } from "lucide-react";
-import SmartImage from "../../shared/components/SmartImage";
-import songService from "../song/services/song.service";
-import { usePlayer } from "../../shared/context/PlayerContext";
-import Loader from "../../shared/components/Loader";
-import { useInfiniteScroll } from "../../shared/hooks/useInfiniteScroll";
-import playlistService from "../playlist/services/playlist.service";
-import { getDeviceType } from "../../shared/utils/getDeviceType";
+import SmartImage from "../../../shared/components/SmartImage";
+import songService from "../../song/services/song.service";
+import { usePlayer } from "../../../shared/context/PlayerContext";
+import Loader from "../../../shared/components/Loader";
+import { useInfiniteScroll } from "../../../shared/hooks/useInfiniteScroll";
+import playlistService from "../../playlist/services/playlist.service";
+import { getDeviceType } from "../../../shared/utils/getDeviceType";
 
 interface MobileQueueProps {
   isExpanded: boolean;
@@ -25,10 +25,10 @@ const MobileQueue = (props: MobileQueueProps) => {
   const [queueScrollTop, setQueueScrollTop] = useState(0);
 
   const [page, setPage] = useState(0);
-  const { loaderRef } = useInfiniteScroll(() => {
+  const { loaderRef } = useInfiniteScroll(async () => {
     if (page > queueMeta.totalPages) return;
     const nextPage = page + 1;
-    getQueueSongs(nextPage);
+    await getQueueSongs(nextPage);
     setPage(nextPage);
   });
 
@@ -46,7 +46,10 @@ const MobileQueue = (props: MobileQueueProps) => {
       return;
     }
 
-    const { data } = await playlistService.getPlaylistSongs(queueMeta.playlistId, { page, limit: 10 });
+    const { data } = await playlistService.getPlaylistSongs(
+      queueMeta.playlistId,
+      { page, limit: 10 }
+    );
     if (!data) return;
     setQueueMeta(data.meta);
     setQueue((prev) => [...prev, ...data.songs]);

@@ -11,7 +11,7 @@ import Toaster from "../../../shared/components/Toaster";
 import useToaster from "../../../shared/hooks/useToaster";
 import MenuItem from "../../../shared/components/MenuItem";
 import songService from "../../song/services/song.service";
-import { AudioPlayer } from "../../player/AudioPlayer";
+import { AudioPlayer } from "../../player/components/AudioPlayer";
 import { getTimeParts } from "../../../shared/utils/formatTime";
 import { getFmtDate } from "../../../shared/utils/getFormatDate";
 import useArtist from "../../artist/hooks/useArtist";

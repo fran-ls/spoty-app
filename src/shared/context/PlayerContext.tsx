@@ -1,11 +1,14 @@
-import { createContext, useContext, useMemo, useRef, useState } from 'react'
+import { createContext, useContext, useRef, useState } from 'react'
 import type { Playlist, PlaylistMeta } from '../../features/playlist/playlist.types';
+import type { Player } from '../../features/player/player.types';
 import type { Song } from '../../features/song/song.types';
 import songService from '../../features/song/services/song.service';
+import playerService from '../../features/player/services/player.service';
 
 export type ViewType = 'home' | 'search' | 'library' | 'playlist' | 'create-playlist' | 'songs';
 
 interface PlayerContextType {
+  audioRef: React.RefObject<HTMLAudioElement | null>,
   currentSong: Song | null;
   currentIndex: number;
   isPlaying: boolean;
@@ -18,12 +21,20 @@ interface PlayerContextType {
   queue: Song[];
   queueMeta: PlaylistMeta;
   currentPlaylist: Playlist;
+  isRepeat: boolean;
+  isShuffle: boolean;
+  player: Player | null;
   next: () => void;
   prev: () => void;
   seek: (time: number) => void;
+  volumeSeek: (time: number) => void;
   toggleMute: () => void;
   togglePlay: () => void;
+  toggleShuffle: () => void;
+  toggleRepeat: () => void;
+  updatePlayer: (data: Partial<Player>) => Promise<any>;
   play: (tracks: Song[], index: number, meta: PlaylistMeta) => void;
+  setData: (tracks: Song[], index: number, meta?: PlaylistMeta) => void;
   playQueueSong: (track: Song, index: number) => void;
   setQueue: React.Dispatch<React.SetStateAction<Song[]>>;
   setVolume: React.Dispatch<React.SetStateAction<number>>;
@@ -33,9 +44,20 @@ interface PlayerContextType {
   setIsQueue: React.Dispatch<React.SetStateAction<boolean>>;
   setQueueMeta: React.Dispatch<React.SetStateAction<PlaylistMeta>>;
   setCurrentPlaylist: React.Dispatch<React.SetStateAction<Playlist>>;
+  setUserPlayer: React.Dispatch<React.SetStateAction<Player | null>>;
+  setDuration: React.Dispatch<React.SetStateAction<number>>;
+  setProgress: React.Dispatch<React.SetStateAction<number>>;
+  setIsRepeat: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsShuffle: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export const PlayerContext = createContext<PlayerContextType>({
+  audioRef: {
+    current: null
+  },
+  player: null,
+  isRepeat: false,
+  isShuffle: false,
   currentSong: null,
   currentIndex: 0,
   progress: 0,
@@ -71,6 +93,7 @@ export const PlayerContext = createContext<PlayerContextType>({
   next: () => { },
   prev: () => { },
   seek: () => { },
+  volumeSeek: () => { },
   togglePlay: () => { },
   playQueueSong: () => { },
   setIsPlaying: () => { },
@@ -81,7 +104,16 @@ export const PlayerContext = createContext<PlayerContextType>({
   setQueueMeta: () => { },
   setIsQueue: () => { },
   setQueue: () => { },
-  setCurrentPlaylist: () => { }
+  setCurrentPlaylist: () => { },
+  toggleShuffle: () => { },
+  toggleRepeat: () => { },
+  setUserPlayer: () => { },
+  setDuration: () => { },
+  setProgress: () => { },
+  setIsRepeat: () => { },
+  setIsShuffle: () => { },
+  setData: () => { },
+  updatePlayer: async () => { }
 });
 
 export const PlayerProvider = ({ children }: any) => {
@@ -91,7 +123,7 @@ export const PlayerProvider = ({ children }: any) => {
     page: 0,
     limit: 10,
     total: 0,
-    totalPages: 0,
+    totalPages: 1,
     hasNextPage: false,
     hasPrevPage: false,
     totalDuration: 0,
@@ -121,14 +153,22 @@ export const PlayerProvider = ({ children }: any) => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audio = audioRef.current;
 
-  const playQueueSong = async (track: Song, index: number) => {
+  const [player, setUserPlayer] = useState<Player | null>(null);
+  const [isRepeat, setIsRepeat] = useState(false);
+  const [isShuffle, setIsShuffle] = useState(false);
+
+  const playQueueSong = (track: Song, index: number) => {
     if (!audio) return;
     setCurrentIndex(index);
     setCurrentSong(track);
+    setDuration(track.duration);
+    seek(0);
 
     audio.src = songService.streamUrl(track.id, track.fileUrl);
     audio.play();
     setIsPlaying(true);
+
+    updatePlayer({ songId: track.id });
   }
 
   const seek = (time: number) => {
@@ -137,11 +177,19 @@ export const PlayerProvider = ({ children }: any) => {
     setProgress(time);
   }
 
+  const volumeSeek = (vol: number) => {
+    if (!audio) return;
+    audio.volume = vol;
+    setVolume(vol);
+    if (vol) setIsMuted(false);
+    updatePlayer({ volume: Math.round(vol * 100) });
+  }
+
   const play = (tracks: Song[], index: number, meta: PlaylistMeta) => {
     if (!audio) return;
     const track = tracks[index];
     setQueue(tracks);
-    setQueueMeta(meta);
+    setQueueMeta({ ...queueMeta, ...meta });
     playQueueSong(track, index);
   }
 
@@ -174,6 +222,8 @@ export const PlayerProvider = ({ children }: any) => {
       audio.src = songService.streamUrl(track.id, track.fileUrl);
       audio.play();
     }
+
+    updatePlayer({ songId: track.id });
   }
 
   const prev = () => {
@@ -193,30 +243,71 @@ export const PlayerProvider = ({ children }: any) => {
       audio.src = songService.streamUrl(track.id, track.fileUrl);
       audio.play();
     }
+
+    updatePlayer({ songId: track.id });
   }
 
   const toggleMute = () => {
+    if (!audio) return;
+
     if (isMuted) {
+      audio.volume = prevVolume;
       setVolume(prevVolume);
       setIsMuted(false);
     } else {
+      audio.volume = 0;
       setPrevVolume(volume);
       setVolume(0);
       setIsMuted(true);
     }
   }
 
-  useMemo(() => {
+  const toggleShuffle = () => {
+    const shuffle = !isShuffle;
+    setIsShuffle(shuffle);
+    updatePlayer({ shuffle });
+  }
+
+  const toggleRepeat = () => {
+    const repeat = !isRepeat;
+    setIsRepeat(repeat);
+    updatePlayer({ repeat });
+  }
+
+  async function updatePlayer(data: Partial<Player>) {
+    if (!player?.id) return;
+
+    return await playerService.updatePlayer(player.id, {
+      repeat: isRepeat,
+      shuffle: isShuffle,
+      songId: currentSong?.id || null,
+      progress,
+      ...data
+    });
+  }
+
+  const setData = (tracks: Song[], index: number, meta?: PlaylistMeta) => {
+    const track = tracks[index];
+    setQueue(tracks);
+    setQueueMeta({ ...queueMeta, ...meta });
+    setCurrentIndex(index);
+    setCurrentSong(track);
     if (audio) {
+      audio.src = songService.streamUrl(track.id, track.fileUrl);
       audio.volume = volume;
     }
-  }, [volume]);
+  }
 
   return (
     <PlayerContext.Provider
       value={{
-        progress, duration,
+        audioRef,
         currentSong, currentIndex,
+        isRepeat, setIsRepeat,
+        isShuffle, setIsShuffle,
+        progress, setProgress,
+        duration, setDuration,
+        player, setUserPlayer,
         queue, setQueue,
         isPlaying, setIsPlaying,
         volume, setVolume,
@@ -227,19 +318,16 @@ export const PlayerProvider = ({ children }: any) => {
         currentPlaylist, setCurrentPlaylist,
         play, togglePlay,
         next, prev,
-        seek, toggleMute,
-        playQueueSong
+        seek, volumeSeek,
+        toggleMute,
+        playQueueSong,
+        toggleShuffle,
+        toggleRepeat,
+        updatePlayer,
+        setData
       }}
     >
       {children}
-
-      <audio
-        ref={audioRef}
-        onTimeUpdate={() => audio && setProgress(audio.currentTime)}
-        onLoadedMetadata={() => audio && setDuration(audio.duration)}
-        onEnded={next} // 🔥 autoplay siguiente
-        crossOrigin="anonymous"
-      />
     </PlayerContext.Provider>
   )
 }

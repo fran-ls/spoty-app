@@ -1,30 +1,36 @@
-import React, { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Volume2, VolumeX, MusicIcon, HeartIcon, ShuffleIcon, PauseIcon,
   PlayIcon, ListIcon, RadioIcon, LaptopIcon,
 } from 'lucide-react';
-import { usePlayer } from '../../shared/context/PlayerContext';
-import { formatTime } from '../../shared/utils/formatTime';
-import songService from '../song/services/song.service';
-import SmartImage from '../../shared/components/SmartImage';
-import { RepeatIcon, SkipForwardIcon } from '../../shared/components/Icons';
+import { usePlayer } from '../../../shared/context/PlayerContext';
+import { formatTime } from '../../../shared/utils/formatTime';
+import songService from '../../song/services/song.service';
+import SmartImage from '../../../shared/components/SmartImage';
+import { RepeatIcon, SkipForwardIcon } from '../../../shared/components/Icons';
+import useAuth from '../../auth/hooks/useAuth';
+import useUserPlayer from '../hooks/useUserPlayer';
 
-export const PlayerBar: React.FC = () => {
+export const PlayerBar = () => {
+  const { user } = useAuth();
+  const { getPlayer } = useUserPlayer();
+
   const {
-    currentSong, progress, duration, isPlaying, volume, isMuted, isQueue,
-    seek, next, prev, togglePlay, setVolume, setIsMuted, toggleMute, setIsQueue
+    audioRef, player, currentSong, progress, duration, isPlaying, volume, isMuted,
+    isQueue, isRepeat, isShuffle, seek, next, prev, togglePlay, toggleMute, setIsQueue,
+    toggleRepeat, toggleShuffle, volumeSeek, setProgress, setDuration, setUserPlayer,
+    updatePlayer, setIsRepeat, setIsShuffle, setData
   } = usePlayer();
 
   const progressRef = useRef<HTMLDivElement>(null);
   const volumeRef = useRef<HTMLDivElement>(null);
+  const audio = audioRef.current;
 
   const [hoverTime, setHoverTime] = useState<number | null>(null);
   const [hoverX, setHoverX] = useState<number>(0);
   const [isDragging, setIsDragging] = useState<boolean>(false);
 
   const [isLiked, setIsLiked] = useState(false);
-  const [isRepeat, setIsRepeat] = useState(false);
-  const [isShuffle, setIsShuffle] = useState(false);
 
   const progressSeek = (clientX: number) => {
     if (!currentSong || !progressRef.current) return;
@@ -80,21 +86,20 @@ export const PlayerBar: React.FC = () => {
     if (!isDragging) setHoverTime(null);
   }
 
-  const volumeSeek = (clientX: number) => {
+  const handleVolumeSeek = (clientX: number) => {
     if (!volumeRef.current) return;
     const rect = volumeRef.current.getBoundingClientRect();
     const clickX = clientX - rect.left;
     const width = rect.width;
     const clickRatio = Math.max(0, Math.min(1, clickX / width));
-    setVolume(clickRatio);
-    if (clickRatio) setIsMuted(false);
+    volumeSeek(clickRatio);
   }
 
   const handleVolumeChange = (e: React.MouseEvent<HTMLDivElement>) => {
-    volumeSeek(e.clientX);
+    handleVolumeSeek(e.clientX);
 
     const handleMouseMove = (moveEvent: MouseEvent) => {
-      volumeSeek(moveEvent.clientX);
+      handleVolumeSeek(moveEvent.clientX);
     }
 
     const handleMouseUp = () => {
@@ -111,12 +116,11 @@ export const PlayerBar: React.FC = () => {
     setIsLiked(!isLiked);
   }
 
-  const toggleShuffle = () => {
-    setIsShuffle(!isShuffle);
-  }
-
-  const toggleRepeat = () => {
-    setIsRepeat(!isRepeat);
+  const onTimeChange = () => {
+    if (audio) {
+      setProgress(audio.currentTime);
+      updatePlayer({ progress: audio.currentTime });
+    }
   }
 
   const progressPercent = Math.min(100, (progress / duration) * 100);
@@ -129,14 +133,26 @@ export const PlayerBar: React.FC = () => {
   //   }
   // }, [progress]);
 
+  useEffect(() => { user?.id && getPlayer(user.id).then(setUserPlayer) }, [user]);
+
+  useEffect(() => {
+    if (player) {
+      setIsRepeat(player.repeat);
+      setIsShuffle(player.shuffle);
+      seek(player.progress);
+      volumeSeek(player.volume / 100);
+      player.song && setData([player.song], 0);
+    }
+  }, [player]);
+
   return (
     <footer
       className="px-4 py-2 fixed bottom-0 left-0 w-full z-50 h-22 bg-black backdrop-blur-3xl flex justify-between items-center select-none playback-bar"
       id="spotify-playback-bar"
     >
-      <div className="lg:flex hidden items-center gap-4 w-[30%] min-w-50">
+      <div className="lg:flex flex items-center gap-4 w-[30%] min-w-50">
         <SmartImage
-          wrapClassName="w-14 h-14 bg-[#262626] rounded overflow-hidden shadow-2xl shrink-0 group relative cursor-pointer"
+          wrapClassName="w-14 h-14 bg-[#333333] rounded overflow-hidden shadow-2xl shrink-0 group relative cursor-pointer"
           className="w-full h-full object-cover transition-transform duration-300"
           url={songCover}
           icon={(
@@ -281,7 +297,7 @@ export const PlayerBar: React.FC = () => {
       </div>
 
       {/* RIGHT: Volume & Secondary Controls */}
-      <div className="lg:flex hidden items-center justify-end gap-4 w-[30%] min-w-50">
+      <div className="lg:flex flex items-center justify-end gap-4 w-[30%] min-w-50">
         <button
           onClick={() => setIsQueue(!isQueue)}
           className="text-[#adaaaa] hover:text-primary transition-all cursor-pointer"
@@ -332,6 +348,14 @@ export const PlayerBar: React.FC = () => {
           <LaptopIcon size={18} />
         </button>
       </div>
+
+      <audio
+        ref={audioRef}
+        onTimeUpdate={onTimeChange}
+        onLoadedMetadata={() => audio && setDuration(audio.duration)}
+        onEnded={next} // 🔥 autoplay siguiente
+        crossOrigin="anonymous"
+      />
     </footer>
   )
 }
