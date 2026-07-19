@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronDownIcon, EllipsisVerticalIcon, HeartIcon, ListMusicIcon, Music2Icon, MusicIcon, PauseIcon, PlayIcon, Share2Icon } from "lucide-react";
 import SmartImage from "../../../shared/components/SmartImage";
@@ -8,13 +8,20 @@ import { formatTime } from "../../../shared/utils/formatTime";
 import { getDeviceType } from "../../../shared/utils/getDeviceType";
 import { RepeatIcon, ShuffleIcon, SkipForwardIcon } from "../../../shared/components/Icons";
 import MobileQueue from "./MobileQueue";
+import useAuth from "../../auth/hooks/useAuth";
+import useUserPlayer from "../hooks/useUserPlayer";
 
 const MobilePlayer = () => {
+  const { user } = useAuth();
+  const { getPlayer } = useUserPlayer();
   const {
+    audioRef, player,
     currentPlaylist, currentSong, progress, duration, isPlaying, isRepeat, isShuffle,
-    seek, next, prev, togglePlay, toggleShuffle, toggleRepeat
+    seek, next, prev, togglePlay, toggleShuffle, toggleRepeat, setProgress, setDuration,
+    updatePlayer, onPlayerChange, setPlayer, resetPlayer
   } = usePlayer();
 
+  const audio = audioRef.current;
   const progressRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<HTMLDivElement>(null);
   const progressEl = progressRef.current;
@@ -25,6 +32,7 @@ const MobilePlayer = () => {
   const [isMobileQueue, setIsMobileQueue] = useState(false);
 
   const [isLiked, setIsLiked] = useState(false);
+
   const handleProgressSeek = (clientX: number) => {
     if (!currentSong || !progressEl) return;
     const rect = progressEl.getBoundingClientRect();
@@ -69,6 +77,15 @@ const MobilePlayer = () => {
   const colors = {
     icon: 'text-white/40'
   }
+
+  useEffect(() => {
+    (!user || !user.id)
+      ? resetPlayer()
+      : getPlayer(user.id).then(setPlayer);
+  }, [user]);
+
+
+  useEffect(() => { player && onPlayerChange(player) }, [player]);
 
   return (
     <>
@@ -331,6 +348,19 @@ const MobilePlayer = () => {
             </button>
           </div>
         </div>
+
+        <audio
+          ref={audioRef}
+          onTimeUpdate={() => {
+            if (audio) {
+              setProgress(audio.currentTime);
+              updatePlayer({ progress: audio.currentTime });
+            }
+          }}
+          onLoadedMetadata={() => audio && setDuration(audio.duration)}
+          onEnded={next} // 🔥 autoplay siguiente
+          crossOrigin="anonymous"
+        />
       </div>
 
       <MobileQueue
