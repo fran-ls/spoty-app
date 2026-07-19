@@ -34,8 +34,10 @@ interface PlayerContextType {
   toggleRepeat: () => void;
   updatePlayer: (data: Partial<Player>) => Promise<any>;
   play: (tracks: Song[], index: number, meta: PlaylistMeta) => void;
-  setData: (tracks: Song[], index: number, meta?: PlaylistMeta) => void;
+  initPlayer: (tracks: Song[], index: number, meta?: PlaylistMeta) => void;
   playQueueSong: (track: Song, index: number) => void;
+  onPlayerChange: (player: Player) => void;
+  resetPlayer: () => void;
   setQueue: React.Dispatch<React.SetStateAction<Song[]>>;
   setVolume: React.Dispatch<React.SetStateAction<number>>;
   setPrevVolume: React.Dispatch<React.SetStateAction<number>>;
@@ -44,7 +46,7 @@ interface PlayerContextType {
   setIsQueue: React.Dispatch<React.SetStateAction<boolean>>;
   setQueueMeta: React.Dispatch<React.SetStateAction<PlaylistMeta>>;
   setCurrentPlaylist: React.Dispatch<React.SetStateAction<Playlist>>;
-  setUserPlayer: React.Dispatch<React.SetStateAction<Player | null>>;
+  setPlayer: React.Dispatch<React.SetStateAction<Player | null>>;
   setDuration: React.Dispatch<React.SetStateAction<number>>;
   setProgress: React.Dispatch<React.SetStateAction<number>>;
   setIsRepeat: React.Dispatch<React.SetStateAction<boolean>>;
@@ -107,13 +109,15 @@ export const PlayerContext = createContext<PlayerContextType>({
   setCurrentPlaylist: () => { },
   toggleShuffle: () => { },
   toggleRepeat: () => { },
-  setUserPlayer: () => { },
-  setDuration: () => { },
   setProgress: () => { },
   setIsRepeat: () => { },
   setIsShuffle: () => { },
-  setData: () => { },
-  updatePlayer: async () => { }
+  setDuration: () => { },
+  initPlayer: () => { },
+  setPlayer: () => { },
+  updatePlayer: async () => { },
+  onPlayerChange: () => { },
+  resetPlayer: () => { }
 });
 
 export const PlayerProvider = ({ children }: any) => {
@@ -153,7 +157,7 @@ export const PlayerProvider = ({ children }: any) => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audio = audioRef.current;
 
-  const [player, setUserPlayer] = useState<Player | null>(null);
+  const [player, setPlayer] = useState<Player | null>(null);
   const [isRepeat, setIsRepeat] = useState(false);
   const [isShuffle, setIsShuffle] = useState(false);
 
@@ -218,7 +222,7 @@ export const PlayerProvider = ({ children }: any) => {
       setIsPlaying(true);
     }
 
-    if (audio) {
+    if (audio && track) {
       audio.src = songService.streamUrl(track.id, track.fileUrl);
       audio.play();
     }
@@ -239,7 +243,7 @@ export const PlayerProvider = ({ children }: any) => {
       setIsPlaying(true);
     }
 
-    if (audio) {
+    if (audio && track) {
       audio.src = songService.streamUrl(track.id, track.fileUrl);
       audio.play();
     }
@@ -286,15 +290,60 @@ export const PlayerProvider = ({ children }: any) => {
     });
   }
 
-  const setData = (tracks: Song[], index: number, meta?: PlaylistMeta) => {
-    const track = tracks[index];
+  const initPlayer = (tracks: Song[], index: number, meta?: PlaylistMeta) => {
+    const track = tracks[index] || null;
     setQueue(tracks);
     setQueueMeta({ ...queueMeta, ...meta });
     setCurrentIndex(index);
     setCurrentSong(track);
-    if (audio) {
+
+    if (audio && track) {
       audio.src = songService.streamUrl(track.id, track.fileUrl);
       audio.volume = volume;
+    }
+  }
+
+  const onPlayerChange = (player: Player) => {
+    setIsRepeat(player.repeat);
+    setIsShuffle(player.shuffle);
+    seek(player.progress);
+    volumeSeek(player.volume / 100);
+    initPlayer(player.song ? [player.song] : [], 0);
+  }
+
+  const resetPlayer = () => {
+    setPlayer(null);
+    setQueue([]);
+    setCurrentIndex(0);
+    setCurrentSong(null);
+    setIsPlaying(false);
+    setProgress(0);
+    setDuration(0);
+    setCurrentPlaylist({
+      id: '',
+      name: '',
+      description: '',
+      cover: '',
+      isPublic: false,
+      gradientColor: '',
+      bgColor: '',
+      userId: '',
+      createdAt: ''
+    });
+    setQueueMeta({
+      page: 0,
+      limit: 10,
+      total: 0,
+      totalPages: 1,
+      hasNextPage: false,
+      hasPrevPage: false,
+      totalDuration: 0,
+      playlistId: ''
+    });
+
+    if (audio) {
+      audio.pause();
+      audio.currentTime = 0;
     }
   }
 
@@ -307,7 +356,7 @@ export const PlayerProvider = ({ children }: any) => {
         isShuffle, setIsShuffle,
         progress, setProgress,
         duration, setDuration,
-        player, setUserPlayer,
+        player, setPlayer,
         queue, setQueue,
         isPlaying, setIsPlaying,
         volume, setVolume,
@@ -324,7 +373,9 @@ export const PlayerProvider = ({ children }: any) => {
         toggleShuffle,
         toggleRepeat,
         updatePlayer,
-        setData
+        initPlayer,
+        onPlayerChange,
+        resetPlayer
       }}
     >
       {children}

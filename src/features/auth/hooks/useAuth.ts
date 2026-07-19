@@ -6,6 +6,8 @@ import { authService } from "../services/auth.service";
 import useToaster from "../../../shared/hooks/useToaster";
 import { routes } from "../../../shared/utils/routes";
 import playerService from "../../player/services/player.service";
+import libraryService from "../../library/services/library.service";
+import { usePlayer } from "../../../shared/context/PlayerContext";
 
 const useAuth = () => {
   const [form, setForm] = useState<UserDTO>({
@@ -18,6 +20,8 @@ const useAuth = () => {
 
   const { state, dispatch } = useContext(AuthContext)!;
   const { toast, isActive, isFirstLoad, showToast, setToast, setIsActive } = useToaster();
+  const { resetPlayer } = usePlayer();
+
   const navigate = useNavigate();
 
   const validation = (data: any, fields: string, custom: string[] = []) => {
@@ -74,6 +78,7 @@ const useAuth = () => {
     const { user, accessToken } = response.data || {};
     if (!user || !accessToken) return;
 
+    await libraryService.newUserLibrary({ userId: user.id });
     await playerService.createPlayer({ userId: user.id });
 
     dispatch({
@@ -105,8 +110,7 @@ const useAuth = () => {
     const user = response.data?.user;
 
     if (!user) {
-      dispatch({ type: 'logout' });
-      await authService.logout();
+      await logout();
       return;
     }
 
@@ -119,6 +123,7 @@ const useAuth = () => {
   }
 
   const logout = async () => {
+    resetPlayer();
     dispatch({ type: 'logout' });
     return await authService.logout();
   }
@@ -148,7 +153,7 @@ const useAuth = () => {
   const onCloseToast = () => setIsActive(false);
 
   const showProfile = () => {
-    dispatch({ type: "profile" });
+    dispatch({ type: 'profile' });
   }
 
   return {

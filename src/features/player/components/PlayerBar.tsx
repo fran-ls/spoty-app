@@ -18,8 +18,8 @@ export const PlayerBar = () => {
   const {
     audioRef, player, currentSong, progress, duration, isPlaying, volume, isMuted,
     isQueue, isRepeat, isShuffle, seek, next, prev, togglePlay, toggleMute, setIsQueue,
-    toggleRepeat, toggleShuffle, volumeSeek, setProgress, setDuration, setUserPlayer,
-    updatePlayer, setIsRepeat, setIsShuffle, setData
+    toggleRepeat, toggleShuffle, volumeSeek, setProgress, setDuration, setPlayer,
+    updatePlayer, onPlayerChange, resetPlayer
   } = usePlayer();
 
   const progressRef = useRef<HTMLDivElement>(null);
@@ -116,13 +116,6 @@ export const PlayerBar = () => {
     setIsLiked(!isLiked);
   }
 
-  const onTimeChange = () => {
-    if (audio) {
-      setProgress(audio.currentTime);
-      updatePlayer({ progress: audio.currentTime });
-    }
-  }
-
   const progressPercent = Math.min(100, (progress / duration) * 100);
   const volumePercent = volume * 100;
   const songCover = currentSong ? songService.songCoverUrl(currentSong.id, currentSong.cover) : '';
@@ -133,17 +126,13 @@ export const PlayerBar = () => {
   //   }
   // }, [progress]);
 
-  useEffect(() => { user?.id && getPlayer(user.id).then(setUserPlayer) }, [user]);
-
   useEffect(() => {
-    if (player) {
-      setIsRepeat(player.repeat);
-      setIsShuffle(player.shuffle);
-      seek(player.progress);
-      volumeSeek(player.volume / 100);
-      player.song && setData([player.song], 0);
-    }
-  }, [player]);
+    (!user || !user.id)
+      ? resetPlayer()
+      : getPlayer(user.id).then(setPlayer);
+  }, [user]);
+
+  useEffect(() => { player && onPlayerChange(player) }, [player]);
 
   return (
     <footer
@@ -351,7 +340,12 @@ export const PlayerBar = () => {
 
       <audio
         ref={audioRef}
-        onTimeUpdate={onTimeChange}
+        onTimeUpdate={() => {
+          if (audio) {
+            setProgress(audio.currentTime);
+            updatePlayer({ progress: audio.currentTime });
+          }
+        }}
         onLoadedMetadata={() => audio && setDuration(audio.duration)}
         onEnded={next} // 🔥 autoplay siguiente
         crossOrigin="anonymous"
