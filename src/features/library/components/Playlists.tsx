@@ -1,13 +1,12 @@
 import { PauseIcon, PlayIcon } from "lucide-react";
 import type { Playlist } from "../../playlist/playlist.types";
-import type { LayoutKind } from "../library.types";
+import type { LayoutKind, LibraryStatus } from "../library.types";
 import type { Grid } from "./Library";
 import playlistService from "../../playlist/services/playlist.service";
 import SmartImage from "../../../shared/components/SmartImage";
 import PlaylistItem from "./PlaylistItem";
 import { usePlayer } from "../../../shared/context/PlayerContext";
 import useAuth from "../../auth/hooks/useAuth";
-import { useAppCtx } from "../../../shared/context/AppContext";
 
 interface PlaylistsProps {
   grid: Grid;
@@ -15,18 +14,17 @@ interface PlaylistsProps {
   gridImgSize: number;
   playlists: Playlist[];
   layoutKind: LayoutKind;
+  libraryStatus: LibraryStatus;
   setHoverId: React.Dispatch<React.SetStateAction<string>>;
   onPlaylistClick: (playlist: Playlist) => void;
 }
 
 const Playlists = (props: PlaylistsProps) => {
-  const { playlists, hoverId, layoutKind, gridImgSize, grid, setHoverId, onPlaylistClick } = props;
+  const { playlists, hoverId, layoutKind, gridImgSize, grid, libraryStatus, setHoverId, onPlaylistClick } = props;
+  const { collapsed: isCollapsed, expanded: isExpanded } = libraryStatus;
 
   const { user } = useAuth();
   const { isPlaying, queueMeta, togglePlay } = usePlayer();
-  const { libraryStatus } = useAppCtx();
-
-  const { collapsed: isCollapsed, expanded: isExpanded } = libraryStatus;
 
   return (
     playlists.map((playlist) => {

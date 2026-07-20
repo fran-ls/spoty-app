@@ -1,13 +1,28 @@
-import type { UserLibrary, UserLibraryDTO, UserLibraryInclude } from "../library.types";
+import type { Library, LibraryDTO, LibraryInclude } from "../library.types";
+import type { Playlist, PlaylistFilters, PlaylistInclude } from "../../playlist/playlist.types";
+import type { SearchResponse } from "../../../shared/types/common.types";
 import { api, apiFetch } from "../../../shared/utils/api";
 import { tokenService } from "../../auth/services/token.service";
-import type { Playlist, PlaylistFilters, PlaylistInclude } from "../../playlist/playlist.types";
 
 class LibraryService {
-  async getUserLibrary(userId: string, include?: UserLibraryInclude) {
-    return await apiFetch<UserLibrary>(() => (
+  async getLibrary(userId: string, include?: LibraryInclude) {
+    return await apiFetch<Library>(() => (
       api.get(`/library/u/${userId}`, {
         params: {
+          include: include ? JSON.stringify(include) : undefined
+        },
+        headers: {
+          'Authorization': `Bearer ${tokenService.getToken()}`
+        }
+      })
+    ));
+  }
+
+  async getUserPlaylists(userId: string, filters?: PlaylistFilters, include?: PlaylistInclude) {
+    return await apiFetch<SearchResponse<Playlist[]>>(() => (
+      api.get(`/playlists/u/${userId}`, {
+        params: {
+          ...filters,
           include: include ? JSON.stringify(include) : undefined
         },
         headers: {
@@ -31,8 +46,8 @@ class LibraryService {
     ));
   }
 
-  async newUserLibrary(library: UserLibraryDTO, include?: UserLibraryInclude) {
-    return await apiFetch<UserLibrary>(() => (
+  async createLibrary(library: LibraryDTO, include?: LibraryInclude) {
+    return await apiFetch<Library>(() => (
       api.post('/library/u', library, {
         params: {
           include: include ? JSON.stringify(include) : undefined
@@ -44,12 +59,12 @@ class LibraryService {
     ));
   }
 
-  async updateUserLibrary(
+  async updateLibrary(
     id: string,
-    library: Partial<UserLibraryDTO>,
-    include?: UserLibraryInclude
+    library: Partial<LibraryDTO>,
+    include?: LibraryInclude
   ) {
-    return await apiFetch<UserLibrary>(() => (
+    return await apiFetch<Library>(() => (
       api.put(`/library/u/${id}`, library, {
         params: {
           include: include ? JSON.stringify(include) : undefined
@@ -61,13 +76,13 @@ class LibraryService {
     ));
   }
 
-  async getOrCreateUserLibrary(userId: string, include?: UserLibraryInclude) {
-    let r = await this.getUserLibrary(userId, include);
+  async getOrCreateLibrary(userId: string, include?: LibraryInclude) {
+    let r = await this.getLibrary(userId, include);
     if (r.error) return r;
 
     let lib = r.data;
     if (!lib) {
-      r = await libraryService.newUserLibrary({ userId }, include);
+      r = await libraryService.createLibrary({ userId }, include);
       lib = r.data;
     }
 

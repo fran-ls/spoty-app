@@ -146,28 +146,6 @@ const PlaylistItem = (props: PlaylistItemProps) => {
             )}
           />
 
-
-          {/* {playlist.cover ? (
-            <div className="rounded-md overflow-hidden">
-              <img
-                className="w-full h-full object-cover"
-                referrerPolicy="no-referrer"
-                crossOrigin="anonymous"
-                src={playlist.cover}
-                alt="cover"
-              />
-            </div>
-          ) : (
-            <div className="flex items-center justify-center">
-              <div
-                style={{ background: bgIcon }}
-                className="rounded-md overflow-hidden w-full h-full flex items-center justify-center"
-              >
-                <MusicIcon className="w-1/2 h-1/2" />
-              </div>
-            </div>
-          )} */}
-
           <h4
             className={`${isCurrent ? 'text-primary' : 'text-white'} mt-2 line-clamp-1 overflow-hidden w-full text-[15px] font-semibold`}
             title={playlist.name}

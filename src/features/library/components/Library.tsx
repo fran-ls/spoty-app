@@ -5,16 +5,13 @@ import type { PlaylistFilters } from '../../playlist/playlist.types';
 import { PlaylistLayout, PlaylistOrderBy, PlaylistVisibility, type LayoutKind } from '../library.types';
 import { routes } from '../../../shared/utils/routes';
 import CustomMenu from './CustomMenu';
-import playlistService from '../../playlist/services/playlist.service';
 import useAuth from '../../auth/hooks/useAuth';
-import usePlaylist from '../../playlist/hooks/usePlaylist';
 import MenuItem from '../../../shared/components/MenuItem';
 import Loader from '../../../shared/components/Loader';
 import { useInfiniteScroll } from '../../../shared/hooks/useInfiniteScroll';
 import { getDeviceType } from '../../../shared/utils/getDeviceType';
 import { STYLES } from '../../../shared/utils/styles';
-import useUserLibrary from '../hooks/useUserLibrary';
-import { useAppCtx } from '../../../shared/context/AppContext';
+import useLibrary from '../hooks/useLibrary';
 import Playlists from './Playlists';
 import { hasScroll } from '../../../shared/utils/scroll';
 
@@ -40,14 +37,15 @@ interface LibraryProps {
 }
 
 export const Library = (props: LibraryProps) => {
-  const { isAdmin, user } = useAuth();
-  const { playlists, playlistMeta, getUserPlaylists } = usePlaylist();
-  const {
-    library, layout, orderBy, systemPlaylists, getUserLibrary,
-    onLayoutChange, onSortBy, onSizeChange, getSystemPlaylists
-  } = useUserLibrary();
+  const navigate = useNavigate();
 
-  const { libraryStatus, setLibraryStatus } = useAppCtx();
+  const { user, isAdmin } = useAuth();
+  const {
+    library, layout, orderBy, systemPlaylists, libraryStatus, playlists, playlistMeta, isLoading,
+    playlistVerticalScroll, playlistScrollTop, newPlaylist, onLayoutChange, onSortBy, onSizeChange,
+    setLibraryStatus, getPlaylists, getLibrary, setPlaylistVerticalScroll, setPlaylistScrollTop
+  } = useLibrary();
+
   const { collapsed: isCollapsed, expanded: isExpanded } = libraryStatus;
 
   const [isVisibilityMenu, setIsVisibilityMenu] = useState(false);
@@ -62,12 +60,7 @@ export const Library = (props: LibraryProps) => {
   const ulRef = useRef<HTMLUListElement>(null);
   const navRef = useRef<HTMLElement>(null);
 
-  const [navVerticalScroll, setNavVerticalScroll] = useState(false);
-  const [queueScrollTop, setQueueScrollTop] = useState(0);
-
   const [gridImgSize, setGridImgSize] = useState(0);
-
-  const navigate = useNavigate();
 
   const orderKind = orderBy.value === PlaylistOrderBy.RECENT ? 'desc' : 'asc';
 
@@ -82,61 +75,77 @@ export const Library = (props: LibraryProps) => {
   }
 
   const { loaderRef } = useInfiniteScroll(async () => {
-    if (playlistMeta.hasNextPage && user?.id) {
-      await getUserPlaylists(
-        user.id,
-        { ...filters, page: page + 1 },
+    if (playlistMeta.hasNextPage) {
+      await getPlaylists({
+        ...filters,
+        page: page + 1
+      },
         undefined
       );
       setPage(page + 1);
     }
   });
 
-  const onSavePlaylist = async () => {
-    const { data } = await playlistService.newPlaylist({
-      name: '',
-      description: '',
-      cover: '',
-      isPublic: false,
-      gradientColor: '',
-      bgColor: '',
-      userId: user?.id!,
-      file: null
-    }, true);
+  const layoutKind: LayoutKind = {
+    list: layout === PlaylistLayout.LIST,
+    grid: layout === PlaylistLayout.GRID,
+    compactList: layout === PlaylistLayout.COMPACT_LIST
+  }
 
-    data?.id && navigate(`${routes.playlists}/${data.id}`);
+  const device = getDeviceType();
+  const isDesktop = device === 'desktop';
+
+  function getGridImgSize(isFirstLoad = false) {
+    const ul = ulRef.current;
+    if (!ul) return;
+
+    const screenWidth = window.innerWidth - 8 - (8 * 2);
+    const wrapWidth = isFirstLoad ? screenWidth : ul.offsetWidth - 8;
+    const initGridWidth = window.innerWidth >= 1024 ? 160 : 136;
+    const cols = Math.floor(wrapWidth / initGridWidth);
+    const gridWidth = wrapWidth / cols;
+    const size = gridWidth - 12 * 2;
+    setGridImgSize(size);
   }
 
   useEffect(() => {
-    if (!props.isPage) {
-      user?.id && getUserLibrary(user.id).then((data) => {
-        data && setLibraryStatus({
-          collapsed: data.isCollapsed,
-          expanded: data.isExpanded
-        });
-      })
+    if (user && user.id) {
+      getLibrary(user.id);
     }
-    else {
-      setLibraryStatus({
-        collapsed: false,
-        expanded: props.isExpanded ?? true
-      });
-    }
+    if (props.isPage) setLibraryStatus({
+      collapsed: false,
+      expanded: props.isExpanded ?? true
+    });
   }, [user]);
 
   useEffect(() => {
     setPage(0);
 
-    setTimeout(() => {
-      user?.id && getUserPlaylists(
-        user.id,
-        { ...filters, page: 0 },
-        undefined
-      )
-
-      isAdmin && getSystemPlaylists(filters);
-    }, 300);
+    setTimeout(() => getPlaylists(
+      { ...filters, page: 0 },
+      undefined
+    ), 300);
   }, [query, orderBy, visibility]);
+
+  useEffect(() => {
+    const handleResize = () => getGridImgSize();
+
+    if (layout === PlaylistLayout.GRID && libraryStatus.expanded) {
+      getGridImgSize(true);
+      window.addEventListener('resize', handleResize);
+    }
+    else {
+      window.removeEventListener('resize', handleResize);
+    }
+    return () => window.removeEventListener('resize', handleResize);
+  }, [layout, libraryStatus]);
+
+  useEffect(() => {
+    if (navRef.current) {
+      const verticalScroll = hasScroll(navRef.current).vertical;
+      setPlaylistVerticalScroll(verticalScroll);
+    }
+  }, [playlists]);
 
   const grid: Grid = {
     li: {
@@ -153,46 +162,6 @@ export const Library = (props: LibraryProps) => {
     }
   }
 
-  const layoutKind: LayoutKind = {
-    list: layout === PlaylistLayout.LIST,
-    grid: layout === PlaylistLayout.GRID,
-    compactList: layout === PlaylistLayout.COMPACT_LIST
-  }
-
-  const device = getDeviceType();
-  const isDesktop = device === 'desktop';
-
-  function getImgSize(isFirstLoad = false) {
-    const ul = ulRef.current;
-    if (!ul) return;
-
-    const screenWidth = window.innerWidth - 8 - (8 * 2);
-    const wrapWidth = isFirstLoad ? screenWidth : ul.offsetWidth - 8;
-    const initGridWidth = window.innerWidth >= 1024 ? 160 : 136;
-    const cols = Math.floor(wrapWidth / initGridWidth);
-    const gridWidth = wrapWidth / cols;
-    const size = gridWidth - 12 * 2;
-    setGridImgSize(size);
-  }
-
-  useEffect(() => {
-    const handleResize = () => getImgSize();
-
-    if (layout === PlaylistLayout.GRID && libraryStatus.expanded) {
-      getImgSize(true);
-      window.addEventListener('resize', handleResize);
-    }
-    else {
-      window.removeEventListener('resize', handleResize);
-    }
-    return () => window.removeEventListener('resize', handleResize);
-  }, [layout, libraryStatus]);
-
-  useEffect(() => {
-    const verticalScroll = hasScroll(navRef.current!).vertical;
-    setNavVerticalScroll(verticalScroll);
-  }, [playlists]);
-
   return (
     <aside
       onClick={() => !query && setIsSearch(false)}
@@ -202,7 +171,7 @@ export const Library = (props: LibraryProps) => {
       <div className={`rounded-lg ${STYLES.minHeightMain} ${STYLES.maxHeightMain}`}>
         <header
           style={{
-            ...((!isExpanded && queueScrollTop) && {
+            ...((!isExpanded && playlistScrollTop) && {
               boxShadow: '0 6px 10px #0009'
             })
           }}
@@ -211,15 +180,10 @@ export const Library = (props: LibraryProps) => {
           <div className={`${isCollapsed ? 'flex-col gap-4' : 'flex-row'} flex items-center justify-between`}>
             {!isExpanded && (
               <button
-                onClick={() => {
-                  const collapsed = !isCollapsed;
-                  const expanded = false;
-                  setLibraryStatus({
-                    collapsed,
-                    expanded
-                  });
-                  onSizeChange(library.id, collapsed, expanded);
-                }}
+                onClick={() => onSizeChange(library.id, {
+                  collapsed: !isCollapsed,
+                  expanded: false
+                })}
                 className="p-2 rounded-lg text-[#adaaaa] hover:text-white cursor-pointer transition-colors duration-100"
                 title={isCollapsed ? "Abre Tu biblioteca" : "Contraer Tu biblioteca"}
               >
@@ -238,15 +202,10 @@ export const Library = (props: LibraryProps) => {
 
             {!isCollapsed &&
               <button
-                onClick={() => {
-                  const collapsed = false;
-                  const expanded = true;
-                  setLibraryStatus({
-                    collapsed,
-                    expanded
-                  });
-                  onSizeChange(library.id, collapsed, expanded);
-                }}
+                onClick={() => onSizeChange(library.id, {
+                  collapsed: false,
+                  expanded: true
+                })}
                 className={`${!isExpanded ? 'cursor-pointer' : ''}`}
                 type="button"
               >
@@ -258,7 +217,7 @@ export const Library = (props: LibraryProps) => {
 
             <div className="flex items-center gap-2">
               <button
-                onClick={onSavePlaylist}
+                onClick={newPlaylist}
                 className={`${isExpanded ? 'p-2 px-4' : 'p-2'} hover:bg-white/10 cursor-pointer bg-[#1f1f1f] text-sm font-medium rounded-full gap-2 flex items-center transition-colors duration-100`}
                 title="Crea una lista"
                 type="button"
@@ -274,14 +233,7 @@ export const Library = (props: LibraryProps) => {
 
               {(isExpanded && !props.isPage) && (
                 <button
-                  onClick={() => {
-                    const expanded = false;
-                    setLibraryStatus({
-                      ...libraryStatus,
-                      expanded
-                    });
-                    onSizeChange(library.id, isCollapsed, expanded);
-                  }}
+                  onClick={() => onSizeChange(library.id, { expanded: false })}
                   className="p-2 rounded-full text-[#adaaaa] hover:bg-white/10 hover:text-white cursor-pointer transition-colors duration-100"
                   title="Contraer Tu biblioteca"
                 >
@@ -409,7 +361,7 @@ export const Library = (props: LibraryProps) => {
             height: !isDesktop ? `calc(100dvh - 64px - 52px - 62px - ${window.innerWidth >= 520 ? 116 : 156}px)` : ''
           }}
           className={`${isCollapsed ? 'h-[calc(100dvh-64px-88px-100px)]' : isExpanded ? `min-[520px]:h-[calc(100dvh-64px-88px-116px)] h-[calc(100dvh-64px-88px-156px)]` : 'h-[calc(100dvh-64px-88px-116px)]'} overflow-y-auto overflow-x-hidden relative ${!isDesktop ? 'hide-scrollbar' : ''}`}
-          onScroll={(e) => setQueueScrollTop(e.currentTarget.scrollTop)}
+          onScroll={(e) => setPlaylistScrollTop(e.currentTarget.scrollTop)}
           ref={navRef}
         >
           {(isExpanded && !layoutKind.grid) && (
@@ -434,7 +386,7 @@ export const Library = (props: LibraryProps) => {
 
           <ul
             style={{
-              ...((!navVerticalScroll && !isCollapsed) && {
+              ...((!playlistVerticalScroll && !isCollapsed) && {
                 paddingRight: '8px'
               })
             }}
@@ -448,14 +400,10 @@ export const Library = (props: LibraryProps) => {
                 gridImgSize={gridImgSize}
                 playlists={systemPlaylists}
                 hoverId={hoverId}
+                libraryStatus={libraryStatus}
                 setHoverId={setHoverId}
                 onPlaylistClick={(playlist) => {
-                  const expanded = false;
-                  setLibraryStatus({
-                    ...libraryStatus,
-                    expanded
-                  });
-                  onSizeChange(library.id, isCollapsed, expanded);
+                  onSizeChange(library.id, { expanded: false });
                   navigate(`${routes.playlists}/${playlist.id}`);
                 }}
               />
@@ -467,19 +415,15 @@ export const Library = (props: LibraryProps) => {
               gridImgSize={gridImgSize}
               playlists={playlists}
               hoverId={hoverId}
+              libraryStatus={libraryStatus}
               setHoverId={setHoverId}
               onPlaylistClick={(playlist) => {
-                const expanded = false;
-                setLibraryStatus({
-                  ...libraryStatus,
-                  expanded
-                });
-                onSizeChange(library.id, isCollapsed, expanded);
+                onSizeChange(library.id, { expanded: false });
                 navigate(`${routes.playlists}/${playlist.id}`);
               }}
             />
 
-            {playlistMeta.hasNextPage &&
+            {(!isLoading && playlistMeta.hasNextPage) &&
               <li
                 className="flex items-center justify-center overflow-hidden py-1"
                 ref={loaderRef}

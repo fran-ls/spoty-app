@@ -15,16 +15,18 @@ import usePlaylist from '../hooks/usePlaylist';
 import PlaylistMenu, { type PlaylistMenuAction } from '../components/PlaylistMenu';
 import SmartImage from '../../../shared/components/SmartImage';
 import TrackModal from '../../song/components/TrackModal';
+import useLibrary from '../../library/hooks/useLibrary';
 
 const PlaylistPage: React.FC = () => {
   const { playlistId } = useParams();
+  const { removePlaylist } = useLibrary();
   const { isPlaying, queueMeta, play, togglePlay, setCurrentPlaylist } = usePlayer();
   const {
     isPlay, isPublic, playlistSongs, searchMeta, gradientColor, bgColor, playlist,
     form, isBackground, isRemove, isHover, isOpen, isEdit, isOpenAction, query, isSearch,
     searchSongs, duration, playlistMeta, playlistItems, coverImages, setGradientColor,
     setBgColor, setForm, setIsHover, setIsEdit, setIsOpenAction, setQuery, setIsSearch,
-    onFileChange, getPlaylist, onSavePlaylist, onRemovePlaylist, getPlaylistTracks, searchTracks,
+    onFileChange, getPlaylist, onSavePlaylist, getPlaylistTracks, searchTracks,
     addSongToPlaylist, onChangeVisibility, setIsOpen, setIsRemove, setIsBackground,
     removeSongFromPlaylist, getPlaylistCover, setSearchSongs
   } = usePlaylist();
@@ -493,7 +495,7 @@ const PlaylistPage: React.FC = () => {
           isOpen={isRemove}
           playlistName={form.name}
           onClose={() => setIsRemove(false)}
-          onConfirm={() => onRemovePlaylist(playlistId!)}
+          onConfirm={() => removePlaylist(playlistId!)}
         />
       }
 

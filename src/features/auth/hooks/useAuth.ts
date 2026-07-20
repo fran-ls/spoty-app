@@ -78,7 +78,7 @@ const useAuth = () => {
     const { user, accessToken } = response.data || {};
     if (!user || !accessToken) return;
 
-    await libraryService.newUserLibrary({ userId: user.id });
+    await libraryService.createLibrary({ userId: user.id });
     await playerService.createPlayer({ userId: user.id });
 
     dispatch({

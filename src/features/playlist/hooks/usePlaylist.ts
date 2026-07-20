@@ -90,26 +90,6 @@ const usePlaylist = () => {
     setIsPublic(data.isPublic);
   }
 
-  const getUserPlaylists = async (
-    userId: string,
-    filters?: Record<string, any>,
-    include?: PlaylistInclude
-  ) => {
-    const id = userId || user?.id;
-    if (!id) return [];
-
-    const { data } = await playlistService.getUserPlaylists(userId, filters, include);
-    if (!data) return data;
-
-    setPlaylistMeta({ ...playlistMeta, ...data.meta, totalDuration: 0 });
-
-    (filters?.page > 1)
-      ? setPlaylists((prev) => [...prev, ...data.items])
-      : setPlaylists(data.items);
-
-    return data;
-  }
-
   const getPlaylist = async (playlistId: string, include?: PlaylistInclude) => {
     if (!playlistId) return;
 
@@ -170,12 +150,6 @@ const usePlaylist = () => {
     return await updatePlaylist(playlistId, {
       ...form, isPublic: !isPublic
     });
-  }
-
-  const onRemovePlaylist = async (playlistId: string) => {
-    if (!playlistId) return;
-    const { data } = await playlistService.removePlaylist(playlistId);
-    if (data?.id) navigate(routes.home);
   }
 
   const getPlaylistTracks = async (playlistId: string, filters?: Record<string, any>) => {
@@ -282,11 +256,9 @@ const usePlaylist = () => {
     coverImages, setCoverImages,
     onFileChange,
     getPlaylistCover,
-    getUserPlaylists,
     getPlaylist,
     onSavePlaylist,
     onChangeVisibility,
-    onRemovePlaylist,
     getPlaylistTracks,
     searchTracks,
     addSongToPlaylist,

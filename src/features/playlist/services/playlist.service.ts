@@ -105,20 +105,6 @@ class PlaylistService {
     });
   }
 
-  async getUserPlaylists(userId: string, filters?: PlaylistFilters, include?: PlaylistInclude) {
-    return await apiFetch<SearchResponse<Playlist[]>>(() => (
-      api.get(`/playlists/u/${userId}`, {
-        params: {
-          ...filters,
-          include: include ? JSON.stringify(include) : undefined
-        },
-        headers: {
-          'Authorization': `Bearer ${tokenService.getToken()}`
-        }
-      })
-    ));
-  }
-
   async getPlaylist(id: string, include?: PlaylistInclude) {
     return await apiFetch<Playlist>(async () => {
       const r = await api.get(`/playlists/${id}`, {

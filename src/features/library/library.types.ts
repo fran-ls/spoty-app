@@ -1,6 +1,6 @@
 import type { IncludeArgs, OrderKind } from "../../shared/types/common.types";
 
-export interface UserLibrary {
+export interface Library {
   id: string;
   isExpanded: boolean;
   isCollapsed: boolean;
@@ -13,7 +13,7 @@ export interface UserLibrary {
   createdAt: any;
 }
 
-export interface UserLibraryDTO {
+export interface LibraryDTO {
   isExpanded?: boolean;
   isCollapsed?: boolean;
   playlistLayout?: PlaylistLayout;
@@ -23,7 +23,7 @@ export interface UserLibraryDTO {
 }
 
 
-export type UserLibraryInclude = {
+export type LibraryInclude = {
   user?: IncludeArgs;
 }
 
