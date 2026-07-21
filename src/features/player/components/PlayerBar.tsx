@@ -1,25 +1,22 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   Volume2, VolumeX, MusicIcon, HeartIcon, ShuffleIcon, PauseIcon,
-  PlayIcon, ListIcon, RadioIcon, LaptopIcon,
+  PlayIcon, ListIcon, RadioIcon, LaptopIcon
 } from 'lucide-react';
-import { usePlayer } from '../../../shared/context/PlayerContext';
+import usePlayer from '../hooks/usePlayer';
 import { formatTime } from '../../../shared/utils/formatTime';
 import songService from '../../song/services/song.service';
 import SmartImage from '../../../shared/components/SmartImage';
 import { RepeatIcon, SkipForwardIcon } from '../../../shared/components/Icons';
 import useAuth from '../../auth/hooks/useAuth';
-import useUserPlayer from '../hooks/useUserPlayer';
 
 export const PlayerBar = () => {
   const { user } = useAuth();
-  const { getPlayer } = useUserPlayer();
-
   const {
     audioRef, player, currentSong, progress, duration, isPlaying, volume, isMuted,
     isQueue, isRepeat, isShuffle, seek, next, prev, togglePlay, toggleMute, setIsQueue,
     toggleRepeat, toggleShuffle, volumeSeek, setProgress, setDuration, setPlayer,
-    updatePlayer, onPlayerChange, resetPlayer
+    updatePlayer, onPlayerChange, resetPlayer, getPlayer
   } = usePlayer();
 
   const progressRef = useRef<HTMLDivElement>(null);
@@ -127,12 +124,10 @@ export const PlayerBar = () => {
   // }, [progress]);
 
   useEffect(() => {
-    (!user || !user.id)
-      ? resetPlayer()
-      : getPlayer(user.id).then(setPlayer);
+    (user && user.id) ? getPlayer(user.id).then(setPlayer) : resetPlayer();
   }, [user]);
 
-  useEffect(() => { player && onPlayerChange(player) }, [player]);
+  useEffect(() => { onPlayerChange(player) }, [player]);
 
   return (
     <footer

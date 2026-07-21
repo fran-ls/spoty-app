@@ -1,6 +1,5 @@
 import { PlayIcon, MusicIcon, EllipsisIcon, ClockIcon, CheckIcon } from 'lucide-react';
 import type { PlaylistMeta, PlaylistSong } from '../playlist.types';
-import { usePlayer } from '../../../shared/context/PlayerContext';
 import { formatTime } from '../../../shared/utils/formatTime';
 import { getFmtDate } from '../../../shared/utils/getFormatDate';
 import Loader from '../../../shared/components/Loader';
@@ -8,6 +7,7 @@ import { useInfiniteScroll } from '../../../shared/hooks/useInfiniteScroll';
 import songService from '../../song/services/song.service';
 import { DropdownIcon } from '../../../shared/components/Icons';
 import SmartImage from '../../../shared/components/SmartImage';
+import usePlayer from '../../player/hooks/usePlayer';
 
 interface PlaylistSongsProps {
   items: PlaylistSong[];

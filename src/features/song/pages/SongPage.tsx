@@ -9,7 +9,7 @@ import { getTimeParts } from '../../../shared/utils/formatTime';
 import SongList from '../components/SongList';
 import songService from '../services/song.service';
 import SongListEmpty from '../components/SongListEmpty';
-import { usePlayer } from '../../../shared/context/PlayerContext';
+import usePlayer from '../../player/hooks/usePlayer';
 import useAuth from '../../auth/hooks/useAuth';
 import { GRADIENT_COLORS, GRADIENT_CSS } from '../../../shared/data/gradientColors.data';
 import PlaylistMenu, { type PlaylistMenuAction } from '../../playlist/components/PlaylistMenu';
@@ -21,7 +21,7 @@ import useTrack from '../hooks/useTrack';
 
 const SongPage: React.FC = () => {
   const { user, isAdmin } = useAuth();
-  const { play, setQueueMeta, setCurrentPlaylist } = usePlayer();
+  const { play, setQueueMeta, onPlaylistChange } = usePlayer();
   const { tracks, trackMeta, searchTracks, setTracks, setTrackMeta } = useTrack()
 
   const [gradientCSS, setGradientCSS] = useState<string>(GRADIENT_CSS);
@@ -76,7 +76,6 @@ const SongPage: React.FC = () => {
 
     if (data) setQueueMeta({
       ...data.meta,
-      playlistId: '',
       totalDuration: 0
     });
   }
@@ -361,6 +360,7 @@ const SongPage: React.FC = () => {
           >
             <div className="p-6 space-y-6">
               <Footer
+                playlist={null}
                 songs={tracks}
                 songMeta={trackMeta}
                 isPlay={tracks.length > 0}
@@ -416,8 +416,8 @@ const SongPage: React.FC = () => {
                   songs={tracks}
                   searchMeta={trackMeta}
                   onPlay={(index) => {
-                    play(tracks, index, { ...trackMeta, playlistId: '', totalDuration: 0 });
-                    setCurrentPlaylist((prev) => ({ ...prev, bgColor, gradientColor }));
+                    onPlaylistChange(null);
+                    play(tracks, index, { ...trackMeta, totalDuration: 0 });
                   }}
                   onOpenPlaylistMenu={(track, index) => {
                     playlistMenuActions('open');

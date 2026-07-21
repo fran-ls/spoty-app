@@ -5,7 +5,7 @@ import type { Grid } from "./Library";
 import playlistService from "../../playlist/services/playlist.service";
 import SmartImage from "../../../shared/components/SmartImage";
 import PlaylistItem from "./PlaylistItem";
-import { usePlayer } from "../../../shared/context/PlayerContext";
+import usePlayer from "../../player/hooks/usePlayer";
 import useAuth from "../../auth/hooks/useAuth";
 
 interface PlaylistsProps {
@@ -24,12 +24,12 @@ const Playlists = (props: PlaylistsProps) => {
   const { collapsed: isCollapsed, expanded: isExpanded } = libraryStatus;
 
   const { user } = useAuth();
-  const { isPlaying, queueMeta, togglePlay } = usePlayer();
+  const { isPlaying, currentPlaylist, togglePlay } = usePlayer();
 
   return (
     playlists.map((playlist) => {
       const cover = playlistService.playlistCover(playlist.id, playlist.cover);
-      const isCurrent = queueMeta.playlistId === playlist.id;
+      const isCurrent = currentPlaylist.id === playlist.id;
       const isCurrentHover = hoverId === playlist.id;
 
       return (

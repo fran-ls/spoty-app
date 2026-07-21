@@ -7,7 +7,7 @@ import useToaster from "../../../shared/hooks/useToaster";
 import { routes } from "../../../shared/utils/routes";
 import playerService from "../../player/services/player.service";
 import libraryService from "../../library/services/library.service";
-import { usePlayer } from "../../../shared/context/PlayerContext";
+import usePlayer from "../../player/hooks/usePlayer";
 
 const useAuth = () => {
   const [form, setForm] = useState<UserDTO>({

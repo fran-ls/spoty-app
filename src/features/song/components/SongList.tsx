@@ -1,7 +1,7 @@
 import { Play, MusicIcon, EllipsisIcon, ClockIcon, CheckIcon } from 'lucide-react';
 import type { Song } from '../song.types';
 import type { PaginationMeta } from '../../../shared/types/common.types';
-import { usePlayer } from '../../../shared/context/PlayerContext';
+import usePlayer from '../../player/hooks/usePlayer';
 import { formatTime } from '../../../shared/utils/formatTime';
 import { getFmtDate } from '../../../shared/utils/getFormatDate';
 import Loader from '../../../shared/components/Loader';

@@ -10,7 +10,7 @@ import BackgroundColor from '../components/BackgroundColor';
 import DeleteConfirm from '../components/DeleteConfirm';
 import SearchSongList from '../../song/components/SearchSongList';
 import PlaylistSongs from '../components/PlaylistSongs';
-import { usePlayer } from '../../../shared/context/PlayerContext';
+import usePlayer from '../../player/hooks/usePlayer';
 import usePlaylist from '../hooks/usePlaylist';
 import PlaylistMenu, { type PlaylistMenuAction } from '../components/PlaylistMenu';
 import SmartImage from '../../../shared/components/SmartImage';
@@ -20,7 +20,7 @@ import useLibrary from '../../library/hooks/useLibrary';
 const PlaylistPage: React.FC = () => {
   const { playlistId } = useParams();
   const { removePlaylist } = useLibrary();
-  const { isPlaying, queueMeta, play, togglePlay, setCurrentPlaylist } = usePlayer();
+  const { currentPlaylist, isPlaying, play, togglePlay, onPlaylistChange } = usePlayer();
   const {
     isPlay, isPublic, playlistSongs, searchMeta, gradientColor, bgColor, playlist,
     form, isBackground, isRemove, isHover, isOpen, isEdit, isOpenAction, query, isSearch,
@@ -269,17 +269,18 @@ const PlaylistPage: React.FC = () => {
           <div className="md:gap-5 gap-3 flex items-center">
             <button
               onClick={() => {
-                if (queueMeta.playlistId === playlistId) {
+                if (currentPlaylist.id === playlistId) {
                   return togglePlay();
                 }
 
-                play(playlistSongs, 0, { ...playlistMeta, playlistId: playlistId! });
+                onPlaylistChange(playlist);
+                play(playlistSongs, 0, playlistMeta);
               }}
               disabled={!isPlay}
               className={`md:max-w-14 md:max-h-14 w-[10vw] h-[10vw] max-w-10 max-h-10 rounded-full flex items-center justify-center scale-100 hover:scale-105 active:scale-95 transition-all shadow-lg text-black ${!isPlay ? 'bg-[#adaaaa]/40 opacity-50 cursor-not-allowed' : 'bg-primary hover:bg-[#63ef82] cursor-pointer'}`}
               title="Reproducir lista"
             >
-              {(isPlaying && isPlay && playlistId === queueMeta.playlistId) ?
+              {(isPlaying && isPlay && playlistId === currentPlaylist.id) ?
                 <PauseIcon
                   className="w-1/2 h-1/2 max-w-6 max-h-6 translate-x-0"
                   fill="currentColor"
@@ -356,8 +357,8 @@ const PlaylistPage: React.FC = () => {
             items={playlistItems}
             playlistMeta={{ ...playlistMeta, playlistId: playlistId! }}
             onPlay={(index) => {
+              onPlaylistChange(playlist);
               play(playlistSongs, index, playlistMeta);
-              playlist && setCurrentPlaylist(playlist);
             }}
             getItem={(item) => {
               setActiveItem(item);

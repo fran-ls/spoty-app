@@ -2,23 +2,21 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronDownIcon, EllipsisVerticalIcon, HeartIcon, ListMusicIcon, Music2Icon, MusicIcon, PauseIcon, PlayIcon, Share2Icon } from "lucide-react";
 import SmartImage from "../../../shared/components/SmartImage";
-import { usePlayer } from "../../../shared/context/PlayerContext";
+import usePlayer from "../hooks/usePlayer";
 import songService from "../../song/services/song.service";
 import { formatTime } from "../../../shared/utils/formatTime";
 import { getDeviceType } from "../../../shared/utils/getDeviceType";
 import { RepeatIcon, ShuffleIcon, SkipForwardIcon } from "../../../shared/components/Icons";
 import MobileQueue from "./MobileQueue";
 import useAuth from "../../auth/hooks/useAuth";
-import useUserPlayer from "../hooks/useUserPlayer";
 
 const MobilePlayer = () => {
   const { user } = useAuth();
-  const { getPlayer } = useUserPlayer();
   const {
     audioRef, player,
     currentPlaylist, currentSong, progress, duration, isPlaying, isRepeat, isShuffle,
     seek, next, prev, togglePlay, toggleShuffle, toggleRepeat, setProgress, setDuration,
-    updatePlayer, onPlayerChange, setPlayer, resetPlayer
+    updatePlayer, onPlayerChange, setPlayer, resetPlayer, getPlayer
   } = usePlayer();
 
   const audio = audioRef.current;
@@ -30,7 +28,6 @@ const MobilePlayer = () => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [isMobileQueue, setIsMobileQueue] = useState(false);
-
   const [isLiked, setIsLiked] = useState(false);
 
   const handleProgressSeek = (clientX: number) => {
@@ -79,11 +76,8 @@ const MobilePlayer = () => {
   }
 
   useEffect(() => {
-    (!user || !user.id)
-      ? resetPlayer()
-      : getPlayer(user.id).then(setPlayer);
+    (user && user.id) ? getPlayer(user.id).then(setPlayer) : resetPlayer();
   }, [user]);
-
 
   useEffect(() => { player && onPlayerChange(player) }, [player]);
 
@@ -179,7 +173,7 @@ const MobilePlayer = () => {
         ref={playerRef}
       >
         <div className="h-full flex flex-1 flex-col">
-          <div className="p-3 pb-4 w-full flex items-center justify-between gap-3">
+          <header className="p-3 pb-4 w-full flex items-center justify-between gap-3">
             <button
               onClick={() => {
                 setIsExpanded(false);
@@ -201,7 +195,7 @@ const MobilePlayer = () => {
             >
               <EllipsisVerticalIcon className="rotate-90" size={24} />
             </button>
-          </div>
+          </header>
 
           <SmartImage
             styles={{
@@ -338,15 +332,15 @@ const MobilePlayer = () => {
             </div>
           </div>
 
-          <div className="flex mt-auto pb-5 px-5">
+          <footer className="flex mt-auto pb-5 px-5">
             <button
               onClick={() => setIsMobileQueue(true)}
-              className="text-white p-1 ml-auto"
+              className="text-white p-1 ml-auto cursor-pointer"
               type="button"
             >
               <ListMusicIcon />
             </button>
-          </div>
+          </footer>
         </div>
 
         <audio

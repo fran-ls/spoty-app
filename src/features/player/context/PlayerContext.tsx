@@ -1,10 +1,11 @@
-import { createContext, useContext, useRef, useState } from 'react'
-import type { Playlist, PlaylistMeta } from '../../features/playlist/playlist.types';
-import type { Player } from '../../features/player/player.types';
-import type { Song } from '../../features/song/song.types';
-import songService from '../../features/song/services/song.service';
-import playerService from '../../features/player/services/player.service';
+import { createContext, useRef, useState } from 'react'
+import type { Playlist, PlaylistMeta as SearchMeta } from '../../playlist/playlist.types';
+import type { Player } from '../../player/player.types';
+import type { Song } from '../../song/song.types';
+import songService from '../../song/services/song.service';
+import playerService from '../../player/services/player.service';
 
+type PlaylistMeta = Omit<SearchMeta, 'playlistId'>;
 export type ViewType = 'home' | 'search' | 'library' | 'playlist' | 'create-playlist' | 'songs';
 
 interface PlayerContextType {
@@ -36,7 +37,8 @@ interface PlayerContextType {
   play: (tracks: Song[], index: number, meta: PlaylistMeta) => void;
   initPlayer: (tracks: Song[], index: number, meta?: PlaylistMeta) => void;
   playQueueSong: (track: Song, index: number) => void;
-  onPlayerChange: (player: Player) => void;
+  onPlayerChange: (player: Player | null) => void;
+  onPlaylistChange: (playlist: Playlist | null) => void;
   resetPlayer: () => void;
   setQueue: React.Dispatch<React.SetStateAction<Song[]>>;
   setVolume: React.Dispatch<React.SetStateAction<number>>;
@@ -74,11 +76,10 @@ export const PlayerContext = createContext<PlayerContextType>({
     page: 0,
     limit: 10,
     total: 0,
-    totalPages: 0,
+    totalPages: 1,
     hasNextPage: false,
     hasPrevPage: false,
-    totalDuration: 0,
-    playlistId: ''
+    totalDuration: 0
   },
   currentPlaylist: {
     id: '',
@@ -116,6 +117,7 @@ export const PlayerContext = createContext<PlayerContextType>({
   initPlayer: () => { },
   setPlayer: () => { },
   updatePlayer: async () => { },
+  onPlaylistChange: () => { },
   onPlayerChange: () => { },
   resetPlayer: () => { }
 });
@@ -123,15 +125,14 @@ export const PlayerContext = createContext<PlayerContextType>({
 export const PlayerProvider = ({ children }: any) => {
   const [isQueue, setIsQueue] = useState(true);
   const [queue, setQueue] = useState<Song[]>([]);
-  const [queueMeta, setQueueMeta] = useState<PlaylistMeta>({
+  const [queueMeta, setQueueMeta] = useState<Omit<PlaylistMeta, 'playlistId'>>({
     page: 0,
     limit: 10,
     total: 0,
     totalPages: 1,
     hasNextPage: false,
     hasPrevPage: false,
-    totalDuration: 0,
-    playlistId: ''
+    totalDuration: 0
   });
   const [currentIndex, setCurrentIndex] = useState(0);
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
@@ -303,13 +304,44 @@ export const PlayerProvider = ({ children }: any) => {
     }
   }
 
-  const onPlayerChange = (player: Player) => {
+  const onPlaylistChange = (playlist: Playlist | null) => {
+    if (!playlist) {
+      resetPlaylist();
+      return;
+    }
+
+    setCurrentPlaylist(playlist);
+    updatePlayer({ playlistId: playlist.id });
+  }
+
+  const onPlayerChange = (player: Player | null) => {
+    if (!player) {
+      setPlayer(null);
+      return;
+    }
+
+    if (player.playlist) {
+      setCurrentPlaylist(player.playlist);
+    }
+
     setIsRepeat(player.repeat);
     setIsShuffle(player.shuffle);
     seek(player.progress);
     volumeSeek(player.volume / 100);
     initPlayer(player.song ? [player.song] : [], 0);
   }
+
+  const resetPlaylist = () => setCurrentPlaylist({
+    id: '',
+    name: '',
+    description: '',
+    cover: '',
+    isPublic: false,
+    gradientColor: '',
+    bgColor: '',
+    userId: '',
+    createdAt: ''
+  });
 
   const resetPlayer = () => {
     setPlayer(null);
@@ -319,17 +351,7 @@ export const PlayerProvider = ({ children }: any) => {
     setIsPlaying(false);
     setProgress(0);
     setDuration(0);
-    setCurrentPlaylist({
-      id: '',
-      name: '',
-      description: '',
-      cover: '',
-      isPublic: false,
-      gradientColor: '',
-      bgColor: '',
-      userId: '',
-      createdAt: ''
-    });
+    resetPlaylist();
     setQueueMeta({
       page: 0,
       limit: 10,
@@ -337,8 +359,7 @@ export const PlayerProvider = ({ children }: any) => {
       totalPages: 1,
       hasNextPage: false,
       hasPrevPage: false,
-      totalDuration: 0,
-      playlistId: ''
+      totalDuration: 0
     });
 
     if (audio) {
@@ -374,6 +395,7 @@ export const PlayerProvider = ({ children }: any) => {
         toggleRepeat,
         updatePlayer,
         initPlayer,
+        onPlaylistChange,
         onPlayerChange,
         resetPlayer
       }}
@@ -381,14 +403,4 @@ export const PlayerProvider = ({ children }: any) => {
       {children}
     </PlayerContext.Provider>
   )
-}
-
-export const usePlayer = () => {
-  const context = useContext(PlayerContext)!;
-
-  if (context === undefined) {
-    throw new Error('usePlayer must be used within a PlayerProvider');
-  }
-
-  return context;
 }

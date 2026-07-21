@@ -2,10 +2,9 @@ import { useState } from "react";
 import { XIcon } from "lucide-react";
 import SmartImage from "../../../shared/components/SmartImage";
 import songService from "../../song/services/song.service";
-import { usePlayer } from "../../../shared/context/PlayerContext";
+import usePlayer from "../hooks/usePlayer";
 import Loader from "../../../shared/components/Loader";
 import { useInfiniteScroll } from "../../../shared/hooks/useInfiniteScroll";
-import playlistService from "../../playlist/services/playlist.service";
 import { getDeviceType } from "../../../shared/utils/getDeviceType";
 
 interface MobileQueueProps {
@@ -18,8 +17,8 @@ interface MobileQueueProps {
 const MobileQueue = (props: MobileQueueProps) => {
   const { isExpanded, isMobileQueue, playerWrap, setIsMobileQueue } = props;
   const {
-    currentSong, currentPlaylist, queue, queueMeta,
-    setQueueMeta, setQueue, playQueueSong
+    currentSong, currentPlaylist, queue, queueMeta, isLoading,
+    playQueueSong, getQueueSongs
   } = usePlayer();
 
   const [queueScrollTop, setQueueScrollTop] = useState(0);
@@ -35,39 +34,19 @@ const MobileQueue = (props: MobileQueueProps) => {
   const device = getDeviceType();
   const isDesktop = device === 'desktop';
 
-  async function getQueueSongs(page: number) {
-    if (page <= 1) return;
-
-    if (!queueMeta.playlistId) {
-      const { data } = await songService.searchSongs({ page, limit: 10 });
-      if (!data) return;
-      setQueueMeta({ ...queueMeta, ...data.meta });
-      setQueue((prev) => [...prev, ...data.items]);
-      return;
-    }
-
-    const { data } = await playlistService.getPlaylistSongs(
-      queueMeta.playlistId,
-      { page, limit: 10 }
-    );
-    if (!data) return;
-    setQueueMeta(data.meta);
-    setQueue((prev) => [...prev, ...data.songs]);
-  }
-
   return (
     <div
       style={{
         transform: `translateY(${(isMobileQueue && isExpanded) ? 0 : 100}%)`,
         maxWidth: playerWrap?.offsetWidth || '400px',
-        boxShadow: '0 0 10px #0009',
+        boxShadow: '0 0 12px #0009',
         background: `linear-gradient(to bottom, ${currentPlaylist.bgColor} 50%, ${currentPlaylist.bgColor} 100%)`
       }}
       className="transition-all duration-100 bg-[#131313] w-full h-[70dvh] z-100 fixed bottom-0 left-0 rounded-t-3xl overflow-hidden"
     >
-      <div
+      <header
         style={{
-          boxShadow: queueScrollTop ? '0 6px 12px #0005' : ''
+          boxShadow: queueScrollTop ? '0 3px 12px #0005' : ''
         }}
         className="flex items-center justify-between gap-2 py-4 pt-5 px-5 transition-shadow duration-75"
       >
@@ -81,10 +60,10 @@ const MobileQueue = (props: MobileQueueProps) => {
         >
           <XIcon size={20} />
         </button>
-      </div>
+      </header>
 
       <ul
-        className={`px-3 pb-4 w-full h-full max-h-[calc(100%-64px)] overflow-y-auto ${!isDesktop ? 'hide-scrollbar' : ''}`}
+        className={`px-2 pb-4 w-full h-full max-h-[calc(100%-64px)] overflow-y-auto ${!isDesktop ? 'hide-scrollbar' : ''}`}
         onScroll={(e) => setQueueScrollTop(e.currentTarget.scrollTop)}
       >
         {queue.map((track, i) => {
@@ -92,7 +71,7 @@ const MobileQueue = (props: MobileQueueProps) => {
 
           return (
             <li
-              className={`p-2 cursor-pointer text-[#adaaaa] hover:bg-[#1f1f1f] gap-3 flex items-center`}
+              className={`py-2 px-3 cursor-pointer text-[#adaaaa] hover:bg-[#1f1f1f] gap-3 flex items-center`}
               onClick={() => playQueueSong(track, i)}
               onPointerOver={(e) => {
                 e.currentTarget.style.background = '#ffffff2f';
@@ -136,12 +115,11 @@ const MobileQueue = (props: MobileQueueProps) => {
           )
         })}
 
-        {(queue.length > 0 && page < queueMeta.totalPages) && (
+        {(!isLoading && page < queueMeta.totalPages) && (
           <li
             className="flex items-center justify-center px-6 py-1 overflow-hidden"
             ref={loaderRef}
           >
-
             <Loader
               className="border-transparent border-t-slate-200"
               size={20}

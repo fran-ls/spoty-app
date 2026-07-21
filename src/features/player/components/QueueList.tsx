@@ -1,55 +1,37 @@
 import { useEffect, useRef, useState } from 'react';
 import { XIcon, PauseIcon, PlayIcon, PanelTopCloseIcon } from 'lucide-react';
-import { usePlayer } from '../../../shared/context/PlayerContext';
 import Loader from '../../../shared/components/Loader';
 import { useInfiniteScroll } from '../../../shared/hooks/useInfiniteScroll';
-import playlistService from '../../playlist/services/playlist.service';
 import songService from '../../song/services/song.service';
 import SmartImage from '../../../shared/components/SmartImage';
 import { hasScroll } from '../../../shared/utils/scroll';
+import usePlayer from '../hooks/usePlayer';
 
-export const QueueList: React.FC = () => {
+export const QueueList = () => {
   const {
-    queue, queueMeta, isPlaying, isQueue, currentSong, currentIndex,
-    setQueue, setIsQueue, playQueueSong, togglePlay, setQueueMeta
+    currentPlaylist, queue, queueMeta, isPlaying, isQueue, currentSong, currentIndex,
+    isLoading, setIsQueue, playQueueSong, togglePlay, getQueueSongs
   } = usePlayer();
 
   const [page, setPage] = useState(0);
   const { loaderRef } = useInfiniteScroll(async () => {
-    if (page > queueMeta.totalPages) return;
+    if (page > queueMeta.totalPages || isLoading) return;
     const nextPage = page + 1;
     await getQueueSongs(nextPage);
     setPage(nextPage);
   });
 
+  const navRef = useRef<HTMLElement>(null);
+
+  const [queueVerticalScroll, setQueueVerticalScroll] = useState(false);
+  const [queueScrollTop, setQueueScrollTop] = useState(0);
+  const [isHoverQueue, setIsHoverQueue] = useState(false);
+  const [hoverId, setHoverId] = useState('');
+
+  const hasMore = !isLoading && page < queueMeta.totalPages;
   const isCollapsed = isQueue;
 
-  const [queueScrollTop, setQueueScrollTop] = useState(0);
-  const [hoverId, setHoverId] = useState('');
-  const [isHoverQueue, setIsHoverQueue] = useState(false);
-
-  const navRef = useRef<HTMLElement>(null);
-  const [navVerticalScroll, setNavVerticalScroll] = useState(false);
-
-  async function getQueueSongs(page: number) {
-    if (page <= 1) return;
-
-    if (!queueMeta.playlistId) {
-      const { data } = await songService.searchSongs({ page, limit: 10 });
-      if (!data) return;
-      setQueueMeta({ ...queueMeta, ...data.meta });
-      setQueue((prev) => [...prev, ...data.items]);
-      return;
-    }
-
-    const { data } = await playlistService.getPlaylistSongs(
-      queueMeta.playlistId,
-      { page, limit: 10 }
-    );
-    if (!data) return;
-    setQueueMeta(data.meta);
-    setQueue((prev) => [...prev, ...data.songs]);
-  }
+  useEffect(() => { currentPlaylist && getQueueSongs(1) }, [currentPlaylist]);
 
   useEffect(() => {
     const lastIndex = queue.length - 1;
@@ -60,8 +42,10 @@ export const QueueList: React.FC = () => {
   }, [currentIndex]);
 
   useEffect(() => {
-    const verticalScroll = hasScroll(navRef.current!).vertical;
-    setNavVerticalScroll(verticalScroll);
+    if (navRef.current) {
+      const verticalScroll = hasScroll(navRef.current).vertical;
+      setQueueVerticalScroll(verticalScroll);
+    }
   }, [queue, isCollapsed]);
 
   return (
@@ -111,7 +95,7 @@ export const QueueList: React.FC = () => {
         >
           <ul
             style={{
-              ...((!navVerticalScroll && !isCollapsed) && {
+              ...((!queueVerticalScroll && !isCollapsed) && {
                 paddingRight: '8px'
               })
             }}
@@ -128,8 +112,11 @@ export const QueueList: React.FC = () => {
                   data-id={track.id}
                   key={track.id}
                 >
-                  <div className="min-w-12 w-12 h-12 bg-[#262626] rounded relative overflow-hidden hover:badge:bg-blue-500">
-                    <SmartImage url={cover} />
+                  <div className="min-w-12 w-12 h-12 rounded relative overflow-hidden hover:badge:bg-blue-500">
+                    <SmartImage
+                      wrapClassName="bg-[#333333]"
+                      url={cover}
+                    />
 
                     {(hoverId !== null && hoverId === track.id && currentSong?.id !== track.id) &&
                       <button
@@ -182,7 +169,7 @@ export const QueueList: React.FC = () => {
                       >
                         {track.title}
                       </h4>
-                      <div className="text-[13px] font-semibold">
+                      <div className="text-[13px] font-medium">
                         <span className="line-clamp-1 w-full">
                           {track.artist?.name}
                         </span>
@@ -193,13 +180,11 @@ export const QueueList: React.FC = () => {
               )
             })}
 
-            {(queue.length > 0 && page < queueMeta.totalPages) && (
-
+            {hasMore && (
               <li
                 className="flex items-center justify-center px-6 py-1 overflow-hidden"
                 ref={loaderRef}
               >
-
                 <Loader
                   className="border-transparent border-t-slate-200"
                   size={20}

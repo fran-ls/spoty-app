@@ -1,5 +1,5 @@
 import { CircleMinusIcon, ListPlusIcon, Music2Icon, UploadIcon } from "lucide-react";
-import { usePlayer } from "../../../shared/context/PlayerContext";
+import usePlayer from "../../player/hooks/usePlayer";
 
 export type PlaylistMenuAction = 'remove' | 'add-to-queue' | 'view-track' | 'share' | 'close';
 

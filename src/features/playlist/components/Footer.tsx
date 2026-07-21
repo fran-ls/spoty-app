@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { Play, Pause, Heart, EllipsisIcon, ListIcon, SearchIcon, XIcon, SearchXIcon } from 'lucide-react';
 import type { SearchMeta } from '../../../shared/types/common.types';
 import type { Song } from '../../song/song.types';
-import { usePlayer } from '../../../shared/context/PlayerContext';
+import type { Playlist } from '../playlist.types';
+import usePlayer from '../../player/hooks/usePlayer';
 import ActionMenu from './ActionMenu';
 import LayoutMenu from './LayoutMenu';
 
@@ -12,6 +13,7 @@ interface FooterProps {
   isBackground: boolean;
   songs: Song[];
   songMeta: SearchMeta;
+  playlist: Playlist | null;
   setIsEdit: React.Dispatch<React.SetStateAction<boolean>>;
   setIsRemove: React.Dispatch<React.SetStateAction<boolean>>;
   setIsBackground: React.Dispatch<React.SetStateAction<boolean>>;
@@ -21,11 +23,11 @@ interface FooterProps {
 
 const Footer: React.FC<FooterProps> = (props) => {
   const {
-    isBackground, isPublic, isPlay, songs, songMeta, searchTracks,
-    setIsEdit, setIsBackground, onChangeVisibility, setIsRemove
+    playlist, isBackground, isPublic, isPlay, songs, songMeta,
+    searchTracks, setIsEdit, setIsBackground, onChangeVisibility, setIsRemove
   } = props;
 
-  const { isPlaying, queueMeta, togglePlay, play } = usePlayer();
+  const { isPlaying, currentPlaylist, onPlaylistChange, togglePlay, play } = usePlayer();
 
   const [isOpen, setIsOpen] = useState(false);
   const [isOpenAction, setIsOpenAction] = useState(false);
@@ -36,24 +38,25 @@ const Footer: React.FC<FooterProps> = (props) => {
 
   const isMobile = window.innerWidth < 768 && isSearch;
 
-  const playlistId = 'song-list';
+  const playlistId = playlist?.id;
 
   return (
     <div className={`${isMobile ? 'overflow-hidden' : ''} text-sm text-[#adaaaa] flex items-center justify-between relativ`}>
       <div className="md:gap-6 gap-3 flex items-center flex-wrap" id="playlist-action-bar">
         <button
           onClick={() => {
-            if (queueMeta.playlistId === playlistId) {
+            if (currentPlaylist.id === playlistId) {
               return togglePlay();
             }
 
-            play(songs, 0, { ...songMeta, playlistId: '', totalDuration: 0 })
+            onPlaylistChange(playlist);
+            play(songs, 0, { ...songMeta, totalDuration: 0 });
           }}
           disabled={!isPlay}
           className={`md:max-w-14 md:max-h-14 w-[10vw] h-[10vw] max-w-10 max-h-10 rounded-full flex items-center justify-center scale-100 hover:scale-105 active:scale-95 transition-all shadow-lg text-black cursor-pointer ${!isPlay ? 'bg-[#adaaaa]/40 opacity-50 cursor-not-allowed' : 'bg-primary hover:bg-[#63ef82]'}`}
           title="Reproducir lista"
         >
-          {(isPlaying && isPlay && playlistId === queueMeta.playlistId) ? (
+          {(isPlaying && isPlay && playlistId === currentPlaylist.id) ? (
             <Pause
               className="w-1/2 h-1/2 max-w-6 max-h-6 translate-x-0"
               fill="currentColor"

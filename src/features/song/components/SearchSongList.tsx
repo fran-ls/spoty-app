@@ -1,7 +1,7 @@
 import { MusicIcon, PlusIcon } from 'lucide-react';
 import type { Song } from '../song.types';
 import type { SearchMeta } from '../../../shared/types/common.types';
-import { usePlayer } from '../../../shared/context/PlayerContext';
+import usePlayer from '../../player/hooks/usePlayer';
 import Loader from '../../../shared/components/Loader';
 import SmartImage from '../../../shared/components/SmartImage';
 import { useInfiniteScroll } from '../../../shared/hooks/useInfiniteScroll';
