@@ -37,15 +37,14 @@ const Footer: React.FC<FooterProps> = (props) => {
   const [query, setQuery] = useState('');
 
   const isMobile = window.innerWidth < 768 && isSearch;
-
-  const playlistId = playlist?.id;
+  const isSamePlaylist = playlist?.id === currentPlaylist?.id;
 
   return (
     <div className={`${isMobile ? 'overflow-hidden' : ''} text-sm text-[#adaaaa] flex items-center justify-between relativ`}>
       <div className="md:gap-6 gap-3 flex items-center flex-wrap" id="playlist-action-bar">
         <button
           onClick={() => {
-            if (currentPlaylist.id === playlistId) {
+            if (isSamePlaylist) {
               return togglePlay();
             }
 
@@ -56,7 +55,7 @@ const Footer: React.FC<FooterProps> = (props) => {
           className={`md:max-w-14 md:max-h-14 w-[10vw] h-[10vw] max-w-10 max-h-10 rounded-full flex items-center justify-center scale-100 hover:scale-105 active:scale-95 transition-all shadow-lg text-black cursor-pointer ${!isPlay ? 'bg-[#adaaaa]/40 opacity-50 cursor-not-allowed' : 'bg-primary hover:bg-[#63ef82]'}`}
           title="Reproducir lista"
         >
-          {(isPlaying && isPlay && playlistId === currentPlaylist.id) ? (
+          {(isPlaying && isPlay && isSamePlaylist) ? (
             <Pause
               className="w-1/2 h-1/2 max-w-6 max-h-6 translate-x-0"
               fill="currentColor"

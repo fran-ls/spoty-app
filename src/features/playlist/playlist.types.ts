@@ -43,7 +43,6 @@ export interface PlaylistSongDTO {
 }
 
 export type PlaylistMeta = PaginationMeta & {
-  playlistId: string;
   totalDuration: number;
 }
 

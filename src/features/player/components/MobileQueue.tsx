@@ -40,7 +40,9 @@ const MobileQueue = (props: MobileQueueProps) => {
         transform: `translateY(${(isMobileQueue && isExpanded) ? 0 : 100}%)`,
         maxWidth: playerWrap?.offsetWidth || '400px',
         boxShadow: '0 0 12px #0009',
-        background: `linear-gradient(to bottom, ${currentPlaylist.bgColor} 50%, ${currentPlaylist.bgColor} 100%)`
+        ...(currentPlaylist && {
+          background: `linear-gradient(to bottom, ${currentPlaylist.bgColor} 50%, ${currentPlaylist.bgColor} 100%)`
+        })
       }}
       className="transition-all duration-100 bg-[#131313] w-full h-[70dvh] z-100 fixed bottom-0 left-0 rounded-t-3xl overflow-hidden"
     >
@@ -51,7 +53,7 @@ const MobileQueue = (props: MobileQueueProps) => {
         className="flex items-center justify-between gap-2 py-4 pt-5 px-5 transition-shadow duration-75"
       >
         <h2 className="text-white font-black truncate">
-          {currentPlaylist.name || 'Cola'}
+          {currentPlaylist?.name || 'Cola'}
         </h2>
         <button
           onClick={() => setIsMobileQueue(false)}

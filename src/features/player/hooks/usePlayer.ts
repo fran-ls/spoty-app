@@ -8,7 +8,7 @@ import songService from "../../song/services/song.service";
 
 const usePlayer = () => {
   const ctx = useContext(PlayerContext);
-  const { currentPlaylist, queueMeta, setPlayer, setQueue, setQueueMeta } = ctx;
+  const { currentPlaylist, queueMeta, setPlayer, setQueue, setQueueMeta, setPlayingTracks } = ctx;
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -20,7 +20,7 @@ const usePlayer = () => {
 
   async function getQueueSongs(page: number, filters?: Pick<PaginationQuery, 'page' | 'limit'>) {
     if (isLoading) return;
-    const playlistId = currentPlaylist.id;
+    const playlistId = currentPlaylist?.id;
 
     if (!playlistId) {
       setIsLoading(true);
@@ -28,9 +28,16 @@ const usePlayer = () => {
       setIsLoading(false);
       if (!data) return;
       setQueueMeta({ ...queueMeta, ...data.meta });
-      page > 1
-        ? setQueue((prev) => [...prev, ...data.items])
-        : setQueue(data.items);
+
+      if (page > 1) {
+        setQueue((prev) => [...prev, ...data.items]);
+        setPlayingTracks((prev) => [...prev, ...data.items]);
+      }
+      else {
+        setQueue(data.items);
+        setPlayingTracks(data.items);
+      }
+
       return;
     }
 
@@ -43,29 +50,15 @@ const usePlayer = () => {
     if (!data) return;
 
     setQueueMeta(data.meta);
-    page > 1
-      ? setQueue((prev) => [...prev, ...data.songs])
-      : setQueue(data.songs);
 
-    return;
-
-    // const playlistId = currentPlaylist.id;
-    // if (!playlistId || isLoading) return null;
-
-    // setIsLoading(true);
-    // const { data } = await playlistService.getPlaylistSongs(
-    //   playlistId,
-    //   filters || { page, limit: 10 }
-    // );
-    // setIsLoading(false);
-    // if (!data) return data;
-
-    // setQueueMeta(data.meta);
-    // page > 1
-    //   ? setQueue((prev) => [...prev, ...data.songs])
-    //   : setQueue(data.songs);
-
-    // return data;
+    if (page > 1) {
+      setQueue((prev) => [...prev, ...data.songs]);
+      setPlayingTracks((prev) => [...prev, ...data.songs]);
+    }
+    else {
+      setQueue(data.songs);
+      setPlayingTracks(data.songs);
+    }
   }
 
   return {

@@ -37,6 +37,7 @@ export const PlayerBar = () => {
     const ratio = Math.max(0, Math.min(1, x / width));
     const targetSecond = Math.floor(ratio * duration);
     seek(targetSecond);
+    updatePlayer({ progress: targetSecond });
   }
 
   const handleProgressMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -90,6 +91,7 @@ export const PlayerBar = () => {
     const width = rect.width;
     const clickRatio = Math.max(0, Math.min(1, clickX / width));
     volumeSeek(clickRatio);
+    updatePlayer({ volume: Math.round(clickRatio * 100) });
   }
 
   const handleVolumeChange = (e: React.MouseEvent<HTMLDivElement>) => {

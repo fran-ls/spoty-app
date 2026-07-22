@@ -37,8 +37,7 @@ const usePlaylist = () => {
     totalPages: 0,
     totalDuration: 0,
     hasNextPage: false,
-    hasPrevPage: false,
-    playlistId: ''
+    hasPrevPage: false
   });
 
   const [isBackground, setIsBackground] = useState(false);

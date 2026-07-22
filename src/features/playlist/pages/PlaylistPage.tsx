@@ -269,7 +269,7 @@ const PlaylistPage: React.FC = () => {
           <div className="md:gap-5 gap-3 flex items-center">
             <button
               onClick={() => {
-                if (currentPlaylist.id === playlistId) {
+                if (currentPlaylist?.id === playlistId) {
                   return togglePlay();
                 }
 
@@ -280,7 +280,7 @@ const PlaylistPage: React.FC = () => {
               className={`md:max-w-14 md:max-h-14 w-[10vw] h-[10vw] max-w-10 max-h-10 rounded-full flex items-center justify-center scale-100 hover:scale-105 active:scale-95 transition-all shadow-lg text-black ${!isPlay ? 'bg-[#adaaaa]/40 opacity-50 cursor-not-allowed' : 'bg-primary hover:bg-[#63ef82] cursor-pointer'}`}
               title="Reproducir lista"
             >
-              {(isPlaying && isPlay && playlistId === currentPlaylist.id) ?
+              {(isPlaying && isPlay && playlistId === currentPlaylist?.id) ?
                 <PauseIcon
                   className="w-1/2 h-1/2 max-w-6 max-h-6 translate-x-0"
                   fill="currentColor"
@@ -355,7 +355,7 @@ const PlaylistPage: React.FC = () => {
         <section className={`${(playlistSongs.length > 0 && !isSearch) ? 'block' : 'hidden'} sm:px-5 p-1 animate-fade-in`}>
           <PlaylistSongs
             items={playlistItems}
-            playlistMeta={{ ...playlistMeta, playlistId: playlistId! }}
+            playlistMeta={playlistMeta}
             onPlay={(index) => {
               onPlaylistChange(playlist);
               play(playlistSongs, index, playlistMeta);

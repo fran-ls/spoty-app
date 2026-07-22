@@ -85,7 +85,9 @@ const MobilePlayer = () => {
     <>
       <div
         style={{
-          background: `linear-gradient(to bottom, ${currentPlaylist.bgColor} 100%, ${currentPlaylist.gradientColor} 100%)`
+          ...(currentPlaylist && {
+            background: `linear-gradient(to bottom, ${currentPlaylist.bgColor} 100%, ${currentPlaylist.gradientColor} 100%)`
+          })
         }}
         className={`${playerBg} mx-2 w-[calc(100%-8px*2)] rounded-md h-fit overflow-hidden z-50 md:max-w-3xl fixed bottom-14 left-0 google-sans-flex-font`}
       >
@@ -167,7 +169,9 @@ const MobilePlayer = () => {
           maxHeight: window.innerHeight,
           minHeight: window.innerHeight,
           transform: `translateY(${isExpanded ? 0 : 100}%)`,
-          background: `linear-gradient(to bottom, ${currentPlaylist.bgColor} 50%, ${currentPlaylist.gradientColor} 100%)`
+          ...(currentPlaylist && {
+            background: `linear-gradient(to bottom, ${currentPlaylist.bgColor} 50%, ${currentPlaylist.gradientColor} 100%)`
+          })
         }}
         className={`sm:max-w-100 ${playerBg} overflow-x-hidden overflow-y-auto w-full z-100 fixed bottom-0 left-0 transition-all duration-200 ${!isDesktop ? 'hide-scrollbar' : ''}`}
         ref={playerRef}
@@ -377,8 +381,10 @@ const MobilePlayer = () => {
                 imgWrap: {
                   ...(!songCover && {
                     boxShadow: '0 0 25px rgb(0, 0, 0, 0.25)',
-                    background: currentPlaylist.bgColor,
-                    borderRadius: '6px'
+                    borderRadius: '6px',
+                    ...(currentPlaylist && {
+                      background: currentPlaylist.bgColor,
+                    })
                   })
                 }
               }}

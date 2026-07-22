@@ -29,7 +29,7 @@ const Playlists = (props: PlaylistsProps) => {
   return (
     playlists.map((playlist) => {
       const cover = playlistService.playlistCover(playlist.id, playlist.cover);
-      const isCurrent = currentPlaylist.id === playlist.id;
+      const isCurrent = currentPlaylist?.id === playlist.id;
       const isCurrentHover = hoverId === playlist.id;
 
       return (
