@@ -7,7 +7,7 @@ import { tokenService } from "../../auth/services/token.service";
 class LibraryService {
   async getLibrary(userId: string, include?: LibraryInclude) {
     return await apiFetch<Library>(() => (
-      api.get(`/library/u/${userId}`, {
+      api.get(`/libraries/${userId}`, {
         params: {
           include: include ? JSON.stringify(include) : undefined
         },
@@ -34,7 +34,7 @@ class LibraryService {
 
   async getSystemPlaylists(filters?: PlaylistFilters, include?: PlaylistInclude) {
     return await apiFetch<Playlist[]>(() => (
-      api.get('/library/s', {
+      api.get('/libraries/s', {
         params: {
           ...filters,
           include: include ? JSON.stringify(include) : undefined
@@ -48,7 +48,7 @@ class LibraryService {
 
   async createLibrary(library: LibraryDTO, include?: LibraryInclude) {
     return await apiFetch<Library>(() => (
-      api.post('/library/u', library, {
+      api.post('/libraries', library, {
         params: {
           include: include ? JSON.stringify(include) : undefined
         },
@@ -65,7 +65,7 @@ class LibraryService {
     include?: LibraryInclude
   ) {
     return await apiFetch<Library>(() => (
-      api.put(`/library/u/${id}`, library, {
+      api.put(`/libraries/${id}`, library, {
         params: {
           include: include ? JSON.stringify(include) : undefined
         },

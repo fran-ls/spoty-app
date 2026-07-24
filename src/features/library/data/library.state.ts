@@ -2,7 +2,7 @@ import { OrderKind } from "../../../shared/types/common.types";
 import { PlaylistLayout, PlaylistOrderBy } from "../library.types";
 
 export const libraryState = {
-  id: 'xxx',
+  id: '',
   isExpanded: false,
   isCollapsed: false,
   playlistLayout: PlaylistLayout.LIST,
@@ -10,6 +10,6 @@ export const libraryState = {
   playlistOrder: OrderKind.DESC,
   publicPlaylistCount: 0,
   privatePlaylistCount: 0,
-  userId: 'xx-puta',
+  userId: '',
   createdAt: null
 } as const

@@ -14,6 +14,7 @@ import { STYLES } from '../../../shared/utils/styles';
 import useLibrary from '../hooks/useLibrary';
 import Playlists from './Playlists';
 import { hasScroll } from '../../../shared/utils/scroll';
+import { OrderKind } from '../../../shared/types/common.types';
 
 export type Grid = {
   li: {
@@ -62,7 +63,7 @@ export const Library = (props: LibraryProps) => {
 
   const [gridImgSize, setGridImgSize] = useState(0);
 
-  const orderKind = orderBy.value === PlaylistOrderBy.RECENT ? 'desc' : 'asc';
+  const orderKind = orderBy.value === PlaylistOrderBy.RECENT ? OrderKind.DESC : OrderKind.ASC;
 
   const filters: PlaylistFilters = {
     page: 0,
