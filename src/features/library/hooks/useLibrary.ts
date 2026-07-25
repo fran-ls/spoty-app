@@ -134,7 +134,7 @@ const useLibrary = () => {
       bgColor: '',
       userId: user?.id,
       file: null
-    }, true);
+    });
 
     if (!data || !data.id) return data;
 

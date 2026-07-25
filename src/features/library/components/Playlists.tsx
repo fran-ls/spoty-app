@@ -41,8 +41,11 @@ const Playlists = (props: PlaylistsProps) => {
           key={playlist.id}
         >
           {isCollapsed && (
-            <div className="min-w-12 w-12 h-12 bg-[#262626] rounded relative overflow-hidden hover:badge:bg-blue-500">
-              <SmartImage url={cover} />
+            <div className="min-w-12 w-12 h-12 rounded relative overflow-hidden hover:badge:bg-blue-500">
+              <SmartImage
+                wrapClassName="bg-[#333333]"
+                url={cover}
+              />
 
               {isCurrentHover &&
                 <button
