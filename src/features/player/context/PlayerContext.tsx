@@ -1,10 +1,11 @@
 import { createContext, useRef, useState } from 'react'
-import type { Playlist, PlaylistMeta } from '../../playlist/playlist.types';
+import type { Playlist } from '../../playlist/playlist.types';
 import type { Player } from '../../player/player.types';
 import type { Song } from '../../song/song.types';
+import type { PaginationMeta } from '../../../shared/types/common.types';
 import songService from '../../song/services/song.service';
 import playerService from '../../player/services/player.service';
-import { QUEUE_META } from '../data/player.data';
+import { paginationMeta } from '../../../shared/data/search.data';
 
 export type ViewType = 'home' | 'search' | 'library' | 'playlist' | 'create-playlist' | 'songs';
 
@@ -20,7 +21,7 @@ interface PlayerContextType {
   isMuted: boolean;
   isQueue: boolean;
   queue: Song[];
-  queueMeta: PlaylistMeta;
+  queueMeta: PaginationMeta;
   currentPlaylist: Playlist | null;
   isRepeat: boolean;
   isShuffle: boolean;
@@ -35,7 +36,7 @@ interface PlayerContextType {
   toggleShuffle: () => void;
   toggleRepeat: () => void;
   updatePlayer: (data: Partial<Player>) => Promise<any>;
-  play: (tracks: Song[], index: number, meta: PlaylistMeta) => void;
+  play: (tracks: Song[], index: number, meta: PaginationMeta) => void;
   playQueueSong: (track: Song, index: number) => void;
   onPlayerChange: (player: Player | null) => void;
   onPlaylistChange: (playlist: Playlist | null) => void;
@@ -47,7 +48,7 @@ interface PlayerContextType {
   setIsPlaying: React.Dispatch<React.SetStateAction<boolean>>;
   setIsMuted: React.Dispatch<React.SetStateAction<boolean>>;
   setIsQueue: React.Dispatch<React.SetStateAction<boolean>>;
-  setQueueMeta: React.Dispatch<React.SetStateAction<PlaylistMeta>>;
+  setQueueMeta: React.Dispatch<React.SetStateAction<PaginationMeta>>;
   setCurrentPlaylist: React.Dispatch<React.SetStateAction<Playlist | null>>;
   setPlayer: React.Dispatch<React.SetStateAction<Player | null>>;
   setDuration: React.Dispatch<React.SetStateAction<number>>;
@@ -74,7 +75,7 @@ export const PlayerContext = createContext<PlayerContextType>({
   isQueue: true,
   isPlaying: false,
   queue: [],
-  queueMeta: structuredClone(QUEUE_META),
+  queueMeta: paginationMeta,
   currentPlaylist: null,
   playingTracks: [],
   play: () => { },
@@ -111,7 +112,7 @@ export const PlayerContext = createContext<PlayerContextType>({
 export const PlayerProvider = ({ children }: any) => {
   const [isQueue, setIsQueue] = useState(true);
   const [queue, setQueue] = useState<Song[]>([]);
-  const [queueMeta, setQueueMeta] = useState<PlaylistMeta>(structuredClone(QUEUE_META));
+  const [queueMeta, setQueueMeta] = useState<PaginationMeta>(paginationMeta);
   const [currentPlaylist, setCurrentPlaylist] = useState<Playlist | null>(null);
 
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -160,7 +161,7 @@ export const PlayerProvider = ({ children }: any) => {
     if (vol) setIsMuted(false);
   }
 
-  const play = (tracks: Song[], index: number, meta: PlaylistMeta) => {
+  const play = (tracks: Song[], index: number, meta: PaginationMeta) => {
     if (!audio) return;
     const track = tracks[index];
     setQueue(tracks);
@@ -320,7 +321,7 @@ export const PlayerProvider = ({ children }: any) => {
     setProgress(0);
     setDuration(0);
     setCurrentPlaylist(null);
-    setQueueMeta(structuredClone(QUEUE_META));
+    setQueueMeta(paginationMeta);
 
     if (audio) {
       audio.pause();

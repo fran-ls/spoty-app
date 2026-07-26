@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { EllipsisIcon, ListIcon, Music2Icon, MusicIcon, PauseIcon, PenIcon, PlayIcon, PlusIcon, SearchIcon, XIcon } from 'lucide-react';
+import { EllipsisIcon, HeartIcon, ListIcon, MusicIcon, PauseIcon, PenIcon, PlayIcon, PlusIcon, SearchIcon, Share2Icon, XIcon } from 'lucide-react';
 import { Toaster as SonnerToaster, toast } from 'sonner';
 import type { PlaylistSong } from '../playlist.types';
 import LayoutMenu from '../components/LayoutMenu';
@@ -17,30 +17,31 @@ import SmartImage from '../../../shared/components/SmartImage';
 import TrackModal from '../../song/components/TrackModal';
 import useLibrary from '../../library/hooks/useLibrary';
 
-const PlaylistPage: React.FC = () => {
+const PlaylistPage = () => {
   const { playlistId } = useParams();
   const { removePlaylist } = useLibrary();
   const { currentPlaylist, isPlaying, play, togglePlay, onPlaylistChange } = usePlayer();
   const {
-    isPlay, isPublic, playlistSongs, searchMeta, gradientColor, bgColor, playlist,
-    form, isBackground, isRemove, isHover, isOpen, isEdit, isOpenAction, query, isSearch,
-    searchSongs, duration, playlistMeta, playlistItems, coverImages, setGradientColor,
-    setBgColor, setForm, setIsHover, setIsEdit, setIsOpenAction, setQuery, setIsSearch,
+    isPlay, isPublic, playlistSongs, searchMeta, playlist, isBackground, isRemove, isLayoutMenu,
+    isOpenAction, loadingPlaylistSongs, searchSongs, playlistMeta, playlistItems, coverImages,
+    trackMeta, form, songSearchQuery, isSongSearch, bgColor, gradientColor, isCoverHover,
+    isEdit, isPlaylistMenu, setForm, setSongSearchQuery, setIsSongSearch, setBgColor,
+    setGradientColor, setIsCoverHover, setIsEdit, setIsPlaylistMenu, setIsOpenAction,
     onFileChange, getPlaylist, onSavePlaylist, getPlaylistTracks, searchTracks,
-    addSongToPlaylist, onChangeVisibility, setIsOpen, setIsRemove, setIsBackground,
+    addSongToPlaylist, onChangeVisibility, setIsLayoutMenu, setIsRemove, setIsBackground,
     removeSongFromPlaylist, getPlaylistCover, setSearchSongs
   } = usePlaylist();
 
   const [page, setPage] = useState(0);
   const [toasterTime, setToasterTime] = useState(2500);
   const [isViewTrack, setIsViewTrack] = useState(false);
-  const [isPlaylistMenu, setIsPlaylistMenu] = useState(false);
   const [activeItem, setActiveItem] = useState<PlaylistSong | null>(null);
 
+  const playlistWrapRef = useRef<HTMLDivElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
   const cover = form.fileUrl || form.cover;
-  const username = playlist?.user?.username?.split(' ')[0] || 'Username';
-  const isTrackCount = playlistMeta.total === 0 || playlistMeta.total > 1;
+  const username = playlist?.user?.username || 'Username';
+  const { trackCountText, duration } = trackMeta;
 
   function playlistMenuActions(action: PlaylistMenuAction | 'open') {
     const onClose = () => setIsPlaylistMenu(false);
@@ -83,7 +84,7 @@ const PlaylistPage: React.FC = () => {
 
     toast(
       <div className="flex items-center gap-2 p-2 pr-3 min-w-10 rounded-lg bg-black">
-        <div className="bg-[#262626] min-w-10 w-10 h-10 rounded overflow-hidden relative">
+        <div className="bg-[#333333] min-w-10 w-10 h-10 rounded overflow-hidden relative">
           <MusicIcon
             className="absolute top-1/2 left-1/2 -translate-1/2"
             size={20}
@@ -112,20 +113,27 @@ const PlaylistPage: React.FC = () => {
   }, [playlistId]);
 
   useEffect(() => { getPlaylistCover() }, [playlistSongs]);
-  useEffect(() => { if (query) setTimeout(() => searchTracks({ page: 0 }), 300) }, [query]);
+  useEffect(() => {
+    if (songSearchQuery) setTimeout(() => searchTracks({
+      page: 0,
+      orderBy: 'createdAt',
+      order: 'desc'
+    }), 300)
+  }, [songSearchQuery]);
 
   return (
     <div className="min-h-full text-white select-none relative">
-      <div className="animate-fade-in">
+      <div className="animate-fade-in relative">
         <section
           style={{
             background: `linear-gradient(to bottom, ${bgColor} 0%, ${gradientColor} 100%)`
           }}
-          className="min-[500px]:flex-row min-[500px]:pt-6 pt-10 px-6 pb-6 flex-col flex items-center gap-6 overflow-auto hide-scrollbar"
+          className="min-[500px]:flex-row min-[500px]:pb-6 pb-3 p-6 flex-col flex items-center gap-x-6 overflow-auto hide-scrollbar max-[500px]:relative"
+          ref={playlistWrapRef}
         >
           <div
-            onPointerEnter={() => setIsHover(true)}
-            onMouseLeave={() => setIsHover(false)}
+            onPointerEnter={() => setIsCoverHover(true)}
+            onMouseLeave={() => setIsCoverHover(false)}
             className="min-[925px]:max-w-58 min-[925px]:max-h-58 min-[925px]:min-w-58 min-[925px]:min-h-58 min-[500px]:min-w-[25vw] min-[500px]:min-h-[25vw] min-w-40 min-h-40 w-[25vw] h-[25vw] min-[500px]:rounded bg-[#262626] overflow-hidden relative"
           >
             <SmartImage
@@ -153,7 +161,7 @@ const PlaylistPage: React.FC = () => {
               })
             )}
 
-            {isHover &&
+            {isCoverHover &&
               <>
                 <button
                   onClick={() => {
@@ -201,7 +209,7 @@ const PlaylistPage: React.FC = () => {
             </span>
             <h1
               onClick={() => setIsEdit(true)}
-              className={`min-[500px]:mb-0 mb-5 min-[500px]:text-left text-center  font-black cursor-pointer ${window.innerWidth >= 500 ? 'playlist-title google-sans-flex-font' : 'playlist-title-font truncate'}`}
+              className={`min-[500px]:mb-0 max-[500px]:mt-2 font-black cursor-pointer ${window.innerWidth >= 500 ? 'playlist-title google-sans-flex-font' : 'playlist-title-font truncate'}`}
               title={form.name}
             >
               {form.name || 'Mi lista'}
@@ -230,7 +238,7 @@ const PlaylistPage: React.FC = () => {
                 •
               </span>
               <span className="min-[500px]:inline-flex hidden text-sm ml-2 text-nowrap">
-                {playlistMeta.total} {isTrackCount ? 'canciones' : 'canción'}, {duration.min} min {duration.stringSecs}s
+                {playlist?.trackCount} {trackCountText} {duration}
               </span>
 
               <div className="min-[500px]:hidden flex-wrap gap-2 flex w-full items-center justify-between">
@@ -247,25 +255,88 @@ const PlaylistPage: React.FC = () => {
                     {isPublic ? 'Pública' : 'Privada'}
                   </span>
                 </div>
-                <span className="min-[420px]:inline-flex hidden text-sm ml-2 text-nowrap">
-                  {playlistMeta.total} {isTrackCount ? 'canciones' : 'canción'}, {duration.min} min {duration.stringSecs}s
-                </span>
               </div>
             </div>
 
-            <div className="min-[420px]:hidden mt-5 flex items-center justify-between gap-2">
-              <Music2Icon className="stroke-[#adaaaa]" size={20} />
+            <div className="min-[500px]:hidden mt-5 flex items-center justify-between gap-2">
               <span className="text-sm text-nowrap mr-auto">
-                {playlistMeta.total} {isTrackCount ? 'canciones' : 'canción'}
+                {playlist?.trackCount} {trackCountText} {duration}
               </span>
               <span className="text-sm text-nowrap">
-                {duration.min} min {duration.stringSecs}s
+                {duration}
               </span>
             </div>
           </div>
         </section>
 
-        <div className="p-5 mb-2 text-sm bg-[#131313] text-[#adaaaa] flex items-center justify-between relative">
+        {/* MOBILE */}
+        <div
+          style={{
+            background: `linear-gradient(to bottom, ${gradientColor} 0%, #131313 100%)`
+          }}
+          className="min-[500px]:hidden w-full px-6 pb-5"
+        >
+          <div className="text-[#adaaaa] flex w-full items-center justify-between gap-4">
+            <div className="flex items-center gap-6">
+              <button
+                className="flex items-center justify-center h-8 cursor-pointer"
+                type="button"
+              >
+                <HeartIcon className="w-6 h-6" />
+              </button>
+              <button
+                className="flex items-center justify-center h-8 cursor-pointer"
+                type="button"
+              >
+                <Share2Icon className="w-5.5 h-5.5" />
+              </button>
+              <button
+                onClick={() => setIsOpenAction(!isOpenAction)}
+                className="flex items-center justify-center h-8 cursor-pointer"
+                type="button"
+              >
+                <EllipsisIcon className="w-6 h-6 rotate-90" />
+              </button>
+            </div>
+
+            <button
+              onClick={() => {
+                if (currentPlaylist?.id === playlistId) {
+                  return togglePlay();
+                }
+
+                onPlaylistChange(playlist);
+                play(playlistSongs, 0, playlistMeta);
+              }}
+              disabled={!isPlay}
+              className={`max-w-14 max-h-14 w-[14vw] h-[14vw] rounded-full flex items-center justify-center scale-100 hover:scale-105 active:scale-95 transition-all shadow-lg text-black ${!isPlay ? 'bg-[#adaaaa]/40 opacity-50 cursor-not-allowed' : 'bg-primary hover:bg-[#63ef82] cursor-pointer'}`}
+              title="Reproducir lista"
+            >
+              {(isPlaying && isPlay && playlistId === currentPlaylist?.id) ?
+                <PauseIcon
+                  className="w-1/2 h-1/2 max-w-6 max-h-6 translate-x-0"
+                  fill="currentColor"
+                  stroke="none"
+                /> :
+                <PlayIcon
+                  className="w-1/2 h-1/2 max-w-6 max-h-6 translate-x-px"
+                  fill="currentColor"
+                  stroke="none"
+                />
+              }
+            </button>
+          </div>
+        </div>
+
+        {/* DESKTOP */}
+        <div
+          style={{
+            backgroundImage: `linear-gradient(in oklch to bottom, color-mix(in srgb, ${gradientColor} 70%, #131313), #131313 100%)`,
+          }}
+          className="min-[500px]:block hidden absolute left-0 h-36 w-full"
+        />
+
+        <div className="min-[500px]:flex hidden py-5 px-6 mb-2 text-sm text-[#adaaaa] items-center justify-between relative">
           <div className="md:gap-5 gap-3 flex items-center">
             <button
               onClick={() => {
@@ -277,7 +348,7 @@ const PlaylistPage: React.FC = () => {
                 play(playlistSongs, 0, playlistMeta);
               }}
               disabled={!isPlay}
-              className={`md:max-w-14 md:max-h-14 w-[10vw] h-[10vw] max-w-10 max-h-10 rounded-full flex items-center justify-center scale-100 hover:scale-105 active:scale-95 transition-all shadow-lg text-black ${!isPlay ? 'bg-[#adaaaa]/40 opacity-50 cursor-not-allowed' : 'bg-primary hover:bg-[#63ef82] cursor-pointer'}`}
+              className={`min-[500px]:max-w-15 min-[500px]:max-h-15 w-[10vw] h-[10vw] max-w-10 max-h-10 rounded-full flex items-center justify-center scale-100 hover:scale-105 active:scale-95 transition-all shadow-lg text-black ${!isPlay ? 'bg-[#adaaaa]/40 opacity-50 cursor-not-allowed' : 'bg-primary hover:bg-[#63ef82] cursor-pointer'}`}
               title="Reproducir lista"
             >
               {(isPlaying && isPlay && playlistId === currentPlaylist?.id) ?
@@ -328,7 +399,7 @@ const PlaylistPage: React.FC = () => {
 
           <div className="relative">
             <button
-              onClick={() => setIsOpen(!isOpen)}
+              onClick={() => setIsLayoutMenu(!isLayoutMenu)}
               className="font-semibold hover:text-white cursor-pointer h-8 flex items-center gap-2"
               type="button"
             >
@@ -336,14 +407,14 @@ const PlaylistPage: React.FC = () => {
               <ListIcon className="inline-flex" size={20} />
             </button>
 
-            {isOpen && <LayoutMenu onClose={() => setIsOpen(!isOpen)} />}
+            {isLayoutMenu && <LayoutMenu onClose={() => setIsLayoutMenu(!isLayoutMenu)} />}
           </div>
         </div>
 
-        {!isSearch && playlistSongs.length === 0 &&
+        {!isSongSearch && playlistSongs.length === 0 &&
           <div className="text-white ml-auto flex-1 flex">
             <button
-              onClick={() => setIsSearch(true)}
+              onClick={() => setIsSongSearch(true)}
               className="font-bold py-1 px-2 my-5 ml-auto mr-6 text-white text-xs rounded-full"
               type="button"
             >
@@ -352,7 +423,7 @@ const PlaylistPage: React.FC = () => {
           </div>
         }
 
-        <section className={`${(playlistSongs.length > 0 && !isSearch) ? 'block' : 'hidden'} sm:px-5 p-1 animate-fade-in`}>
+        <section className={`${(playlistSongs.length > 0 && !isSongSearch) ? 'block' : 'hidden'} sm:px-5 p-1 animate-fade-in z-50`}>
           <PlaylistSongs
             items={playlistItems}
             playlistMeta={playlistMeta}
@@ -365,17 +436,16 @@ const PlaylistPage: React.FC = () => {
               playlistMenuActions('open');
             }}
             loadMore={() => {
-              if (page < playlistMeta.totalPages) {
-                const nextPage = page + 1;
-                getPlaylistTracks(playlistId!, { page: nextPage });
-                setPage(nextPage);
-              }
+              if (page > playlistMeta.totalPages || loadingPlaylistSongs) return;
+              const nextPage = page + 1;
+              getPlaylistTracks(playlistId!, { page: nextPage });
+              setPage(nextPage);
             }}
           />
 
           <div className="text-white ml-auto flex-1 flex">
             <button
-              onClick={() => setIsSearch(true)}
+              onClick={() => setIsSongSearch(true)}
               className="font-bold py-1 px-2 my-5 text-white text-xs rounded-full ml-auto"
               type="button"
             >
@@ -385,7 +455,7 @@ const PlaylistPage: React.FC = () => {
         </section>
 
         <section
-          className={`${isSearch ? 'block' : 'hidden'} bg-[#131313] min-h-[75vh] sm:p-6 px-3 pb-6 pt-0 space-y-6 relative`}
+          className={`${isSongSearch ? 'block' : 'hidden'} bg-[#131313] min-h-[75vh] sm:p-6 px-3 pb-6 pt-0 space-y-6 relative`}
           style={{
             // background: `linear-gradient(to bottom, ${gradientColor} 0%, #131313 100%)`,
           }}
@@ -399,17 +469,17 @@ const PlaylistPage: React.FC = () => {
             <div className="text-[#adaaaa] px-3 py-2.5 text-sm w-full min-[460px]:max-w-82 bg-[#262626] gap-2 flex items-center rounded">
               <SearchIcon className="min-w-5 w-5 h-5" />
               <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
+                value={songSearchQuery}
+                onChange={(e) => setSongSearchQuery(e.target.value)}
                 className="w-full min-h-full"
                 placeholder="Buscar canciones"
                 name="query"
                 type="text"
               />
-              {query &&
+              {songSearchQuery &&
                 <button
                   onClick={() => {
-                    setQuery('');
+                    setSongSearchQuery('');
                     setSearchSongs([]);
                   }}
                   type="button"
@@ -420,7 +490,7 @@ const PlaylistPage: React.FC = () => {
             </div>
 
             <button
-              onClick={() => setIsSearch(false)}
+              onClick={() => setIsSongSearch(false)}
               className="text-[#adaaaa] bg-[#131313] absolute min-[460px]:top-1/2 top-0 right-0 min-[460px]:-translate-1/2"
               type="button"
             >
@@ -433,9 +503,9 @@ const PlaylistPage: React.FC = () => {
             searchMeta={searchMeta}
             loadMore={() => { }}
             addSongToPlaylist={async (id) => {
-              const data = await addSongToPlaylist({ playlistId: playlistId!, songId: id });
+              const { status } = await addSongToPlaylist({ playlistId: playlistId!, songId: id });
               setToasterTime(2500);
-              if (data?.id) toast(
+              if (status === 201) toast(
                 <div className="flex items-center gap-2 p-2 pr-3 min-w-10 rounded bg-black">
                   <div className="bg-[#262626] min-w-8 w-8 h-8 rounded overflow-hidden relative">
                     <SmartImage

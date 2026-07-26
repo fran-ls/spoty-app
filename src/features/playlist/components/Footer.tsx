@@ -49,7 +49,7 @@ const Footer: React.FC<FooterProps> = (props) => {
             }
 
             onPlaylistChange(playlist);
-            play(songs, 0, { ...songMeta, totalDuration: 0 });
+            play(songs, 0, songMeta);
           }}
           disabled={!isPlay}
           className={`md:max-w-14 md:max-h-14 w-[10vw] h-[10vw] max-w-10 max-h-10 rounded-full flex items-center justify-center scale-100 hover:scale-105 active:scale-95 transition-all shadow-lg text-black cursor-pointer ${!isPlay ? 'bg-[#adaaaa]/40 opacity-50 cursor-not-allowed' : 'bg-primary hover:bg-[#63ef82]'}`}

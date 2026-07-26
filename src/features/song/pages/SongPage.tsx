@@ -74,10 +74,7 @@ const SongPage: React.FC = () => {
       artist: 'id name'
     });
 
-    if (data) setQueueMeta({
-      ...data.meta,
-      totalDuration: 0
-    });
+    if (data) setQueueMeta(data.meta);
   }
 
   async function onRemoveSong(isRemoveFiles = false) {
@@ -417,7 +414,7 @@ const SongPage: React.FC = () => {
                   searchMeta={trackMeta}
                   onPlay={(index) => {
                     onPlaylistChange(null);
-                    play(tracks, index, { ...trackMeta, totalDuration: 0 });
+                    play(tracks, index, trackMeta);
                   }}
                   onOpenPlaylistMenu={(track, index) => {
                     playlistMenuActions('open');

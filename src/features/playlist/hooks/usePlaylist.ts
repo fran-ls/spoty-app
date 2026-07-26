@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import type { Playlist, PlaylistDTO, PlaylistInclude, PlaylistMeta, PlaylistSong, PlaylistSongDTO, PlaylistSongInclude } from "../playlist.types";
-import type { SearchMeta } from "../../../shared/types/common.types";
+import type { Playlist, PlaylistDTO, PlaylistInclude, PlaylistSong, PlaylistSongDTO, PlaylistSongInclude } from "../playlist.types";
+import type { PaginationMeta } from "../../../shared/types/common.types";
 import type { Song, SongCover, TrackFilters, TrackInclude } from "../../song/song.types";
 import playlistService from "../services/playlist.service";
 import songService from "../../song/services/song.service";
 import { routes } from "../../../shared/utils/routes";
-import { getTimeParts } from "../../../shared/utils/formatTime";
 import useAuth from "../../auth/hooks/useAuth";
+import { getTimeParts } from "../../../shared/utils/formatTime";
+import { paginationMeta } from "../../../shared/data/search.data";
 
 const usePlaylist = () => {
   const [gradientColor, setGradientColor] = useState('#121212');
@@ -30,41 +31,45 @@ const usePlaylist = () => {
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [playlistSongs, setPlaylistSongs] = useState<Song[]>([]);
   const [playlistItems, setPlaylistItems] = useState<PlaylistSong[]>([]);
-  const [playlistMeta, setPlaylistMeta] = useState<PlaylistMeta>({
-    page: 0,
-    limit: 10,
-    total: 0,
-    totalPages: 0,
-    totalDuration: 0,
-    hasNextPage: false,
-    hasPrevPage: false
-  });
+  const [loadingPlaylistSongs, setLoadingPlaylistSongs] = useState(false);
+  const [playlistMeta, setPlaylistMeta] = useState<PaginationMeta>(paginationMeta);
 
+  const [isPlaylistMenu, setIsPlaylistMenu] = useState(false);
   const [isBackground, setIsBackground] = useState(false);
   const [isOpenAction, setIsOpenAction] = useState(false);
   const [isRemove, setIsRemove] = useState(false);
-  const [isHover, setIsHover] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
+  const [isCoverHover, setIsCoverHover] = useState(false);
+  const [isLayoutMenu, setIsLayoutMenu] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
 
-  const [query, setQuery] = useState('');
-  const [isSearch, setIsSearch] = useState(true);
+  const [songSearchQuery, setSongSearchQuery] = useState('');
+  const [isSongSearch, setIsSongSearch] = useState(true);
   const [searchSongs, setSearchSongs] = useState<Song[]>([]);
-  const [searchMeta, setSearchMeta] = useState<SearchMeta>({
-    page: 0,
-    limit: 10,
-    total: 0,
-    totalPages: 0,
-    totalDuration: 0,
-    hasNextPage: false,
-    hasPrevPage: false
+  const [searchMeta, setSearchMeta] = useState<PaginationMeta>(paginationMeta);
+
+  const [trackMeta, setTrackMeta] = useState({
+    trackCountText: '',
+    duration: ''
   });
 
   const [activeItem, setActiveItem] = useState<PlaylistSong | null>(null);
 
   const { user } = useAuth();
-  const duration = getTimeParts(playlistMeta.totalDuration ?? 0);
   const navigate = useNavigate();
+
+  const getTrackMeta = (playlist: Playlist) => {
+    const time = getTimeParts(playlist?.duration || 0);
+    const manyTracks = playlist.trackCount === 0 || playlist.trackCount > 1;
+    const duration = time.hours > 0 ? `${time.hours} h ${time.min > 0 ? `${time.min} min` : ''}` : `${time.min > 0 ? `${time.min} min` : ''} ${time.secs > 0 ? `${time.secs} s` : ''}`.trim();
+
+    const meta = {
+      duration,
+      manyTracks,
+      trackCountText: `${manyTracks ? 'canciones' : 'canción'}${playlist?.trackCount ? ',' : ''}`
+    }
+    setTrackMeta(meta);
+    return meta;
+  }
 
   const onFileChange = (e: React.ChangeEvent<HTMLInputElement, HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
@@ -90,19 +95,20 @@ const usePlaylist = () => {
   }
 
   const getPlaylist = async (playlistId: string, include?: PlaylistInclude) => {
-    if (!playlistId) return;
+    if (!playlistId) return null;
 
     const r = await playlistService.getPlaylist(playlistId, include);
 
     if (r.status === 404) {
       navigate(routes.home);
-      return;
+      return r.data;
     }
 
-    if (r.data) {
-      setPlaylist(r.data);
-      onSetForm(r.data);
-    }
+    if (!r.data) return r.data;
+
+    setPlaylist(r.data);
+    getTrackMeta(r.data);
+    onSetForm(r.data);
 
     return r.data;
   }
@@ -152,26 +158,26 @@ const usePlaylist = () => {
   }
 
   const getPlaylistTracks = async (playlistId: string, filters?: Record<string, any>) => {
+    if (loadingPlaylistSongs) return;
     if (!playlistId) return null;
 
+    setLoadingPlaylistSongs(true);
     const { data } = await playlistService.getPlaylistSongs(playlistId, filters);
+    setLoadingPlaylistSongs(false);
     if (!data) return data;
 
-    setIsSearch(data.items.length === 0);
-
-    setPlaylistMeta({
-      ...data.meta,
-      totalDuration: data.totalDuration || 0
-    });
+    setIsSongSearch(data.items.length === 0);
+    setPlaylistMeta(data.meta);
 
     if (filters?.page > 1) {
       setPlaylistItems((prev) => [...prev, ...data.items]);
       setPlaylistSongs((prev) => [...prev, ...data.songs]);
-      return null;
+    }
+    else {
+      setPlaylistItems(data.items);
+      setPlaylistSongs(data.songs);
     }
 
-    setPlaylistItems(data.items);
-    setPlaylistSongs(data.songs);
     return data;
   }
 
@@ -195,7 +201,7 @@ const usePlaylist = () => {
 
   const searchTracks = async (filters?: TrackFilters | undefined, include?: TrackInclude) => {
     const { data } = await songService.searchSongs({
-      title: query,
+      title: songSearchQuery,
       ...filters
     }, include);
 
@@ -208,14 +214,33 @@ const usePlaylist = () => {
   }
 
   const addSongToPlaylist = async (dto: PlaylistSongDTO, include?: PlaylistSongInclude) => {
-    if (!dto.playlistId) return null;
-    const { data } = await playlistService.addSongToPlaylist(dto, include);
-    if (!data || !data.id) return data;
+    const res = await playlistService.addSongToPlaylist(dto, include);
+    const { error, data, status } = res;
+    if (error || !data || status === 200) return res;
 
     setPlaylistItems((prev) => [...prev, data]);
-    setPlaylistSongs((prev) => [...prev, data.song!]);
+    if (data.song) {
+      setPlaylistSongs((prev) => [...prev, data.song!]);
+    }
     setPlaylistMeta((prev) => ({ ...prev, total: prev.total + 1 }));
-    return data;
+
+    if (!playlist) return res;
+    const newDuration = data.song ? playlist.duration + data.song.duration : playlist.duration;
+    const newTrackCount = playlist.trackCount + 1;
+
+    getTrackMeta({
+      ...playlist,
+      trackCount: newTrackCount,
+      duration: newDuration
+    });
+
+    setPlaylist({
+      ...playlist,
+      trackCount: newTrackCount,
+      duration: newDuration
+    });
+
+    return res;
   }
 
   const removeSongFromPlaylist = async (id: string) => {
@@ -226,12 +251,29 @@ const usePlaylist = () => {
     setPlaylistItems((prev) => prev.filter((p) => p.id !== id));
     setPlaylistSongs((prev) => prev.filter((p) => p.id !== id));
     setPlaylistMeta((prev) => ({ ...prev, total: prev.total - 1 }));
+
+    if (!playlist) return;
+    const newDuration = data.song ? playlist.duration - data.song.duration : playlist.duration;
+    const newTrackCount = playlist.trackCount - 1;
+
+    getTrackMeta({
+      ...playlist,
+      trackCount: newTrackCount,
+      duration: newDuration
+    });
+
+    setPlaylist({
+      ...playlist,
+      trackCount: newTrackCount,
+      duration: newDuration
+    });
+
     return true;
   }
 
   return {
     isPlay: playlistSongs.length > 0,
-    duration,
+    trackMeta, setTrackMeta,
     playlist, setPlaylist,
     playlistMeta, setPlaylistMeta,
     playlistSongs, setPlaylistSongs,
@@ -243,16 +285,18 @@ const usePlaylist = () => {
     form, setForm,
     isBackground, setIsBackground,
     isRemove, setIsRemove,
-    isHover, setIsHover,
-    isOpen, setIsOpen,
+    isCoverHover, setIsCoverHover,
+    isLayoutMenu, setIsLayoutMenu,
     isEdit, setIsEdit,
     isOpenAction, setIsOpenAction,
-    query, setQuery,
-    isSearch, setIsSearch,
+    songSearchQuery, setSongSearchQuery,
+    isSongSearch, setIsSongSearch,
     searchSongs, setSearchSongs,
     searchMeta, setSearchMeta,
     activeItem, setActiveItem,
     coverImages, setCoverImages,
+    isPlaylistMenu, setIsPlaylistMenu,
+    loadingPlaylistSongs, setLoadingPlaylistSongs,
     onFileChange,
     getPlaylistCover,
     getPlaylist,
@@ -261,7 +305,8 @@ const usePlaylist = () => {
     getPlaylistTracks,
     searchTracks,
     addSongToPlaylist,
-    removeSongFromPlaylist
+    removeSongFromPlaylist,
+    getTrackMeta
   }
 }
 

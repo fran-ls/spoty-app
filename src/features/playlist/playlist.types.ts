@@ -11,9 +11,10 @@ export interface Playlist {
   gradientColor: string;
   isPublic: boolean;
   userId: string;
+  trackCount: number;
+  duration: number;
   createdAt: any;
   user?: User | null;
-  trackCount?: number;
 }
 
 export interface PlaylistDTO {
@@ -42,13 +43,9 @@ export interface PlaylistSongDTO {
   include?: Record<string, any>;
 }
 
-export type PlaylistMeta = PaginationMeta & {
-  totalDuration: number;
-}
-
 export interface PlaylistResponse {
   items: PlaylistSong[];
-  meta: PlaylistMeta;
+  meta: PaginationMeta;
   songs: Song[];
   totalDuration: number;
 }

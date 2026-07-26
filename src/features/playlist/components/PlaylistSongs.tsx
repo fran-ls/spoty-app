@@ -1,5 +1,6 @@
 import { PlayIcon, MusicIcon, EllipsisIcon, ClockIcon, CheckIcon } from 'lucide-react';
-import type { PlaylistMeta, PlaylistSong } from '../playlist.types';
+import type { PlaylistSong } from '../playlist.types';
+import type { PaginationMeta } from '../../../shared/types/common.types';
 import { formatTime } from '../../../shared/utils/formatTime';
 import { getFmtDate } from '../../../shared/utils/getFormatDate';
 import Loader from '../../../shared/components/Loader';
@@ -11,37 +12,37 @@ import usePlayer from '../../player/hooks/usePlayer';
 
 interface PlaylistSongsProps {
   items: PlaylistSong[];
-  playlistMeta: PlaylistMeta;
+  playlistMeta: PaginationMeta;
   getItem: (item: PlaylistSong) => void;
   onPlay: (index: number) => void;
   loadMore: () => void;
 }
 
-const PlaylistSongs: React.FC<PlaylistSongsProps> = (props) => {
+const PlaylistSongs = (props: PlaylistSongsProps) => {
   const { items, playlistMeta, loadMore, getItem, onPlay } = props;
   const { currentSong } = usePlayer();
   const { loaderRef } = useInfiniteScroll(() => loadMore());
 
   const grid = {
     s: 'grid-cols-[minmax(200px,2fr)_28px]',
-    sm: 'sm:grid-cols-[40px_minmax(200px,2fr)_40px_40px_28px]',
-    md: 'md:grid-cols-[40px_minmax(200px,2fr)_40px_40px_28px]',
-    lg: 'lg:grid-cols-[40px_minmax(200px,2fr)_minmax(120px,1fr)_minmax(120px,1fr)_40px_40px_28px]'
+    sm: 'sm:grid-cols-[5vw_minmax(200px,2fr)_40px_40px_28px]',
+    md: 'md:grid-cols-[4vw_minmax(200px,2fr)_40px_40px_28px]',
+    lg: 'lg:grid-cols-[2.5vw_minmax(200px,2fr)_minmax(120px,1fr)_minmax(120px,1fr)_40px_40px_28px]'
   }
 
   return (
-    <div className={`overflow-x-auto bg-[#131313] relative ${window.innerWidth <= 768 ? 'hide-scrollbar' : ''}`}>
-      <div className={`sm:grid hidden min-w-fit ${grid.s} ${grid.sm} ${grid.md} ${grid.lg} gap-4 px-4 py-2 border-b border-white/10 text-[#adaaaa] text-xs font-semibold tracking-wider`}>
-        <span className="text-sm">#</span>
+    <div className={`overflow-x-auto relative ${window.innerWidth <= 768 ? 'hide-scrollbar' : ''}`}>
+      <div className={`sm:grid hidden min-w-fit ${grid.s} ${grid.sm} ${grid.md} ${grid.lg} gap-4 pr-4 py-2 border-b border-white/10 text-[#adaaaa] text-xs font-semibold tracking-wider`}>
+        <span className="-mt-1 text-base text-right font-normal block">#</span>
         <span>Título</span>
-        <span className="lg:block hidden">Álbum</span>
+        <span className="lg:inline-flex hidden">Álbum</span>
         <span
-          className="lg:block hidden line-clamp-1 truncate text-nowrap"
+          className="lg:inline-flex hidden line-clamp-1 truncate text-nowrap"
           title="Fecha en la que se añadió"
         >
           Fecha en la que se añadió
         </span>
-        <span className="sm:block hidden" />
+        <span className="sm:inline-flex hidden" />
         <span className="sm:flex hidden items-center justify-end">
           <ClockIcon size={16} strokeWidth={2.5} />
         </span>
@@ -64,18 +65,19 @@ const PlaylistSongs: React.FC<PlaylistSongsProps> = (props) => {
           return (
             <div
               onClick={() => onPlay(i)}
-              className={`min-w-fit grid ${grid.s} ${grid.sm} ${grid.md} ${grid.lg} gap-4 px-4 py-2 items-center sm:rounded hover:bg-white/5 transition-colors group cursor-pointer duration-200 relative`}
+              className={`min-w-fit grid ${grid.s} ${grid.sm} ${grid.md} ${grid.lg} gap-4 sm:pr-4 sm:px-0 px-4 py-2 items-center sm:rounded hover:bg-white/5 transition-colors group cursor-pointer duration-200 relative`}
               key={item.id}
             >
-              <div className={`${isCurrentPlayingNow ? 'text-primary' : 'text-[#adaaaa]'} sm:flex hidden items-center text-sm font-medium`}>
-                <span className="group-hover:hidden">
+              <div className={`${isCurrentPlayingNow ? 'text-primary' : 'text-[#adaaaa]'} group-hover:pl-4 sm:flex hidden items-center text-sm font-medium`}>
+                <span className="group-hover:hidden ml-auto text-base text-right font-normal">
                   {i + 1}
                 </span>
+
                 <PlayIcon
-                  className="hidden group-hover:block"
+                  className="ml-auto min-w-4 min-h-4 group-hover:flex hidden"
                   fill="currentColor"
                   stroke="none"
-                  size={13}
+                  size={16}
                 />
               </div>
 

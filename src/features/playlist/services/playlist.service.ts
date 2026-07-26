@@ -37,7 +37,7 @@ class PlaylistService {
   }
 
   async removeSongFromPlaylist(id: string) {
-    return await apiFetch<Playlist | null>(() => (
+    return await apiFetch<PlaylistSong | null>(() => (
       api.post(`/playlists/remove-track`, { id }, {
         headers: {
           'Authorization': `Bearer ${tokenService.getToken()}`
@@ -155,7 +155,7 @@ class PlaylistService {
     ));
   }
 
-  async newPlaylist(playlist: PlaylistDTO, force = false) {
+  async newPlaylist(playlist: PlaylistDTO) {
     const formData = new FormData();
 
     if (playlist.file) {
@@ -170,7 +170,6 @@ class PlaylistService {
 
     return await apiFetch<Playlist>(() => (
       api.post('/playlists', formData, {
-        params: { force },
         headers: {
           'Authorization': `Bearer ${tokenService.getToken()}`,
           'Content-Type': 'multipart/form-data'

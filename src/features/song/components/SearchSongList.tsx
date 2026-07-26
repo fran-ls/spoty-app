@@ -1,7 +1,6 @@
 import { MusicIcon, PlusIcon } from 'lucide-react';
 import type { Song } from '../song.types';
 import type { SearchMeta } from '../../../shared/types/common.types';
-import usePlayer from '../../player/hooks/usePlayer';
 import Loader from '../../../shared/components/Loader';
 import SmartImage from '../../../shared/components/SmartImage';
 import { useInfiniteScroll } from '../../../shared/hooks/useInfiniteScroll';
@@ -16,7 +15,6 @@ interface SearchSongListProps {
 
 const SearchSongList: React.FC<SearchSongListProps> = (props) => {
   const { songs, searchMeta, loadMore, addSongToPlaylist } = props;
-  const { currentSong } = usePlayer();
   const { loaderRef } = useInfiniteScroll(() => loadMore());
 
   const grid = {
@@ -28,7 +26,6 @@ const SearchSongList: React.FC<SearchSongListProps> = (props) => {
   return (
     <div className="flex flex-col gap-1 animate-fade-in bg-[#131313] overflow-x-auto">
       {songs.map((track) => {
-        const isCurrentPlayingNow = currentSong?.id === track.id;
         const cover = songService.songCoverUrl(track.id, track.cover);
 
         return (
@@ -45,8 +42,7 @@ const SearchSongList: React.FC<SearchSongListProps> = (props) => {
 
               <div className="flex flex-col min-w-0 select-none">
                 <span
-                  className={`block font-semibold truncate text-sm leading-tight ${isCurrentPlayingNow ? 'text-primary' : 'text-white'
-                    }`}
+                  className="block font-semibold truncate text-sm leading-tight text-white"
                   title={track.title}
                 >
                   {track.title}

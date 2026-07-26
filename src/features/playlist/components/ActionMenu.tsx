@@ -16,7 +16,7 @@ const ActionMenu = (props: ActionMenuProps) => {
   return (
     <>
       <div
-        className={`${STYLES.minHeightMain} bg-transparent z-100 fixed w-full left-0 top-0`}
+        className={`${STYLES.minHeightMain} bg-transparent z-100 fixed w-full h-full left-0 top-0`}
         onClick={onClose}
       />
 
