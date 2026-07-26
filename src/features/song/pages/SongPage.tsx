@@ -22,7 +22,7 @@ import useTrack from '../hooks/useTrack';
 const SongPage: React.FC = () => {
   const { user, isAdmin } = useAuth();
   const { play, setQueueMeta, onPlaylistChange } = usePlayer();
-  const { tracks, trackMeta, searchTracks, setTracks, setTrackMeta } = useTrack()
+  const { tracks, trackMeta, loading, searchTracks, setTracks, setTrackMeta } = useTrack()
 
   const [gradientCSS, setGradientCSS] = useState<string>(GRADIENT_CSS);
   const [bgColor, setBgColor] = useState(GRADIENT_COLORS[0].color || '#3b3b3b');
@@ -412,6 +412,7 @@ const SongPage: React.FC = () => {
                 <SongList
                   songs={tracks}
                   searchMeta={trackMeta}
+                  hasMore={!loading && trackMeta.page < trackMeta.totalPages}
                   onPlay={(index) => {
                     onPlaylistChange(null);
                     play(tracks, index, trackMeta);
@@ -421,10 +422,10 @@ const SongPage: React.FC = () => {
                     setActiveTrackIndex(index);
                     setActiveTrack(track);
                   }}
-                  loadMore={() => {
+                  loadMore={async () => {
                     if (page < trackMeta.totalPages) {
                       const nextPage = page + 1;
-                      getTracks(nextPage);
+                      await getTracks(nextPage);
                       setPage(nextPage);
                     }
                   }}

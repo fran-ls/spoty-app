@@ -4,6 +4,7 @@ import type { SearchMeta } from "../../../shared/types/common.types";
 import songService from "../services/song.service";
 
 const useTrack = () => {
+  const [loading, setLoading] = useState(false);
   const [tracks, setTracks] = useState<Track[]>([]);
   const [trackMeta, setTrackMeta] = useState<SearchMeta>({
     page: 0,
@@ -16,8 +17,12 @@ const useTrack = () => {
   });
 
   async function searchTracks(filters?: TrackFilters, include?: TrackInclude) {
+    if (loading) return;
+
     const page = filters?.page ?? 0;
+    setLoading(true);
     const { data } = await songService.searchSongs(filters, include);
+    setLoading(false);
     if (!data) return data;
 
     setTrackMeta(data.meta);
@@ -42,6 +47,7 @@ const useTrack = () => {
   return {
     trackMeta, setTrackMeta,
     tracks, setTracks,
+    loading, setLoading,
     searchTracks,
     deleteTrack
   }
