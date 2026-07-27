@@ -31,6 +31,7 @@ export interface SongDTO {
   artistId?: string;
   cover?: string | null;
   fileUrl?: string | null;
+  duration?: number;
   albumId?: string | null;
   albumName?: string;
   quality: string;
@@ -71,6 +72,7 @@ export interface TrackDTO {
   artistId?: string;
   cover?: string | null;
   fileUrl?: string | null;
+  duration?: number;
   albumId?: string | null;
   albumName?: string;
   quality: string;

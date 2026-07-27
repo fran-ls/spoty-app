@@ -88,7 +88,8 @@ const TrackDetail = ({ activeTrack, onClose, onRemove }: TrackDetailProps) => {
     await songService.updateSong(activeTrack.id, {
       title: form.title,
       albumId: album.id,
-      artistId: artist.id
+      artistId: artist.id,
+      duration: duration.int
     });
   }
 
