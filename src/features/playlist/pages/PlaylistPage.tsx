@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { EllipsisIcon, HeartIcon, ListIcon, MusicIcon, PauseIcon, PenIcon, PlayIcon, PlusIcon, SearchIcon, Share2Icon, XIcon } from 'lucide-react';
+import { CircleMinusIcon, EllipsisIcon, GlobeIcon, HeartIcon, ListIcon, ListPlusIcon, LockIcon, Music2Icon, MusicIcon, PaletteIcon, PauseIcon, PenIcon, PlayIcon, PlusIcon, SearchIcon, Share2Icon, ShareIcon, XIcon } from 'lucide-react';
 import { Toaster as SonnerToaster, toast } from 'sonner';
 import type { PlaylistSong } from '../playlist.types';
 import LayoutMenu from '../components/LayoutMenu';
-import ActionMenu from '../components/ActionMenu';
+import ActionMenu from '../../../shared/components/ActionMenu';
 import EditData from '../components/EditData';
 import BackgroundColor from '../components/BackgroundColor';
 import DeleteConfirm from '../components/DeleteConfirm';
@@ -12,15 +12,16 @@ import SearchSongList from '../../song/components/SearchSongList';
 import PlaylistSongs from '../components/PlaylistSongs';
 import usePlayer from '../../player/hooks/usePlayer';
 import usePlaylist from '../hooks/usePlaylist';
-import PlaylistMenu, { type PlaylistMenuAction } from '../components/PlaylistMenu';
 import SmartImage from '../../../shared/components/SmartImage';
 import TrackModal from '../../song/components/TrackModal';
 import useLibrary from '../../library/hooks/useLibrary';
+import useAuth from '../../auth/hooks/useAuth';
 
 const PlaylistPage = () => {
   const { playlistId } = useParams();
+  const { user } = useAuth();
   const { removePlaylist } = useLibrary();
-  const { currentPlaylist, isPlaying, play, togglePlay, onPlaylistChange } = usePlayer();
+  const { currentPlaylist, isPlaying, isQueue, play, togglePlay, onPlaylistChange } = usePlayer();
   const {
     isPlay, isPublic, playlistSongs, searchMeta, playlist, isBackground, isRemove, isLayoutMenu,
     isOpenAction, loadingPlaylistSongs, searchSongs, playlistMeta, playlistItems, coverImages,
@@ -42,38 +43,9 @@ const PlaylistPage = () => {
   const cover = form.fileUrl || form.cover;
   const username = playlist?.user?.username || 'Username';
   const { trackCountText, duration } = trackMeta;
+  const isPlaylistOwner = user && user.id === playlist?.user?.id;
 
-  function playlistMenuActions(action: PlaylistMenuAction | 'open') {
-    const onClose = () => setIsPlaylistMenu(false);
-
-    switch (action) {
-      case 'open':
-        setIsPlaylistMenu(true);
-        return;
-      case 'add-to-queue':
-        onClose();
-        return;
-      case 'remove':
-        onRemoveTrack(activeItem?.id!);
-        onClose();
-        return;
-      case 'view-track':
-        setIsViewTrack(true);
-        onClose();
-        return;
-      case 'share':
-        onClose();
-        return;
-      case 'close':
-        onClose();
-        return;
-      default:
-        onClose();
-        return;
-    }
-  }
-
-  const onRemoveTrack = async (id: string) => {
+  const onRemoveSongFromPlaylist = async (id: string) => {
     if (!id) return;
 
     const ok = await removeSongFromPlaylist(id);
@@ -106,6 +78,8 @@ const PlaylistPage = () => {
   }
 
   useEffect(() => {
+    setIsPlaylistMenu(false);
+
     if (playlistId) {
       getPlaylist(playlistId);
       getPlaylistTracks(playlistId);
@@ -132,8 +106,8 @@ const PlaylistPage = () => {
           ref={playlistWrapRef}
         >
           <div
-            onPointerEnter={() => setIsCoverHover(true)}
-            onMouseLeave={() => setIsCoverHover(false)}
+            onPointerEnter={() => isPlaylistOwner && setIsCoverHover(true)}
+            onMouseLeave={() => isPlaylistOwner && setIsCoverHover(false)}
             className="min-[925px]:max-w-58 min-[925px]:max-h-58 min-[925px]:min-w-58 min-[925px]:min-h-58 min-[500px]:min-w-[25vw] min-[500px]:min-h-[25vw] min-w-40 min-h-40 w-[25vw] h-[25vw] min-[500px]:rounded bg-[#262626] overflow-hidden relative"
           >
             <SmartImage
@@ -165,6 +139,7 @@ const PlaylistPage = () => {
               <>
                 <button
                   onClick={() => {
+                    if (!isPlaylistOwner) return;
                     coverInputRef.current?.click();
                     setIsEdit(true);
                   }}
@@ -208,8 +183,8 @@ const PlaylistPage = () => {
               Lista {isPublic ? 'pública' : 'privada'}
             </span>
             <h1
-              onClick={() => setIsEdit(true)}
-              className={`min-[500px]:mb-0 max-[500px]:mt-2 font-black cursor-pointer ${window.innerWidth >= 500 ? 'playlist-title google-sans-flex-font' : 'playlist-title-font truncate'}`}
+              onClick={() => isPlaylistOwner && setIsEdit(true)}
+              className={`min-[500px]:mb-0 max-[500px]:mt-2 font-black ${isPlaylistOwner ? 'cursor-pointer' : ''} ${window.innerWidth >= 500 ? 'playlist-title google-sans-flex-font' : 'playlist-title-font truncate'}`}
               title={form.name}
             >
               {form.name || 'Mi lista'}
@@ -258,14 +233,9 @@ const PlaylistPage = () => {
               </div>
             </div>
 
-            <div className="min-[500px]:hidden mt-5 flex items-center justify-between gap-2">
-              <span className="text-sm text-nowrap mr-auto">
-                {playlist?.trackCount} {trackCountText} {duration}
-              </span>
-              <span className="text-sm text-nowrap">
-                {duration}
-              </span>
-            </div>
+            <span className="min-[500px]:hidden block mt-5 text-sm text-nowrap mr-auto">
+              {playlist?.trackCount} {trackCountText} {duration}
+            </span>
           </div>
         </section>
 
@@ -290,13 +260,67 @@ const PlaylistPage = () => {
               >
                 <Share2Icon className="w-5.5 h-5.5" />
               </button>
-              <button
-                onClick={() => setIsOpenAction(!isOpenAction)}
-                className="flex items-center justify-center h-8 cursor-pointer"
-                type="button"
-              >
-                <EllipsisIcon className="w-6 h-6 rotate-90" />
-              </button>
+
+              <div className="relative">
+                <button
+                  onClick={() => setIsPlaylistMenu(true)}
+                  className="flex items-center justify-center h-8 cursor-pointer"
+                  type="button"
+                >
+                  <EllipsisIcon className="w-6 h-6 rotate-90" />
+                </button>
+
+                {(isPlaylistMenu && isPlaylistOwner) &&
+                  <div
+                    onMouseLeave={() => setIsPlaylistMenu(false)}
+                    className="z-10 absolute top-0 left-0"
+                  >
+                    <ActionMenu
+                      onClose={() => setIsPlaylistMenu(false)}
+                      styles={{
+                        wrap: "min-w-[160px]"
+                      }}
+                      items={[{
+                        label: 'Fondo',
+                        icon: (
+                          <PaletteIcon size={18} />
+                        ),
+                        onAction: () => setIsBackground(!isBackground)
+                      }, {
+                        label: 'Editar datos',
+                        icon: (
+                          <PenIcon size={18} />
+                        ),
+                        onAction: () => {
+                          setIsEdit(true);
+                          setIsPlaylistMenu(false);
+                          setIsBackground(false);
+                          setIsRemove(false);
+                        }
+                      }, {
+                        label: 'Eliminar',
+                        icon: (
+                          <CircleMinusIcon size={18} />
+                        ),
+                        onAction: () => {
+                          setIsEdit(false);
+                          setIsPlaylistMenu(false);
+                          setIsBackground(false);
+                          setIsRemove(true);
+                        }
+                      }, {
+                        label: `Hacer ${isPublic ? 'privada' : 'pública'}`,
+                        icon: (
+                          !isPublic
+                            ? <GlobeIcon size={18} />
+                            : <LockIcon size={18} />
+                        ),
+                        onAction: () => onChangeVisibility(playlistId!)
+                      }]}
+                    />
+                  </div>
+                }
+              </div>
             </div>
 
             <button
@@ -348,7 +372,7 @@ const PlaylistPage = () => {
                 play(playlistSongs, 0, playlistMeta);
               }}
               disabled={!isPlay}
-              className={`min-[500px]:max-w-15 min-[500px]:max-h-15 w-[10vw] h-[10vw] max-w-10 max-h-10 rounded-full flex items-center justify-center scale-100 hover:scale-105 active:scale-95 transition-all shadow-lg text-black ${!isPlay ? 'bg-[#adaaaa]/40 opacity-50 cursor-not-allowed' : 'bg-primary hover:bg-[#63ef82] cursor-pointer'}`}
+              className={`min-[500px]:max-w-14 min-[500px]:max-h-14 w-[10vw] h-[10vw] max-w-10 max-h-10 rounded-full flex items-center justify-center scale-100 hover:scale-105 active:scale-95 transition-all shadow-lg text-black ${!isPlay ? 'bg-[#adaaaa]/40 opacity-50 cursor-not-allowed' : 'bg-primary hover:bg-[#63ef82] cursor-pointer'}`}
               title="Reproducir lista"
             >
               {(isPlaying && isPlay && playlistId === currentPlaylist?.id) ?
@@ -367,32 +391,62 @@ const PlaylistPage = () => {
 
             <div className="relative">
               <button
-                onClick={() => setIsOpenAction(!isOpenAction)}
+                onClick={() => isPlaylistOwner && setIsPlaylistMenu(true)}
                 className="flex items-center justify-center h-8 px-2 hover:text-white cursor-pointer"
                 type="button"
               >
                 <EllipsisIcon className="w-8 h-8" />
               </button>
 
-              {isOpenAction &&
-                <ActionMenu
-                  isPublic={isPublic}
-                  onIsEdit={() => {
-                    setIsEdit(true);
-                    setIsOpenAction(false);
-                    setIsBackground(false);
-                    setIsRemove(false);
-                  }}
-                  onIsBackground={() => setIsBackground(!isBackground)}
-                  onChangeVisibility={() => onChangeVisibility(playlistId!)}
-                  onClose={() => setIsOpenAction(!isOpenAction)}
-                  onRemove={() => {
-                    setIsEdit(false);
-                    setIsOpenAction(false);
-                    setIsBackground(false);
-                    setIsRemove(true);
-                  }}
-                />
+              {(isPlaylistMenu && isPlaylistOwner) &&
+                <div
+                  onMouseLeave={() => setIsPlaylistMenu(false)}
+                  className="z-10 absolute top-0 left-0"
+                >
+                  <ActionMenu
+                    onClose={() => setIsPlaylistMenu(false)}
+                    styles={{
+                      wrap: "min-w-[160px]"
+                    }}
+                    items={[{
+                      label: 'Fondo',
+                      icon: (
+                        <PaletteIcon size={18} />
+                      ),
+                      onAction: () => setIsBackground(!isBackground)
+                    }, {
+                      label: 'Editar datos',
+                      icon: (
+                        <PenIcon size={18} />
+                      ),
+                      onAction: () => {
+                        setIsEdit(true);
+                        setIsPlaylistMenu(false);
+                        setIsBackground(false);
+                        setIsRemove(false);
+                      }
+                    }, {
+                      label: 'Eliminar',
+                      icon: (
+                        <CircleMinusIcon size={18} />
+                      ),
+                      onAction: () => {
+                        setIsEdit(false);
+                        setIsPlaylistMenu(false);
+                        setIsBackground(false);
+                        setIsRemove(true);
+                      }
+                    }, {
+                      label: `Hacer ${isPublic ? 'privada' : 'pública'}`,
+                      icon: (
+                        !isPublic
+                          ? <GlobeIcon size={18} />
+                          : <LockIcon size={18} />
+                      ),
+                      onAction: () => onChangeVisibility(playlistId!)
+                    }]}
+                  />
+                </div>
               }
             </div>
           </div>
@@ -411,7 +465,7 @@ const PlaylistPage = () => {
           </div>
         </div>
 
-        {!isSongSearch && playlistSongs.length === 0 &&
+        {(!isSongSearch && !playlistSongs.length && isPlaylistOwner) &&
           <div className="text-white ml-auto flex-1 flex">
             <button
               onClick={() => setIsSongSearch(true)}
@@ -423,105 +477,111 @@ const PlaylistPage = () => {
           </div>
         }
 
-        <section className={`${(playlistSongs.length > 0 && !isSongSearch) ? 'block' : 'hidden'} sm:px-5 p-1 animate-fade-in z-50`}>
-          <PlaylistSongs
-            items={playlistItems}
-            playlistMeta={playlistMeta}
-            onPlay={(index) => {
-              onPlaylistChange(playlist);
-              play(playlistSongs, index, playlistMeta);
-            }}
-            getItem={(item) => {
-              setActiveItem(item);
-              playlistMenuActions('open');
-            }}
-            loadMore={() => {
-              if (page > playlistMeta.totalPages || loadingPlaylistSongs) return;
-              const nextPage = page + 1;
-              getPlaylistTracks(playlistId!, { page: nextPage });
-              setPage(nextPage);
-            }}
-          />
+        {(playlistSongs.length > 0 && !isSongSearch) && (
+          <section className="sm:px-5 p-1 animate-fade-in z-50">
+            <PlaylistSongs
+              items={playlistItems}
+              playlistMeta={playlistMeta}
+              onPlay={(index) => {
+                onPlaylistChange(playlist);
+                play(playlistSongs, index, playlistMeta);
+              }}
+              getItem={(item) => {
+                setActiveItem(item);
+                setIsOpenAction(true);
+              }}
+              loadMore={() => {
+                if (page > playlistMeta.totalPages || loadingPlaylistSongs) return;
+                const nextPage = page + 1;
+                getPlaylistTracks(playlistId!, { page: nextPage });
+                setPage(nextPage);
+              }}
+            />
 
-          <div className="text-white ml-auto flex-1 flex">
-            <button
-              onClick={() => setIsSongSearch(true)}
-              className="font-bold py-1 px-2 my-5 text-white text-xs rounded-full ml-auto"
-              type="button"
-            >
-              Buscar más
-            </button>
-          </div>
-        </section>
-
-        <section
-          className={`${isSongSearch ? 'block' : 'hidden'} bg-[#131313] min-h-[75vh] sm:p-6 px-3 pb-6 pt-0 space-y-6 relative`}
-          style={{
-            // background: `linear-gradient(to bottom, ${gradientColor} 0%, #131313 100%)`,
-          }}
-        >
-          <div className="h-px bg-white/10" />
-
-          <div className="mb-8 relative animate-fade-in">
-            <label className="my-3 min-[460px]:text-[22px] text-[18px] font-bold block" htmlFor="query">
-              {window.innerWidth >= 360 ? 'Encontremos algo para tu lista' : 'Busca algo'}
-            </label>
-            <div className="text-[#adaaaa] px-3 py-2.5 text-sm w-full min-[460px]:max-w-82 bg-[#262626] gap-2 flex items-center rounded">
-              <SearchIcon className="min-w-5 w-5 h-5" />
-              <input
-                value={songSearchQuery}
-                onChange={(e) => setSongSearchQuery(e.target.value)}
-                className="w-full min-h-full"
-                placeholder="Buscar canciones"
-                name="query"
-                type="text"
-              />
-              {songSearchQuery &&
+            {(playlistSongs.length && isPlaylistOwner) && (
+              <div className="text-white ml-auto flex-1 flex">
                 <button
-                  onClick={() => {
-                    setSongSearchQuery('');
-                    setSearchSongs([]);
-                  }}
+                  onClick={() => setIsSongSearch(true)}
+                  className="font-bold py-1 px-2 my-5 text-white text-xs rounded-full ml-auto"
                   type="button"
                 >
-                  <XIcon className="min-w-5 w-5 h-5" />
+                  Buscar más
                 </button>
-              }
+              </div>
+            )}
+          </section>
+        )}
+
+        {(isSongSearch && isPlaylistOwner) && (
+          <section
+            className="bg-[#131313] min-h-[75vh] sm:p-6 px-3 pb-6 pt-0 space-y-6 relative"
+            style={{
+              // background: `linear-gradient(to bottom, ${gradientColor} 0%, #131313 100%)`,
+            }}
+          >
+            <div className="h-px bg-white/10" />
+
+            <div className="mb-8 relative animate-fade-in">
+              <label className="my-3 min-[460px]:text-[22px] text-[18px] font-bold block" htmlFor="query">
+                {window.innerWidth >= 360 ? 'Encontremos algo para tu lista' : 'Busca algo'}
+              </label>
+              <div className="text-[#adaaaa] px-3 py-2.5 text-sm w-full min-[460px]:max-w-82 bg-[#262626] gap-2 flex items-center rounded">
+                <SearchIcon className="min-w-5 w-5 h-5" />
+                <input
+                  value={songSearchQuery}
+                  onChange={(e) => setSongSearchQuery(e.target.value)}
+                  className="w-full min-h-full"
+                  placeholder="Buscar canciones"
+                  name="query"
+                  type="text"
+                />
+                {songSearchQuery &&
+                  <button
+                    onClick={() => {
+                      setSongSearchQuery('');
+                      setSearchSongs([]);
+                    }}
+                    type="button"
+                  >
+                    <XIcon className="min-w-5 w-5 h-5" />
+                  </button>
+                }
+              </div>
+
+              <button
+                onClick={() => setIsSongSearch(false)}
+                className="text-[#adaaaa] bg-[#131313] absolute min-[460px]:top-1/2 top-0 right-0 min-[460px]:-translate-1/2"
+                type="button"
+              >
+                <XIcon className="w-7 h-7 min-[460px]:w-8 min-[460px]:h-8" strokeWidth={1.5} />
+              </button>
             </div>
 
-            <button
-              onClick={() => setIsSongSearch(false)}
-              className="text-[#adaaaa] bg-[#131313] absolute min-[460px]:top-1/2 top-0 right-0 min-[460px]:-translate-1/2"
-              type="button"
-            >
-              <XIcon className="w-7 h-7 min-[460px]:w-8 min-[460px]:h-8" strokeWidth={1.5} />
-            </button>
-          </div>
-
-          <SearchSongList
-            songs={searchSongs}
-            searchMeta={searchMeta}
-            loadMore={() => { }}
-            addSongToPlaylist={async (id) => {
-              const { status } = await addSongToPlaylist({ playlistId: playlistId!, songId: id });
-              setToasterTime(2500);
-              if (status === 201) toast(
-                <div className="flex items-center gap-2 p-2 pr-3 min-w-10 rounded bg-black">
-                  <div className="bg-[#262626] min-w-8 w-8 h-8 rounded overflow-hidden relative">
-                    <SmartImage
-                      url={cover}
-                      wrapClassName="w-full h-full"
-                      icon={<MusicIcon size={16} />}
-                    />
+            <SearchSongList
+              songs={searchSongs}
+              searchMeta={searchMeta}
+              loadMore={() => { }}
+              addSongToPlaylist={async (id) => {
+                const { status } = await addSongToPlaylist({ playlistId: playlistId!, songId: id });
+                setToasterTime(2500);
+                if (status === 201) toast(
+                  <div className="flex items-center gap-2 p-2 pr-3 min-w-10 rounded bg-black">
+                    <div className="bg-[#262626] min-w-8 w-8 h-8 rounded overflow-hidden relative">
+                      <SmartImage
+                        url={cover}
+                        wrapClassName="w-full h-full"
+                        icon={<MusicIcon size={16} />}
+                      />
+                    </div>
+                    <span>
+                      Añadido a {form.name}
+                    </span>
                   </div>
-                  <span>
-                    Añadido a {form.name}
-                  </span>
-                </div>
-              );
-            }}
-          />
-        </section>
+                );
+              }}
+            />
+          </section>
+        )}
 
         {isBackground &&
           <BackgroundColor
@@ -541,11 +601,48 @@ const PlaylistPage = () => {
         }
       </div>
 
-      {isPlaylistMenu &&
-        <PlaylistMenu
-          actions={playlistMenuActions}
-          onClose={() => playlistMenuActions('close')}
-        />
+      {isOpenAction &&
+        <div
+          onMouseLeave={() => setIsOpenAction(false)}
+          className={`${!isQueue ? 'md:right-76 right-2' : 'md:right-22 right-2'} w-45 z-100 bg-[#282828] rounded fixed bottom-22`}
+        >
+          <ActionMenu
+            onClose={() => setIsOpenAction(false)}
+            styles={{
+              wrap: "min-w-[160px]"
+            }}
+            items={[{
+              label: 'Añadir a lista',
+              icon: (
+                <PlusIcon size={18} />
+              )
+            },
+            ...(!isPlaylistOwner ? [] : [{
+              label: 'Quitar de la lista',
+              icon: (
+                <CircleMinusIcon size={18} />
+              ),
+              onAction: () => onRemoveSongFromPlaylist(activeItem?.id!)
+            }]),
+            ...[{
+              label: 'Añadir a la cola',
+              icon: (
+                <ListPlusIcon size={18} />
+              )
+            }, {
+              label: 'Ver pista',
+              icon: (
+                <Music2Icon size={18} />
+              ),
+              onAction: () => setIsViewTrack(true)
+            }, {
+              label: 'Compartir',
+              icon: (
+                <ShareIcon size={18} />
+              )
+            }]]}
+          />
+        </div>
       }
 
       {isEdit &&
