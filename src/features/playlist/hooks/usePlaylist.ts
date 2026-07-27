@@ -114,28 +114,32 @@ const usePlaylist = () => {
   }
 
   const updatePlaylist = async (playlistId: string, values: PlaylistDTO) => {
-    const r = await playlistService.updatePlaylist(playlistId, {
+    const { data, status } = await playlistService.updatePlaylist(playlistId, {
       ...values,
       name: values.name.trim(),
       description: values.description.trim()
     });
 
-    if (r.status === 200 && r.data) {
-      onSetForm(r.data);
+    if (status === 200 && data) {
+      onSetForm(data);
       setIsEdit(false);
     }
 
-    return r.data;
+    return data;
   }
 
-  const onSavePlaylist = async (playlistId: string | null, values: PlaylistDTO = form, isNew = false) => {
-    if (!playlistId) return null;
-
-    if (!isNew) return await updatePlaylist(playlistId, {
-      ...values,
-      gradientColor,
-      bgColor
-    });
+  const onSavePlaylist = async (
+    playlistId: string | null,
+    values: PlaylistDTO,
+    isNew = false
+  ) => {
+    if (!isNew && playlistId) {
+      return await updatePlaylist(playlistId, {
+        ...values,
+        gradientColor,
+        bgColor
+      });
+    }
 
     const r = await playlistService.newPlaylist({
       ...values,

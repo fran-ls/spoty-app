@@ -653,7 +653,7 @@ const PlaylistPage = () => {
           coverInputRef={coverInputRef}
           setForm={setForm}
           onChangeVisibility={() => onChangeVisibility(playlistId!)}
-          onSave={() => onSavePlaylist(playlistId!)}
+          onSave={() => onSavePlaylist(playlistId!, form)}
           onClose={() => setIsEdit(false)}
         />
       }
