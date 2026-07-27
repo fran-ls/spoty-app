@@ -1,7 +1,7 @@
 import { OrderKind } from "../../../shared/types/common.types";
 import { PlaylistLayout, PlaylistOrderBy } from "../library.types";
 
-export const libraryState = {
+const library = {
   id: '',
   isExpanded: false,
   isCollapsed: false,
@@ -13,3 +13,5 @@ export const libraryState = {
   userId: '',
   createdAt: null
 } as const
+
+export const libraryState = structuredClone(library);

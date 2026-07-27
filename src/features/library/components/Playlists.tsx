@@ -16,25 +16,28 @@ interface PlaylistsProps {
   layoutKind: LayoutKind;
   libraryStatus: LibraryStatus;
   setHoverId: React.Dispatch<React.SetStateAction<string>>;
-  onPlaylistClick: (playlist: Playlist) => void;
+  onPlaylistClick: (playlist: Playlist, index: number) => void;
 }
 
 const Playlists = (props: PlaylistsProps) => {
-  const { playlists, hoverId, layoutKind, gridImgSize, grid, libraryStatus, setHoverId, onPlaylistClick } = props;
+  const {
+    playlists, hoverId, layoutKind, gridImgSize, grid, libraryStatus,
+    setHoverId, onPlaylistClick
+  } = props;
   const { collapsed: isCollapsed, expanded: isExpanded } = libraryStatus;
 
   const { user } = useAuth();
   const { isPlaying, currentPlaylist, togglePlay } = usePlayer();
 
   return (
-    playlists.map((playlist) => {
+    playlists.map((playlist, index) => {
       const cover = playlistService.playlistCover(playlist.id, playlist.cover);
       const isCurrent = currentPlaylist?.id === playlist.id;
       const isCurrentHover = hoverId === playlist.id;
 
       return (
         <li
-          onClick={() => onPlaylistClick(playlist)}
+          onClick={() => onPlaylistClick(playlist, index)}
           className={`${isCollapsed ? 'justify-center' : isExpanded ? 'justify-start gap-3' : ''} ${(!layoutKind.grid && isExpanded) ? `${grid.li.s} ${grid.li.sm} ${grid.li.md} ${grid.li.lg}` : ''} grid p-2 cursor-pointer text-[#adaaaa] hover:bg-[#1f1f1f] rounded-md`}
           onPointerEnter={() => setHoverId(playlist.id)}
           onPointerLeave={() => setHoverId('')}

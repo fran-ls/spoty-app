@@ -20,7 +20,7 @@ import useAuth from '../../auth/hooks/useAuth';
 const PlaylistPage = () => {
   const { playlistId } = useParams();
   const { user } = useAuth();
-  const { removePlaylist } = useLibrary();
+  const { libraryStatus, removePlaylist } = useLibrary();
   const { currentPlaylist, isPlaying, isQueue, play, togglePlay, onPlaylistChange } = usePlayer();
   const {
     isPlay, isPublic, playlistSongs, searchMeta, playlist, isBackground, isRemove, isLayoutMenu,
@@ -28,7 +28,7 @@ const PlaylistPage = () => {
     trackMeta, form, songSearchQuery, isSongSearch, bgColor, gradientColor, isCoverHover,
     isEdit, isPlaylistMenu, setForm, setSongSearchQuery, setIsSongSearch, setBgColor,
     setGradientColor, setIsCoverHover, setIsEdit, setIsPlaylistMenu, setIsOpenAction,
-    onFileChange, getPlaylist, onSavePlaylist, getPlaylistTracks, searchTracks,
+    onFileChange, getPlaylist, updatePlaylist, getPlaylistTracks, searchTracks,
     addSongToPlaylist, onChangeVisibility, setIsLayoutMenu, setIsRemove, setIsBackground,
     removeSongFromPlaylist, getPlaylistCover, setSearchSongs
   } = usePlaylist();
@@ -44,6 +44,9 @@ const PlaylistPage = () => {
   const username = playlist?.user?.username || 'Username';
   const { trackCountText, duration } = trackMeta;
   const isPlaylistOwner = user && user.id === playlist?.user?.id;
+
+  const [coverSize, setCoverSize] = useState<Record<string, string | number>>({});
+  const [titleSize, setTitleSize] = useState('16px');
 
   const onRemoveSongFromPlaylist = async (id: string) => {
     if (!id) return;
@@ -87,6 +90,7 @@ const PlaylistPage = () => {
   }, [playlistId]);
 
   useEffect(() => { getPlaylistCover() }, [playlistSongs]);
+
   useEffect(() => {
     if (songSearchQuery) setTimeout(() => searchTracks({
       page: 0,
@@ -94,6 +98,40 @@ const PlaylistPage = () => {
       order: 'desc'
     }), 300)
   }, [songSearchQuery]);
+
+  const handleResize = () => {
+    const wrap = playlistWrapRef.current;
+    if (!wrap) return;
+
+    const imgSize = `${wrap.offsetWidth * 0.25}px`;
+    const imgMaxSize = '232px';
+
+    const fontSize = window.innerWidth >= 1280 ? 96 : wrap.offsetWidth * (
+      window.innerWidth >= 640 ? 0.10 : 0.08
+    );
+
+    setCoverSize({
+      width: imgSize,
+      height: imgSize,
+      minWidth: imgSize,
+      minHeight: imgSize,
+      maxWidth: imgMaxSize,
+      maxHeight: imgMaxSize,
+      ...(window.innerWidth >= 1280 && {
+        minWidth: imgMaxSize,
+        minHeight: imgMaxSize
+      })
+    });
+
+    setTitleSize(`${fontSize}px`);
+  }
+
+  useEffect(() => {
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => { handleResize() }, [libraryStatus.collapsed, isQueue]);
 
   return (
     <div className="min-h-full text-white select-none relative">
@@ -108,7 +146,12 @@ const PlaylistPage = () => {
           <div
             onPointerEnter={() => isPlaylistOwner && setIsCoverHover(true)}
             onMouseLeave={() => isPlaylistOwner && setIsCoverHover(false)}
-            className="min-[925px]:max-w-58 min-[925px]:max-h-58 min-[925px]:min-w-58 min-[925px]:min-h-58 min-[500px]:min-w-[25vw] min-[500px]:min-h-[25vw] min-w-40 min-h-40 w-[25vw] h-[25vw] min-[500px]:rounded bg-[#262626] overflow-hidden relative"
+            style={{
+              ...(window.innerWidth >= 500 && coverSize),
+              maxWidth: '232px',
+              maxHeight: '232px'
+            }}
+            className="min-[925px]:max-w-58 min-[925px]:max-h-58 min-w-40 min-h-40 w-[25vw] h-[25vw] min-[500px]:rounded bg-[#262626] overflow-hidden relative transition-all duration-100"
           >
             <SmartImage
               wrapClassName="w-full h-full"
@@ -146,8 +189,10 @@ const PlaylistPage = () => {
                   className={`${(cover || coverImages.length > 3) ? 'bg-black/50' : 'bg-[#262626]'} hover:text-white w-full h-full flex flex-col items-center gap-1 justify-center absolute top-1/2 left-1/2 -translate-1/2`}
                   type="button"
                 >
-                  <PenIcon className="w-[25%] h-[25%] sm:w-10 sm:h-10" />
-                  <span>Elegir foto</span>
+                  <PenIcon className="w-1/4 h-1/4 sm:max-w-11 sm:max-h-11" />
+                  <span className="">
+                    Elegir foto
+                  </span>
                 </button>
 
                 <button
@@ -160,10 +205,10 @@ const PlaylistPage = () => {
                       fileUrl: ''
                     });
                   }}
-                  className="hover:text-white bg-black w-7 h-7 rounded-full flex flex-col items-center gap-1 justify-center absolute top-3 right-3"
+                  className="hover:text-white bg-black max-w-7 max-h-7 w-[18%] h-[18%] rounded-full flex flex-col items-center gap-1 justify-center absolute top-3 right-3"
                   type="button"
                 >
-                  <EllipsisIcon className="w-5 h-5" />
+                  <EllipsisIcon className="w-[75%] h-[75%]" />
                 </button>
               </>
             }
@@ -183,6 +228,9 @@ const PlaylistPage = () => {
               Lista {isPublic ? 'pública' : 'privada'}
             </span>
             <h1
+              style={{
+                fontSize: titleSize
+              }}
               onClick={() => isPlaylistOwner && setIsEdit(true)}
               className={`min-[500px]:mb-0 max-[500px]:mt-2 font-black ${isPlaylistOwner ? 'cursor-pointer' : ''} ${window.innerWidth >= 500 ? 'playlist-title google-sans-flex-font' : 'playlist-title-font truncate'}`}
               title={form.name}
@@ -209,12 +257,17 @@ const PlaylistPage = () => {
                   {username}
                 </span>
               </a>
-              <span className="min-[500px]:inline-flex hidden text-sm ml-2 font-bold">
-                •
-              </span>
-              <span className="min-[500px]:inline-flex hidden text-sm ml-2 text-nowrap">
-                {playlist?.trackCount} {trackCountText} {duration}
-              </span>
+
+              {(playlist?.trackCount && playlist?.trackCount > 0) ? (
+                <>
+                  <span className="min-[500px]:inline-flex hidden text-sm ml-2 font-bold">
+                    •
+                  </span>
+                  <span className="min-[500px]:inline-flex hidden text-sm ml-2 text-nowrap">
+                    {playlist?.trackCount} {trackCountText} {duration}
+                  </span>
+                </>
+              ) : <></>}
 
               <div className="min-[500px]:hidden flex-wrap gap-2 flex w-full items-center justify-between">
                 <div>
@@ -234,7 +287,7 @@ const PlaylistPage = () => {
             </div>
 
             <span className="min-[500px]:hidden block mt-5 text-sm text-nowrap mr-auto">
-              {playlist?.trackCount} {trackCountText} {duration}
+              {playlist?.trackCount ? `${playlist?.trackCount} ${trackCountText} ${duration}` : '0'}
             </span>
           </div>
         </section>
@@ -401,7 +454,7 @@ const PlaylistPage = () => {
               {(isPlaylistMenu && isPlaylistOwner) &&
                 <div
                   onMouseLeave={() => setIsPlaylistMenu(false)}
-                  className="z-10 absolute top-0 left-0"
+                  className="p-3 z-10 absolute -top-3 -left-3"
                 >
                   <ActionMenu
                     onClose={() => setIsPlaylistMenu(false)}
@@ -592,14 +645,14 @@ const PlaylistPage = () => {
             setGradientColor={setGradientColor}
             onClose={() => setIsBackground(false)}
             onSave={async () => {
-              const data = await onSavePlaylist(playlistId!, {
+              const data = await updatePlaylist(playlistId!, {
                 ...form, bgColor, gradientColor
               });
               if (data?.id) setIsBackground(false);
             }}
           />
         }
-      </div>
+      </div >
 
       {isOpenAction &&
         <div
@@ -653,7 +706,7 @@ const PlaylistPage = () => {
           coverInputRef={coverInputRef}
           setForm={setForm}
           onChangeVisibility={() => onChangeVisibility(playlistId!)}
-          onSave={() => onSavePlaylist(playlistId!, form)}
+          onSave={() => updatePlaylist(playlistId!, { ...form, bgColor, gradientColor })}
           onClose={() => setIsEdit(false)}
         />
       }

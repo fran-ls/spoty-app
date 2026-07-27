@@ -15,12 +15,13 @@ import { LibraryContext } from "../context/LibraryContext";
 const useLibrary = () => {
   const { user, isAdmin } = useAuth();
 
+  const ctx = useContext(LibraryContext);
   const {
     library, setLibrary,
-    playlists, setPlaylists,
     libraryStatus, setLibraryStatus,
-    playlistMeta, setPlaylistMeta,
-  } = useContext(LibraryContext);
+    playlists, setPlaylists,
+    playlistMeta, setPlaylistMeta
+  } = ctx;
 
   const [playlistVerticalScroll, setPlaylistVerticalScroll] = useState(false);
   const [playlistScrollTop, setPlaylistScrollTop] = useState(0);
@@ -49,10 +50,6 @@ const useLibrary = () => {
       label: PLAYLIST_SORT_LABEL[orderBy],
       value: orderBy,
       k: PlaylistOrderK[orderBy]
-    });
-    setLibraryStatus({
-      collapsed: lib.isCollapsed,
-      expanded: lib.isExpanded
     });
 
     return lib;
@@ -143,7 +140,15 @@ const useLibrary = () => {
       expanded: false
     });
 
-    const playlistSorted = [...playlists, data].sort((a, b) => {
+    const sortedPlaylists = sortPlaylists([...playlists, data]);
+    setPlaylists(sortedPlaylists);
+    navigate(`${routes.playlists}/${data.id}`);
+
+    return data;
+  }
+
+  const sortPlaylists = (playlists: Playlist[]) => {
+    return [...playlists].sort((a, b) => {
       const isRecent = orderBy.k === PlaylistOrderK.RECENT;
 
       if (isRecent) {
@@ -155,11 +160,6 @@ const useLibrary = () => {
       const f = PlaylistOrderK.NAME;
       return a[f] > b[f] ? 1 : -1;
     });
-
-    setPlaylists(playlistSorted);
-    navigate(`${routes.playlists}/${data.id}`);
-
-    return data;
   }
 
   async function removePlaylist(playlistId: string) {
@@ -218,10 +218,7 @@ const useLibrary = () => {
   }
 
   return {
-    library, setLibrary,
-    playlists, setPlaylists,
-    playlistMeta, setPlaylistMeta,
-    libraryStatus, setLibraryStatus,
+    ...ctx,
     layout, setLayout,
     orderBy, setOrderBy,
     isLoading, setIsLoading,
@@ -232,7 +229,8 @@ const useLibrary = () => {
     getPlaylists, getSystemPlaylists,
     newPlaylist, removePlaylist,
     onLayoutChange, onSortBy,
-    onSizeChange
+    onSizeChange,
+    sortPlaylists
   }
 }
 

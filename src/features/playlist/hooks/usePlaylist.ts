@@ -9,8 +9,11 @@ import { routes } from "../../../shared/utils/routes";
 import useAuth from "../../auth/hooks/useAuth";
 import { getTimeParts } from "../../../shared/utils/formatTime";
 import { paginationMeta } from "../../../shared/data/search.data";
+import useLibrary from "../../library/hooks/useLibrary";
 
 const usePlaylist = () => {
+  const { setPlaylists: setLibPlaylists } = useLibrary();
+
   const [gradientColor, setGradientColor] = useState('#121212');
   const [bgColor, setBgColor] = useState('#3a3a3a');
   const [isPublic, setIsPublic] = useState(false);
@@ -114,34 +117,27 @@ const usePlaylist = () => {
   }
 
   const updatePlaylist = async (playlistId: string, values: PlaylistDTO) => {
-    const { data, status } = await playlistService.updatePlaylist(playlistId, {
+    if (!playlistId) return null;
+
+    const { error, data, status } = await playlistService.updatePlaylist(playlistId, {
       ...values,
       name: values.name.trim(),
       description: values.description.trim()
     });
 
-    if (status === 200 && data) {
-      onSetForm(data);
-      setIsEdit(false);
+    if (error || status !== 200 || !data) {
+      return data;
     }
+
+    onSetForm(data);
+    setIsEdit(false);
+    setLibPlaylists((prev) => prev.map((p) => p.id === playlistId ? data : p));
 
     return data;
   }
 
-  const onSavePlaylist = async (
-    playlistId: string | null,
-    values: PlaylistDTO,
-    isNew = false
-  ) => {
-    if (!isNew && playlistId) {
-      return await updatePlaylist(playlistId, {
-        ...values,
-        gradientColor,
-        bgColor
-      });
-    }
-
-    const r = await playlistService.newPlaylist({
+  const newPlaylist = async (values: PlaylistDTO) => {
+    return await playlistService.newPlaylist({
       ...values,
       name: values.name.trim(),
       description: values.description.trim(),
@@ -149,8 +145,6 @@ const usePlaylist = () => {
       gradientColor,
       bgColor
     });
-
-    return r.data;
   }
 
   const onChangeVisibility = async (playlistId: string) => {
@@ -304,7 +298,8 @@ const usePlaylist = () => {
     onFileChange,
     getPlaylistCover,
     getPlaylist,
-    onSavePlaylist,
+    updatePlaylist,
+    newPlaylist,
     onChangeVisibility,
     getPlaylistTracks,
     searchTracks,

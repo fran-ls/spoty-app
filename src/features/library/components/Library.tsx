@@ -44,7 +44,8 @@ export const Library = (props: LibraryProps) => {
   const {
     library, layout, orderBy, systemPlaylists, libraryStatus, playlists, playlistMeta, isLoading,
     playlistVerticalScroll, playlistScrollTop, newPlaylist, onLayoutChange, onSortBy, onSizeChange,
-    setLibraryStatus, getPlaylists, getLibrary, setPlaylistVerticalScroll, setPlaylistScrollTop
+    setLibraryStatus, getPlaylists, getLibrary, setPlaylistVerticalScroll, setPlaylistScrollTop,
+    setActivePlaylistIndex
   } = useLibrary();
 
   const { collapsed: isCollapsed, expanded: isExpanded } = libraryStatus;
@@ -111,7 +112,12 @@ export const Library = (props: LibraryProps) => {
 
   useEffect(() => {
     if (user && user.id) {
-      getLibrary(user.id);
+      getLibrary(user.id).then((lib) => {
+        (!props.isPage && lib) && setLibraryStatus({
+          collapsed: lib.isCollapsed,
+          expanded: lib.isExpanded
+        });
+      });
     }
     if (props.isPage) setLibraryStatus({
       collapsed: false,
@@ -403,8 +409,11 @@ export const Library = (props: LibraryProps) => {
                 hoverId={hoverId}
                 libraryStatus={libraryStatus}
                 setHoverId={setHoverId}
-                onPlaylistClick={(playlist) => {
-                  onSizeChange(library.id, { expanded: false });
+                onPlaylistClick={(playlist, index) => {
+                  setActivePlaylistIndex(index);
+                  if (isDesktop) {
+                    onSizeChange(library.id, { expanded: false });
+                  }
                   navigate(`${routes.playlists}/${playlist.id}`);
                 }}
               />
@@ -418,8 +427,11 @@ export const Library = (props: LibraryProps) => {
               hoverId={hoverId}
               libraryStatus={libraryStatus}
               setHoverId={setHoverId}
-              onPlaylistClick={(playlist) => {
-                onSizeChange(library.id, { expanded: false });
+              onPlaylistClick={(playlist, index) => {
+                setActivePlaylistIndex(index);
+                if (isDesktop) {
+                  onSizeChange(library.id, { expanded: false });
+                }
                 navigate(`${routes.playlists}/${playlist.id}`);
               }}
             />

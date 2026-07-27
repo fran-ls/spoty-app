@@ -3,47 +3,45 @@ import { type Library, type LibraryStatus } from "../../../features/library/libr
 import type { Playlist } from "../../playlist/playlist.types";
 import type { SearchMeta } from "../../../shared/types/common.types";
 import { libraryState } from "../data/library.state";
+import { paginationMeta } from "../../../shared/data/search.data";
 
 interface LibraryCtx {
   library: Library;
   libraryStatus: LibraryStatus;
   playlists: Playlist[];
   playlistMeta: SearchMeta;
+  activePlaylistIndex: number | null;
   setLibrary: React.Dispatch<React.SetStateAction<Library>>;
   setLibraryStatus: React.Dispatch<React.SetStateAction<LibraryStatus>>;
   setPlaylists: React.Dispatch<React.SetStateAction<Playlist[]>>;
   setPlaylistMeta: React.Dispatch<React.SetStateAction<SearchMeta>>;
+  setActivePlaylistIndex: React.Dispatch<React.SetStateAction<number | null>>;
 }
 
 export const LibraryContext = createContext<LibraryCtx>({
-  library: structuredClone(libraryState),
+  library: libraryState,
   libraryStatus: {
     collapsed: false,
     expanded: false
   },
   playlists: [],
-  playlistMeta: {
-    page: 0,
-    limit: 10,
-    total: 0,
-    totalPages: 0,
-    totalDuration: 0,
-    hasNextPage: false,
-    hasPrevPage: false
-  },
+  playlistMeta: paginationMeta,
+  activePlaylistIndex: null,
   setLibrary: () => { },
   setLibraryStatus: () => { },
   setPlaylists: () => { },
-  setPlaylistMeta: () => { }
+  setPlaylistMeta: () => { },
+  setActivePlaylistIndex: () => { }
 });
 
 export const LibraryProvider = ({ children }: { children: ReactElement }) => {
-  const [library, setLibrary] = useState<Library>(structuredClone(libraryState));
+  const [library, setLibrary] = useState<Library>(libraryState);
   const [libraryStatus, setLibraryStatus] = useState<LibraryStatus>({
     collapsed: false,
     expanded: false
   });
 
+  const [activePlaylistIndex, setActivePlaylistIndex] = useState<number | null>(null);
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [playlistMeta, setPlaylistMeta] = useState<SearchMeta>({
     page: 0,
@@ -60,7 +58,8 @@ export const LibraryProvider = ({ children }: { children: ReactElement }) => {
       library, setLibrary,
       libraryStatus, setLibraryStatus,
       playlists, setPlaylists,
-      playlistMeta, setPlaylistMeta
+      playlistMeta, setPlaylistMeta,
+      activePlaylistIndex, setActivePlaylistIndex
     }}
     >
       {children}

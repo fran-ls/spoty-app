@@ -105,7 +105,7 @@ const EditData = (props: EditDataProps) => {
                   className={`${(cover || coverImages.length > 3) ? 'bg-black/50' : 'bg-[#282828]'} hover:text-white w-full h-full flex flex-col items-center gap-1 justify-center absolute top-1/2 left-1/2 -translate-1/2`}
                   type="button"
                 >
-                  <PenIcon className="w-8 h-8" />
+                  <PenIcon className="w-[23%] h-[23%]" />
                   <span>Elegir foto</span>
                 </button>
 
