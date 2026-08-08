@@ -68,12 +68,12 @@ const useLibrary = () => {
 
   async function getUserPlaylists(
     userId: string,
-    filters?: Record<string, any>,
+    filters?: PlaylistFilters,
     include?: PlaylistInclude
   ) {
     if (!userId) return null;
 
-    const { data } = await libraryService.getUserPlaylists(userId, filters, include);
+    const { data } = await libraryService.getUserPlaylists(filters, include);
     if (!data) return null;
 
     setPlaylistMeta({
@@ -82,7 +82,7 @@ const useLibrary = () => {
       totalDuration: 0
     });
 
-    (filters?.page > 1)
+    (filters?.page && filters?.page > 1)
       ? setPlaylists((prev) => [...prev, ...data.items])
       : setPlaylists(data.items);
 

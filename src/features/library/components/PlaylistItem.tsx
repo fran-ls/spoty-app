@@ -4,6 +4,10 @@ import type { LayoutKind } from "../library.types";
 import type { User } from "../../auth/auth.types";
 import SmartImage from "../../../shared/components/SmartImage";
 import { getFmtDate } from "../../../shared/utils/getFormatDate";
+import PlaylistCoverImgs from "../../playlist/components/PlaylistCoverImgs";
+import playlistService from "../../playlist/services/playlist.service";
+import usePlayer from "../../player/hooks/usePlayer";
+import { useState } from "react";
 
 interface PlaylistItemProps {
   gridImgSize: number;
@@ -14,24 +18,53 @@ interface PlaylistItemProps {
   playlist: Playlist;
   layout: LayoutKind;
   user: User;
-  togglePlay: () => void;
 }
 
 const PlaylistItem = (props: PlaylistItemProps) => {
-  const { gridImgSize, isExpanded, playlist, layout, user, isCurrent, isHover, isPlaying, togglePlay } = props;
+  const { gridImgSize, isExpanded, playlist, layout, user, isCurrent, isHover, isPlaying } = props;
+  const { onPlaylistChange, togglePlay, play } = usePlayer();
 
+  const [playable, setPlayable] = useState(true);
+
+  const isCoverImgs = !playlist.cover && playlist.coverImages && playlist.coverImages.length > 3
   const createdAt = getFmtDate(playlist.createdAt, '').split(' ')[0].replaceAll('/', ' ');
   const trackCount = playlist?.trackCount || 0;
-  const manyTracks = trackCount === 0 || trackCount > 1;
+  const manyTracks = trackCount !== 1;
 
   const bgIcon = "#333333";
+
+  async function getPlaylistSongs() {
+    if (!playable) return;
+
+    if (isCurrent) {
+      togglePlay();
+      return;
+    }
+
+    const { data } = await playlistService.getPlaylistSongs(playlist.id);
+    if (!data || !data.songs.length) {
+      setPlayable(false);
+      return;
+    }
+
+    setPlayable(data.songs.length > 0);
+    play(data.songs, 0, data.meta);
+    onPlaylistChange(playlist);
+  }
 
   return (
     <>
       {layout.list && (
         <>
           <div className="flex items-center gap-3">
-            <div className="min-w-12 w-12 h-12 rounded relative overflow-hidden hover:badge:bg-blue-500">
+            <div
+              className="min-w-12 w-12 h-12 rounded relative overflow-hidden"
+              data-playable={playable}
+              onClick={(e) => {
+                e.stopPropagation();
+                getPlaylistSongs();
+              }}
+            >
               <SmartImage
                 styles={{
                   imgWrap: {
@@ -40,6 +73,10 @@ const PlaylistItem = (props: PlaylistItemProps) => {
                 }}
                 url={playlist.cover}
               />
+
+              {isCoverImgs && (
+                <PlaylistCoverImgs images={playlist.coverImages || []} />
+              )}
 
               {isHover &&
                 <button
@@ -122,29 +159,62 @@ const PlaylistItem = (props: PlaylistItemProps) => {
       )}
 
       {layout.grid && (
-        <div className="relative w-full text-[13px] font-semibold p-1">
-          <SmartImage
-            styles={{
-              imgWrap: {
-                background: bgIcon,
-                width: '100%',
-                height: 'auto',
-                minWidth: '112px',
-                minHeight: '112px',
-                borderRadius: '6px',
-                boxShadow: '0 8px 24px #00000080',
-                ...(gridImgSize && {
-                  width: gridImgSize,
-                  height: gridImgSize
-                })
-              }
+        <div className="group relative w-full text-[13px] font-semibold p-1">
+          <div
+            className="rounded-md overflow-hidden relative"
+            style={{
+              boxShadow: '0 8px 24px #00000080',
+              width: '100%',
+              height: 'auto',
+              minWidth: '112px',
+              minHeight: '112px',
+              ...(gridImgSize && {
+                width: gridImgSize,
+                height: gridImgSize
+              })
             }}
-            className="object-cover w-full h-full"
-            url={playlist.cover}
-            icon={(
-              <MusicIcon className="w-1/2 h-1/2" />
+          >
+            <SmartImage
+              styles={{
+                imgWrap: {
+                  background: bgIcon,
+                  width: '100%',
+                  height: 'auto',
+                  minWidth: '112px',
+                  minHeight: '112px',
+                  ...(gridImgSize && {
+                    width: gridImgSize,
+                    height: gridImgSize
+                  })
+                }
+              }}
+              className="object-cover w-full h-full"
+              url={playlist.cover}
+              icon={(
+                <MusicIcon className="w-1/2 h-1/2" />
+              )}
+            />
+
+            {isCoverImgs && (
+              <PlaylistCoverImgs images={playlist.coverImages || []} />
             )}
-          />
+
+            <button
+              className={`absolute bottom-0 right-2 bg-primary text-black p-3 rounded-full shadow-2xl opacity-0 group-hover:opacity-100 group-hover:-translate-y-2 transition-all duration-200 cursor-pointer hover:scale-105 active:scale-90 ${isPlaying && isCurrent ? '-translate-y-2 opacity-100' : ''}`}
+              style={{
+                boxShadow: '0 8px 24px #0009',
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+                getPlaylistSongs();
+              }}
+            >
+              {isPlaying
+                ? <PauseIcon size={24} fill="currentColor" stroke="none" />
+                : <PlayIcon size={24} fill="currentColor" stroke="none" />
+              }
+            </button>
+          </div>
 
           <h4
             className={`${isCurrent ? 'text-primary' : 'text-white'} mt-2 line-clamp-1 overflow-hidden w-full text-[15px] font-semibold`}

@@ -15,6 +15,7 @@ export interface Playlist {
   duration: number;
   createdAt: any;
   user?: User | null;
+  coverImages?: PlaylistCover[];
 }
 
 export interface PlaylistDTO {
@@ -28,6 +29,12 @@ export interface PlaylistDTO {
   file: File | null;
   fileUrl?: string;
 }
+
+export type PlaylistCover = {
+  id: string;
+  url: string;
+}
+
 
 export interface PlaylistSong {
   id: string;
@@ -43,6 +50,7 @@ export interface PlaylistSongDTO {
   include?: Record<string, any>;
 }
 
+
 export interface PlaylistResponse {
   items: PlaylistSong[];
   meta: PaginationMeta;
@@ -57,6 +65,7 @@ export type PlaylistFormState = PlaylistDTO & {
 export type PlaylistFormAction = 'set-state' | 'select-file' | 'save';
 
 export type PlaylistFilters = Partial<Playlist> & PaginationQuery;
+
 
 export interface PlaylistInclude {
   user?: IncludeArgs;

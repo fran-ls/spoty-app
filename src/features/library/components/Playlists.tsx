@@ -1,12 +1,17 @@
 import { PauseIcon, PlayIcon } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import type { Playlist } from "../../playlist/playlist.types";
-import type { LayoutKind, LibraryStatus } from "../library.types";
+import type { LayoutKind } from "../library.types";
 import type { Grid } from "./Library";
 import playlistService from "../../playlist/services/playlist.service";
 import SmartImage from "../../../shared/components/SmartImage";
 import PlaylistItem from "./PlaylistItem";
 import usePlayer from "../../player/hooks/usePlayer";
 import useAuth from "../../auth/hooks/useAuth";
+import PlaylistCoverImgs from "../../playlist/components/PlaylistCoverImgs";
+import { routes } from "../../../shared/utils/routes";
+import useLibrary from "../hooks/useLibrary";
+import { getDeviceType } from "../../../shared/utils/getDeviceType";
 
 interface PlaylistsProps {
   grid: Grid;
@@ -14,31 +19,40 @@ interface PlaylistsProps {
   gridImgSize: number;
   playlists: Playlist[];
   layoutKind: LayoutKind;
-  libraryStatus: LibraryStatus;
   setHoverId: React.Dispatch<React.SetStateAction<string>>;
-  onPlaylistClick: (playlist: Playlist, index: number) => void;
 }
 
 const Playlists = (props: PlaylistsProps) => {
-  const {
-    playlists, hoverId, layoutKind, gridImgSize, grid, libraryStatus,
-    setHoverId, onPlaylistClick
-  } = props;
-  const { collapsed: isCollapsed, expanded: isExpanded } = libraryStatus;
+  const { playlists, hoverId, layoutKind, gridImgSize, grid, setHoverId } = props;
 
   const { user } = useAuth();
   const { isPlaying, currentPlaylist, togglePlay } = usePlayer();
+  const { library, libraryStatus, onSizeChange, setActivePlaylistIndex } = useLibrary();
+
+  const device = getDeviceType();
+  const { collapsed: isCollapsed, expanded: isExpanded } = libraryStatus;
+
+  const navigate = useNavigate();
 
   return (
     playlists.map((playlist, index) => {
       const cover = playlistService.playlistCover(playlist.id, playlist.cover);
+      const isCoverImgs = !cover && playlist.coverImages && playlist.coverImages.length > 3
       const isCurrent = currentPlaylist?.id === playlist.id;
       const isCurrentHover = hoverId === playlist.id;
 
       return (
         <li
-          onClick={() => onPlaylistClick(playlist, index)}
           className={`${isCollapsed ? 'justify-center' : isExpanded ? 'justify-start gap-3' : ''} ${(!layoutKind.grid && isExpanded) ? `${grid.li.s} ${grid.li.sm} ${grid.li.md} ${grid.li.lg}` : ''} grid p-2 cursor-pointer text-[#adaaaa] hover:bg-[#1f1f1f] rounded-md`}
+          onClick={() => {
+            setActivePlaylistIndex(index);
+
+            if (device === 'desktop') {
+              onSizeChange(library.id, { expanded: false });
+            }
+
+            navigate(`${routes.playlists}/${playlist.id}`);
+          }}
           onPointerEnter={() => setHoverId(playlist.id)}
           onPointerLeave={() => setHoverId('')}
           key={playlist.id}
@@ -50,10 +64,16 @@ const Playlists = (props: PlaylistsProps) => {
                 url={cover}
               />
 
+              {!cover && isCoverImgs && (
+                <PlaylistCoverImgs images={playlist.coverImages || []} />
+              )}
+
               {isCurrentHover &&
                 <button
-                  onClick={() => isCurrent && togglePlay()}
                   className="text-white badge w-full h-full absolute top-0 left-0 bg-black/50 flex items-center justify-center"
+                  onClick={() => isCurrent && togglePlay()}
+                  // setQueue();
+                  // isCurrent ? togglePlay() : play();
                   type="button"
                 >
                   {(isPlaying && isCurrent) ?
@@ -83,7 +103,6 @@ const Playlists = (props: PlaylistsProps) => {
               isCurrent={isCurrent}
               layout={layoutKind}
               user={user!}
-              togglePlay={togglePlay}
             />
           }
         </li>

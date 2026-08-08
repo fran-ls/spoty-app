@@ -1,9 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { PlusIcon, SearchIcon, ListIcon, XIcon, PanelTopCloseIcon, PanelTopOpenIcon, LayoutGridIcon, TextAlignJustify, Minimize2Icon, GlobeIcon, LockIcon, GlobeLockIcon } from 'lucide-react';
 import type { PlaylistFilters } from '../../playlist/playlist.types';
 import { PlaylistLayout, PlaylistOrderBy, PlaylistVisibility, type LayoutKind } from '../library.types';
-import { routes } from '../../../shared/utils/routes';
 import CustomMenu from './CustomMenu';
 import useAuth from '../../auth/hooks/useAuth';
 import MenuItem from '../../../shared/components/MenuItem';
@@ -38,14 +36,11 @@ interface LibraryProps {
 }
 
 export const Library = (props: LibraryProps) => {
-  const navigate = useNavigate();
-
   const { user, isAdmin } = useAuth();
   const {
     library, layout, orderBy, systemPlaylists, libraryStatus, playlists, playlistMeta, isLoading,
     playlistVerticalScroll, playlistScrollTop, newPlaylist, onLayoutChange, onSortBy, onSizeChange,
-    setLibraryStatus, getPlaylists, getLibrary, setPlaylistVerticalScroll, setPlaylistScrollTop,
-    setActivePlaylistIndex
+    setLibraryStatus, getPlaylists, getLibrary, setPlaylistVerticalScroll, setPlaylistScrollTop
   } = useLibrary();
 
   const { collapsed: isCollapsed, expanded: isExpanded } = libraryStatus;
@@ -407,15 +402,7 @@ export const Library = (props: LibraryProps) => {
                 gridImgSize={gridImgSize}
                 playlists={systemPlaylists}
                 hoverId={hoverId}
-                libraryStatus={libraryStatus}
                 setHoverId={setHoverId}
-                onPlaylistClick={(playlist, index) => {
-                  setActivePlaylistIndex(index);
-                  if (isDesktop) {
-                    onSizeChange(library.id, { expanded: false });
-                  }
-                  navigate(`${routes.playlists}/${playlist.id}`);
-                }}
               />
             )}
 
@@ -425,15 +412,7 @@ export const Library = (props: LibraryProps) => {
               gridImgSize={gridImgSize}
               playlists={playlists}
               hoverId={hoverId}
-              libraryStatus={libraryStatus}
               setHoverId={setHoverId}
-              onPlaylistClick={(playlist, index) => {
-                setActivePlaylistIndex(index);
-                if (isDesktop) {
-                  onSizeChange(library.id, { expanded: false });
-                }
-                navigate(`${routes.playlists}/${playlist.id}`);
-              }}
             />
 
             {(!isLoading && playlistMeta.hasNextPage) &&

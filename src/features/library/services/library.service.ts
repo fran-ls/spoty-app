@@ -3,6 +3,7 @@ import type { Playlist, PlaylistFilters, PlaylistInclude } from "../../playlist/
 import type { SearchResponse } from "../../../shared/types/common.types";
 import { api, apiFetch } from "../../../shared/utils/api";
 import { tokenService } from "../../auth/services/token.service";
+import playlistService from "../../playlist/services/playlist.service";
 
 class LibraryService {
   async getLibrary(userId: string, include?: LibraryInclude) {
@@ -18,9 +19,31 @@ class LibraryService {
     ));
   }
 
-  async getUserPlaylists(userId: string, filters?: PlaylistFilters, include?: PlaylistInclude) {
+  async getPlaylist(id: string, include?: PlaylistInclude) {
+    return await apiFetch<Playlist>(async () => {
+      const r = await api.get(`/libraries/playlists/${id}`, {
+        params: {
+          include: include ? JSON.stringify(include) : undefined
+        },
+        headers: {
+          'Authorization': `Bearer ${tokenService.getToken()}`
+        }
+      });
+      const data = r.data;
+
+      return {
+        ...r,
+        data: {
+          ...data,
+          cover: playlistService.playlistCover(id, data.cover)
+        }
+      }
+    });
+  }
+
+  async getUserPlaylists(filters?: PlaylistFilters, include?: PlaylistInclude) {
     return await apiFetch<SearchResponse<Playlist[]>>(() => (
-      api.get(`/playlists/u/${userId}`, {
+      api.get('/libraries/playlists', {
         params: {
           ...filters,
           include: include ? JSON.stringify(include) : undefined

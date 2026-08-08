@@ -16,6 +16,7 @@ import SmartImage from '../../../shared/components/SmartImage';
 import TrackModal from '../../song/components/TrackModal';
 import useLibrary from '../../library/hooks/useLibrary';
 import useAuth from '../../auth/hooks/useAuth';
+import PlaylistCoverImgs from '../components/PlaylistCoverImgs';
 
 const PlaylistPage = () => {
   const { playlistId } = useParams();
@@ -24,13 +25,13 @@ const PlaylistPage = () => {
   const { currentPlaylist, isPlaying, isQueue, play, togglePlay, onPlaylistChange } = usePlayer();
   const {
     isPlay, isPublic, playlistSongs, searchMeta, playlist, isBackground, isRemove, isLayoutMenu,
-    isOpenAction, loadingPlaylistSongs, searchSongs, playlistMeta, playlistItems, coverImages,
+    isOpenAction, loadingPlaylistSongs, searchSongs, playlistMeta, playlistItems,
     trackMeta, form, songSearchQuery, isSongSearch, bgColor, gradientColor, isCoverHover,
     isEdit, isPlaylistMenu, setForm, setSongSearchQuery, setIsSongSearch, setBgColor,
     setGradientColor, setIsCoverHover, setIsEdit, setIsPlaylistMenu, setIsOpenAction,
     onFileChange, getPlaylist, updatePlaylist, getPlaylistTracks, searchTracks,
     addSongToPlaylist, onChangeVisibility, setIsLayoutMenu, setIsRemove, setIsBackground,
-    removeSongFromPlaylist, getPlaylistCover, setSearchSongs
+    removeSongFromPlaylist, setSearchSongs
   } = usePlaylist();
 
   const [page, setPage] = useState(0);
@@ -40,10 +41,12 @@ const PlaylistPage = () => {
 
   const playlistWrapRef = useRef<HTMLDivElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
+
   const cover = form.fileUrl || form.cover;
   const username = playlist?.user?.username || 'Username';
-  const { trackCountText, duration } = trackMeta;
   const isPlaylistOwner = user && user.id === playlist?.user?.id;
+  const isCoverImgs = playlist && playlist.coverImages && playlist.coverImages.length > 3;
+  const { trackCountText, duration } = trackMeta;
 
   const [coverSize, setCoverSize] = useState<Record<string, string | number>>({});
   const [titleSize, setTitleSize] = useState('16px');
@@ -88,8 +91,6 @@ const PlaylistPage = () => {
       getPlaylistTracks(playlistId);
     }
   }, [playlistId]);
-
-  useEffect(() => { getPlaylistCover() }, [playlistSongs]);
 
   useEffect(() => {
     if (songSearchQuery) setTimeout(() => searchTracks({
@@ -159,23 +160,8 @@ const PlaylistPage = () => {
               url={cover}
             />
 
-            {!cover && coverImages.length > 3 && (
-              coverImages.map((d, i) => {
-                const className = i === 0
-                  ? 'top-0 left-0' : i === 1
-                    ? 'top-0 right-0' : i === 3
-                      ? 'bottom-0 left-0' : 'bottom-0 right-0';
-
-                return (
-                  <img
-                    className={`${className} absolute w-1/2 h-1/2 object-cover`}
-                    crossOrigin="anonymous"
-                    src={d.url}
-                    alt=""
-                    key={d.id}
-                  />
-                )
-              })
+            {(!playlist?.cover && isCoverImgs) && (
+              <PlaylistCoverImgs images={playlist.coverImages || []} />
             )}
 
             {isCoverHover &&
@@ -186,7 +172,7 @@ const PlaylistPage = () => {
                     coverInputRef.current?.click();
                     setIsEdit(true);
                   }}
-                  className={`${(cover || coverImages.length > 3) ? 'bg-black/50' : 'bg-[#262626]'} hover:text-white w-full h-full flex flex-col items-center gap-1 justify-center absolute top-1/2 left-1/2 -translate-1/2`}
+                  className={`${(cover || isCoverImgs) ? 'bg-black/50' : 'bg-[#262626]'} hover:text-white w-full h-full flex flex-col items-center gap-1 justify-center absolute top-1/2 left-1/2 -translate-1/2`}
                   type="button"
                 >
                   <PenIcon className="w-1/4 h-1/4 sm:max-w-11 sm:max-h-11" />
@@ -387,7 +373,7 @@ const PlaylistPage = () => {
               }}
               disabled={!isPlay}
               className={`max-w-14 max-h-14 w-[14vw] h-[14vw] rounded-full flex items-center justify-center scale-100 hover:scale-105 active:scale-95 transition-all shadow-lg text-black ${!isPlay ? 'bg-[#adaaaa]/40 opacity-50 cursor-not-allowed' : 'bg-primary hover:bg-[#63ef82] cursor-pointer'}`}
-              title="Reproducir lista"
+              title={isPlaying ? "Pausar lista" : "Reproducir lista"}
             >
               {(isPlaying && isPlay && playlistId === currentPlaylist?.id) ?
                 <PauseIcon
@@ -426,7 +412,7 @@ const PlaylistPage = () => {
               }}
               disabled={!isPlay}
               className={`min-[500px]:max-w-14 min-[500px]:max-h-14 w-[10vw] h-[10vw] max-w-10 max-h-10 rounded-full flex items-center justify-center scale-100 hover:scale-105 active:scale-95 transition-all shadow-lg text-black ${!isPlay ? 'bg-[#adaaaa]/40 opacity-50 cursor-not-allowed' : 'bg-primary hover:bg-[#63ef82] cursor-pointer'}`}
-              title="Reproducir lista"
+              title={isPlaying ? "Pausar lista" : "Reproducir lista"}
             >
               {(isPlaying && isPlay && playlistId === currentPlaylist?.id) ?
                 <PauseIcon
@@ -702,7 +688,7 @@ const PlaylistPage = () => {
         <EditData
           form={form}
           isPublic={isPublic}
-          coverImages={coverImages}
+          coverImages={playlist?.coverImages || []}
           coverInputRef={coverInputRef}
           setForm={setForm}
           onChangeVisibility={() => onChangeVisibility(playlistId!)}

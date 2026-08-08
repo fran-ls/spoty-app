@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { Playlist, PlaylistDTO, PlaylistInclude, PlaylistSong, PlaylistSongDTO, PlaylistSongInclude } from "../playlist.types";
 import type { PaginationMeta } from "../../../shared/types/common.types";
-import type { Song, SongCover, TrackFilters, TrackInclude } from "../../song/song.types";
+import type { Song, TrackFilters, TrackInclude } from "../../song/song.types";
 import playlistService from "../services/playlist.service";
 import songService from "../../song/services/song.service";
 import { routes } from "../../../shared/utils/routes";
@@ -10,6 +10,7 @@ import useAuth from "../../auth/hooks/useAuth";
 import { getTimeParts } from "../../../shared/utils/formatTime";
 import { paginationMeta } from "../../../shared/data/search.data";
 import useLibrary from "../../library/hooks/useLibrary";
+import libraryService from "../../library/services/library.service";
 
 const usePlaylist = () => {
   const { setPlaylists: setLibPlaylists } = useLibrary();
@@ -30,7 +31,6 @@ const usePlaylist = () => {
   });
 
   const [playlist, setPlaylist] = useState<Playlist | null>(null);
-  const [coverImages, setCoverImages] = useState<SongCover[]>([]);
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [playlistSongs, setPlaylistSongs] = useState<Song[]>([]);
   const [playlistItems, setPlaylistItems] = useState<PlaylistSong[]>([]);
@@ -61,15 +61,19 @@ const usePlaylist = () => {
   const navigate = useNavigate();
 
   const getTrackMeta = (playlist: Playlist) => {
-    const time = getTimeParts(playlist?.duration || 0);
-    const manyTracks = playlist.trackCount === 0 || playlist.trackCount > 1;
-    const duration = time.hours > 0 ? `${time.hours} h ${time.min > 0 ? `${time.min} min` : ''}` : `${time.min > 0 ? `${time.min} min` : ''} ${time.secs > 0 ? `${time.secs} s` : ''}`.trim();
+    const { hours, min, secs } = getTimeParts(playlist.duration || 0);
+    const duration = hours > 0
+      ? `${hours} h ${min > 0 ? `${min} min` : ''}`
+      : `${min > 0 ? `${min} min` : ''} ${secs > 0 ? `${secs} s` : ''}`.trim();
+
+    const manyTracks = playlist.trackCount !== 1;
 
     const meta = {
       duration,
       manyTracks,
       trackCountText: `${manyTracks ? 'canciones' : 'canción'}${playlist?.trackCount ? ',' : ''}`
     }
+
     setTrackMeta(meta);
     return meta;
   }
@@ -100,7 +104,7 @@ const usePlaylist = () => {
   const getPlaylist = async (playlistId: string, include?: PlaylistInclude) => {
     if (!playlistId) return null;
 
-    const r = await playlistService.getPlaylist(playlistId, include);
+    const r = await libraryService.getPlaylist(playlistId, include);
 
     if (r.status === 404) {
       navigate(routes.home);
@@ -177,24 +181,6 @@ const usePlaylist = () => {
     }
 
     return data;
-  }
-
-  const getPlaylistCover = () => {
-    const images: SongCover[] = [];
-
-    for (const song of playlistSongs) {
-      if (song?.cover) {
-        const coverUrl = songService.songCoverUrl(song.id, song.cover);
-        images.push({ id: song.id, url: coverUrl });
-      }
-
-      if (images.length === 4) {
-        break;
-      }
-    }
-
-    setCoverImages(images);
-    return images;
   }
 
   const searchTracks = async (filters?: TrackFilters | undefined, include?: TrackInclude) => {
@@ -292,11 +278,9 @@ const usePlaylist = () => {
     searchSongs, setSearchSongs,
     searchMeta, setSearchMeta,
     activeItem, setActiveItem,
-    coverImages, setCoverImages,
     isPlaylistMenu, setIsPlaylistMenu,
     loadingPlaylistSongs, setLoadingPlaylistSongs,
     onFileChange,
-    getPlaylistCover,
     getPlaylist,
     updatePlaylist,
     newPlaylist,
