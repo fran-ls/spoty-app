@@ -209,7 +209,7 @@ const PlaylistPage = () => {
             />
           </div>
 
-          <div className="mt-auto w-full">
+          <div className="overflow-hidden mt-auto w-full">
             <span className="min-[500px]:block hidden text-sm font-medium">
               Lista {isPublic ? 'pública' : 'privada'}
             </span>
@@ -218,7 +218,7 @@ const PlaylistPage = () => {
                 fontSize: titleSize
               }}
               onClick={() => isPlaylistOwner && setIsEdit(true)}
-              className={`min-[500px]:mb-0 max-[500px]:mt-2 font-black ${isPlaylistOwner ? 'cursor-pointer' : ''} ${window.innerWidth >= 500 ? 'playlist-title google-sans-flex-font' : 'playlist-title-font truncate'}`}
+              className={`min-[500px]:mb-0 max-[500px]:mt-2 font-black truncate ${isPlaylistOwner ? 'cursor-pointer' : ''} ${window.innerWidth >= 500 ? 'playlist-title google-sans-flex-font' : 'playlist-title-font'}`}
               title={form.name}
             >
               {form.name || 'Mi lista'}

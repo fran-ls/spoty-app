@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { AnimatePresence } from "motion/react";
 import { Library } from "../../features/library/components/Library";
-import { QueueList } from "../../features/player/components/QueueList";
+import { Player } from "../../features/player/components/Player";
 import { Header } from "../components/Header";
 import { PlayerBar } from "../../features/player/components/PlayerBar";
 import { PremiumModal } from "../components/PremiumModal";
@@ -72,7 +72,7 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
           </div>
         </main>
 
-        <QueueList />
+        <Player />
       </div>
 
       {isDesktop ? <PlayerBar /> : (

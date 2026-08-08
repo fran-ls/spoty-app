@@ -13,10 +13,10 @@ import useAuth from '../../auth/hooks/useAuth';
 export const PlayerBar = () => {
   const { user } = useAuth();
   const {
-    audioRef, player, currentSong, progress, duration, isPlaying, volume, isMuted,
+    audioRef, player, currentSong, progress, duration, isPlaying, volume, isMuted, isPlayer,
     isQueue, isRepeat, isShuffle, seek, next, prev, togglePlay, toggleMute, setIsQueue,
     toggleRepeat, toggleShuffle, volumeSeek, setProgress, setDuration, setPlayer,
-    updatePlayer, onPlayerChange, resetPlayer, getPlayer
+    updatePlayer, onPlayerChange, resetPlayer, getPlayer, setIsPlayer
   } = usePlayer();
 
   const progressRef = useRef<HTMLDivElement>(null);
@@ -285,8 +285,11 @@ export const PlayerBar = () => {
       {/* RIGHT: Volume & Secondary Controls */}
       <div className="lg:flex flex items-center justify-end gap-4 w-[30%] min-w-50">
         <button
-          onClick={() => setIsQueue(!isQueue)}
-          className="text-[#adaaaa] hover:text-primary transition-all cursor-pointer"
+          onClick={() => {
+            !isPlayer && setIsPlayer(true);
+            setIsQueue(!isQueue);
+          }}
+          className={`hover:text-primary transition-all cursor-pointer ${isQueue ? 'text-primary' : 'text-[#adaaaa]'}`}
           title="Cola"
           type="button"
         >

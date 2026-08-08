@@ -70,10 +70,8 @@ const Playlists = (props: PlaylistsProps) => {
 
               {isCurrentHover &&
                 <button
-                  className="text-white badge w-full h-full absolute top-0 left-0 bg-black/50 flex items-center justify-center"
                   onClick={() => isCurrent && togglePlay()}
-                  // setQueue();
-                  // isCurrent ? togglePlay() : play();
+                  className="text-white badge w-full h-full absolute top-0 left-0 bg-black/50 flex items-center justify-center"
                   type="button"
                 >
                   {(isPlaying && isCurrent) ?

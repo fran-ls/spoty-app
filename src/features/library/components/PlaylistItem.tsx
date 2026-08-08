@@ -217,17 +217,33 @@ const PlaylistItem = (props: PlaylistItemProps) => {
           </div>
 
           <h4
-            className={`${isCurrent ? 'text-primary' : 'text-white'} mt-2 line-clamp-1 overflow-hidden w-full text-[15px] font-semibold`}
+            className={`${isCurrent ? 'text-primary' : 'text-white'} mt-2 truncate w-full text-[15px] font-semibold`}
+            style={{
+              width: `${gridImgSize}px`,
+              minWidth: '110px',
+              ...(gridImgSize && {
+                width: gridImgSize
+              })
+            }}
             title={playlist.name}
           >
             {playlist.name}
           </h4>
 
-          <div className="flex items-center text-[#adaaaa]">
+          <div
+            className="overflow-hidden flex items-center text-[#adaaaa]"
+            style={{
+              width: `${gridImgSize}px`,
+              minWidth: '110px',
+              ...(gridImgSize && {
+                width: gridImgSize
+              })
+            }}
+          >
             <span>Lista</span>
             <span className="mx-1">•</span>
             <span
-              className="line-clamp-1"
+              className="truncate"
               title={`${trackCount} ${manyTracks ? 'canciones' : 'Canción'}`}
             >
               {trackCount} {manyTracks ? 'canciones' : 'Canción'}

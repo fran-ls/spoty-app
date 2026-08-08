@@ -27,6 +27,7 @@ interface PlayerContextType {
   isShuffle: boolean;
   player: Player | null;
   playingTracks: Song[];
+  isPlayer: boolean;
   next: () => void;
   prev: () => void;
   seek: (time: number) => void;
@@ -56,6 +57,7 @@ interface PlayerContextType {
   setIsRepeat: React.Dispatch<React.SetStateAction<boolean>>;
   setIsShuffle: React.Dispatch<React.SetStateAction<boolean>>;
   setPlayingTracks: React.Dispatch<React.SetStateAction<Song[]>>;
+  setIsPlayer: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export const PlayerContext = createContext<PlayerContextType>({
@@ -74,6 +76,7 @@ export const PlayerContext = createContext<PlayerContextType>({
   isMuted: false,
   isQueue: true,
   isPlaying: false,
+  isPlayer: false,
   queue: [],
   queueMeta: paginationMeta,
   currentPlaylist: null,
@@ -106,15 +109,17 @@ export const PlayerContext = createContext<PlayerContextType>({
   onPlayerChange: () => { },
   resetPlayer: () => { },
   setPlayingTracks: () => { },
-  shuffleTracks: () => { }
+  shuffleTracks: () => { },
+  setIsPlayer: () => { }
 });
 
 export const PlayerProvider = ({ children }: any) => {
-  const [isQueue, setIsQueue] = useState(true);
+  const [isQueue, setIsQueue] = useState(false);
   const [queue, setQueue] = useState<Song[]>([]);
   const [queueMeta, setQueueMeta] = useState<PaginationMeta>(paginationMeta);
   const [currentPlaylist, setCurrentPlaylist] = useState<Playlist | null>(null);
 
+  const [isPlayer, setIsPlayer] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -369,6 +374,7 @@ export const PlayerProvider = ({ children }: any) => {
         queueMeta, setQueueMeta,
         currentPlaylist, setCurrentPlaylist,
         playingTracks, setPlayingTracks,
+        isPlayer, setIsPlayer,
         play, togglePlay,
         next, prev,
         seek, volumeSeek,
