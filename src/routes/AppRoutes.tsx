@@ -1,6 +1,6 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import AppLayout from "../shared/layout/AppLayout";
-import HomePage from "../features/home/HomePage";
+import HomePage from "../features/home/pages/HomePage";
 // import SearchPage from "../features/search/SearchPage";
 import LibraryPage from "../features/library/pages/LibraryPage";
 import PlaylistPage from "../features/playlist/pages/PlaylistPage";

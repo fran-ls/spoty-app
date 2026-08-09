@@ -1,0 +1,35 @@
+.slider-before::before {
+  background: linear-gradient(90deg, #131313b3 0%, transparent 100%);
+  inset-inline-start: 0;
+  content: "";
+  z-index: 2;
+  pointer-events: none;
+  width: 120px;
+  height: 100%;
+  transition: opacity .15s ease-out;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+}
+
+.slider-after::after {
+  background: linear-gradient(-90deg, #131313b3 0%, transparent 100%);
+  inset-inline-end: 0;
+  content: "";
+  z-index: 2;
+  pointer-events: none;
+  width: 120px;
+  height: 100%;
+  transition: opacity .15s ease-out;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+}
+
+.slider .playlist-item:first-child {
+  margin-left: 24px;
+}
+
+.slider .playlist-item:last-child {
+  margin-right: 24px;
+}
