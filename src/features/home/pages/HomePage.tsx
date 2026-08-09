@@ -1,7 +1,8 @@
 import { Play } from 'lucide-react';
 import { mockMadeForYou, mockRecentlyPlayed } from '../../../shared/data/music.data';
-import '../../assets/css/home.css';
+import '../../../assets/css/home.css';
 import UserPlaylistsSlider from '../components/UserPlaylistsSlider';
+import ArtistSlider from '../components/ArtistSlider';
 
 const HomePage = () => {
   return (
@@ -10,6 +11,8 @@ const HomePage = () => {
       // className="pt-6 pb-10 min-h-full bg-linear-to-b from-[#2a2a2a] via-[#1a1a1a] to-[#131313] text-white select-none scroll-smooth animate-fade-in"
       id="spotify-home-stage"
     >
+      <ArtistSlider />
+
       <UserPlaylistsSlider />
 
       {/* 2. Made For You Section */}
