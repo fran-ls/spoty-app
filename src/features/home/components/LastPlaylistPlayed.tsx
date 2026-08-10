@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PauseIcon, PlayIcon } from "lucide-react";
 import type { HistoryPlaylist } from "../../player/playHistory.types";
@@ -9,14 +9,23 @@ import playlistService from "../../playlist/services/playlist.service";
 import SmartImage from "../../../shared/components/SmartImage";
 import { routes } from "../../../shared/utils/routes";
 import usePlayer from "../../player/hooks/usePlayer";
+import { getFmtDate } from "../../../shared/utils/getFormatDate";
 
-const LastPlaylistPlayed = () => {
+const LastPlaylistPlayed = ({ bannerRef, setPlaylist }: {
+  bannerRef: React.RefObject<HTMLDivElement | null>;
+  setPlaylist: React.Dispatch<React.SetStateAction<any>>;
+}) => {
   const { user } = useAuth();
   const { isPlaying, currentPlaylist, togglePlay, play, onPlaylistChange } = usePlayer();
 
   const navigate = useNavigate();
 
   const [playlists, setPlaylists] = useState<HistoryPlaylist[]>([]);
+
+  const welcome = useMemo(() => {
+    const hour = Number(getFmtDate(new Date(), 'HH'));
+    return hour >= 18 ? `¡Buenas noches ${user?.username}!` : `¡Buen día ${user?.username}!`;
+  }, []);
 
   async function getPlaylists() {
     if (!user?.id) return;
@@ -41,10 +50,13 @@ const LastPlaylistPlayed = () => {
 
   return (
     <section className="px-8 mb-12" id="home-greeting-section">
-      <h1 className="text-3xl font-bold font-headline mb-6 tracking-tight text-white select-none">
-        Good evening
-      </h1>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
+      <h2 className="text-3xl font-bold font-headline mb-6 tracking-tight text-white select-none google-sans-flex-font">
+        {welcome}
+      </h2>
+      <div
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4"
+        ref={bannerRef}
+      >
         {playlists.map((it) => {
           const playlist = it.playlist;
           if (!playlist) return null;
@@ -56,10 +68,11 @@ const LastPlaylistPlayed = () => {
           return (
             <div
               onClick={() => navigate(`${routes.playlists}/${playlist.id}`)}
-              className="group flex items-center bg-white/5 hover:bg-white/10 rounded-lg overflow-hidden transition-all duration-300 cursor-pointer relative pr-16 active:scale-98"
+              onMouseEnter={() => setPlaylist(playlist)}
+              className="group flex items-center bg-white/5 hover:bg-white/10 rounded overflow-hidden transition-all duration-300 cursor-pointer relative active:scale-98"
               key={playlist.id}
             >
-              <div className="aspect-square w-20 h-20 shrink-0 relative overflow-hidden bg-[#333333]">
+              <div className="shadow-[0px_0px_24px_#00000080] aspect-square w-16 h-16 shrink-0 relative overflow-hidden bg-[#333333]">
                 <SmartImage
                   wrapClassName="bg-transparent"
                   url={cover}
@@ -87,9 +100,9 @@ const LastPlaylistPlayed = () => {
                 })}
               </div>
 
-              <div className="px-5 flex-1 font-headline font-extrabold text-[#ffffff] text-sm truncate">
+              <h3 className="px-5 flex-1 font-headline font-extrabold text-[#ffffff] text-sm truncate google-sans-flex-font">
                 {playlist.name}
-              </div>
+              </h3>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
