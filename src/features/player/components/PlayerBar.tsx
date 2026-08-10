@@ -16,7 +16,7 @@ export const PlayerBar = () => {
     audioRef, player, currentSong, progress, duration, isPlaying, volume, isMuted, isPlayer,
     isQueue, isRepeat, isShuffle, seek, next, prev, togglePlay, toggleMute, setIsQueue,
     toggleRepeat, toggleShuffle, volumeSeek, setProgress, setDuration, setPlayer,
-    updatePlayer, onPlayerChange, resetPlayer, getPlayer, setIsPlayer
+    updatePlayer, onPlayerChange, resetPlayer, getPlayer, setIsPlayer, addToPlayHistory
   } = usePlayer();
 
   const progressRef = useRef<HTMLDivElement>(null);
@@ -38,6 +38,12 @@ export const PlayerBar = () => {
     const targetSecond = Math.floor(ratio * duration);
     seek(targetSecond);
     updatePlayer({ progress: targetSecond });
+    addToPlayHistory({
+      song: {
+        ...currentSong,
+        duration: duration - targetSecond
+      }
+    });
   }
 
   const handleProgressMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {

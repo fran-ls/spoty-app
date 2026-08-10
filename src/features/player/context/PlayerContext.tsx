@@ -3,9 +3,11 @@ import type { Playlist } from '../../playlist/playlist.types';
 import type { Player } from '../../player/player.types';
 import type { Song } from '../../song/song.types';
 import type { PaginationMeta } from '../../../shared/types/common.types';
+import type { PlayHistoryAddPayload } from '../playHistory.types';
 import songService from '../../song/services/song.service';
 import playerService from '../../player/services/player.service';
 import { paginationMeta } from '../../../shared/data/search.data';
+import playHistoryService from '../services/playHistory.service';
 
 export type ViewType = 'home' | 'search' | 'library' | 'playlist' | 'create-playlist' | 'songs';
 
@@ -43,6 +45,7 @@ interface PlayerContextType {
   onPlaylistChange: (playlist: Playlist | null) => void;
   resetPlayer: () => void;
   shuffleTracks: () => void;
+  addToPlayHistory: (payload: PlayHistoryAddPayload) => void;
   setQueue: React.Dispatch<React.SetStateAction<Song[]>>;
   setVolume: React.Dispatch<React.SetStateAction<number>>;
   setPrevVolume: React.Dispatch<React.SetStateAction<number>>;
@@ -110,7 +113,8 @@ export const PlayerContext = createContext<PlayerContextType>({
   resetPlayer: () => { },
   setPlayingTracks: () => { },
   shuffleTracks: () => { },
-  setIsPlayer: () => { }
+  setIsPlayer: () => { },
+  addToPlayHistory: () => { }
 });
 
 export const PlayerProvider = ({ children }: any) => {
@@ -129,7 +133,6 @@ export const PlayerProvider = ({ children }: any) => {
   const [isMuted, setIsMuted] = useState(false);
   const [prevVolume, setPrevVolume] = useState<number>(1);
 
-  // const [unplayedTracks, setUnplayedTracks] = useState<Record<string, number>>({});
   const [playingTracks, setPlayingTracks] = useState<Song[]>([]);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -151,6 +154,7 @@ export const PlayerProvider = ({ children }: any) => {
     setIsPlaying(true);
 
     updatePlayer({ songId: track.id });
+    addToPlayHistory({ song: track });
   }
 
   const seek = (time: number) => {
@@ -184,6 +188,12 @@ export const PlayerProvider = ({ children }: any) => {
     } else {
       audio.play();
       setIsPlaying(true);
+      addToPlayHistory({
+        song: {
+          ...currentSong,
+          duration: duration - progress
+        }
+      });
     }
   }
 
@@ -214,6 +224,7 @@ export const PlayerProvider = ({ children }: any) => {
     }
 
     updatePlayer({ songId: track.id });
+    addToPlayHistory({ song: track });
   }
 
   const prev = () => {
@@ -237,6 +248,7 @@ export const PlayerProvider = ({ children }: any) => {
     }
 
     updatePlayer({ songId: track.id });
+    addToPlayHistory({ song: track });
   }
 
   const toggleMute = () => {
@@ -266,6 +278,21 @@ export const PlayerProvider = ({ children }: any) => {
     updatePlayer({ repeat });
   }
 
+  function addToPlayHistory(data: PlayHistoryAddPayload) {
+    const { song, playlist, playlistTimout } = data;
+
+    if (song) {
+      const timout = song.duration * 1000;
+      setTimeout(() => { playHistoryService.add({ songId: song.id }) }, timout);
+    }
+    if (playlist) {
+      const timout = 3 * 60 * 1000;
+      setTimeout(() => playHistoryService.add({
+        playlistId: playlist.id
+      }), playlistTimout || timout);
+    }
+  }
+
   async function updatePlayer(data: Partial<Player>) {
     if (!player?.id) return;
 
@@ -283,6 +310,7 @@ export const PlayerProvider = ({ children }: any) => {
 
     if (playlist) {
       updatePlayer({ playlistId: playlist.id });
+      addToPlayHistory({ playlist });
     }
   }
 
@@ -386,7 +414,8 @@ export const PlayerProvider = ({ children }: any) => {
         onPlaylistChange,
         onPlayerChange,
         resetPlayer,
-        shuffleTracks
+        shuffleTracks,
+        addToPlayHistory
       }}
     >
       {children}

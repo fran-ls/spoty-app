@@ -172,7 +172,7 @@ const BackgroundColor = (props: BackgroundColorProps) => {
               <input
                 type="color"
                 value={bgColor}
-                onChange={(e) => setBgColor(e.target.value)}
+                onChange={(e) => onBgColorChange(e.target.value)}
                 className="w-10 h-10 outline-none border-none rounded cursor-pointer bg-transparent"
               />
               <input
@@ -192,7 +192,7 @@ const BackgroundColor = (props: BackgroundColorProps) => {
               <input
                 type="color"
                 value={gradientColor}
-                onChange={(e) => setGradientColor(e.target.value)}
+                onChange={(e) => onGradientColorChange(e.target.value)}
                 className="w-10 h-10 outline-none border-none rounded cursor-pointer bg-transparent"
               />
               <input

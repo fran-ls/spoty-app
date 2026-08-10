@@ -16,7 +16,7 @@ const MobilePlayer = () => {
     audioRef, player,
     currentPlaylist, currentSong, progress, duration, isPlaying, isRepeat, isShuffle,
     seek, next, prev, togglePlay, toggleShuffle, toggleRepeat, setProgress, setDuration,
-    updatePlayer, onPlayerChange, setPlayer, resetPlayer, getPlayer
+    updatePlayer, onPlayerChange, setPlayer, resetPlayer, getPlayer, addToPlayHistory
   } = usePlayer();
 
   const audio = audioRef.current;
@@ -38,6 +38,12 @@ const MobilePlayer = () => {
     const ratio = Math.max(0, Math.min(1, x / width));
     const targetSecond = Math.floor(ratio * duration);
     seek(targetSecond);
+    addToPlayHistory({
+      song: {
+        ...currentSong,
+        duration: duration - targetSecond
+      }
+    });
   }
 
   const handleProgressMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -381,7 +387,6 @@ const MobilePlayer = () => {
                 imgWrap: {
                   ...(!songCover && {
                     boxShadow: '0 0 25px rgb(0, 0, 0, 0.25)',
-                    borderRadius: '6px',
                     ...(currentPlaylist && {
                       background: currentPlaylist.bgColor,
                     })
@@ -392,7 +397,7 @@ const MobilePlayer = () => {
               className="aspect-square w-full h-full object-cover transition-transform duration-300"
               url={songCover}
               icon={(
-                <MusicIcon className="w-[30%] h-[30%] text-white absolute top-1/2 left-1/2 -translate-1/2" />
+                <MusicIcon className="w-[35%] h-[35%] text-white absolute top-1/2 left-1/2 -translate-1/2" />
               )}
             />
 
