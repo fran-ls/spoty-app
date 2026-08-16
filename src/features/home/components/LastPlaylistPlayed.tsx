@@ -29,8 +29,8 @@ const LastPlaylistPlayed = ({ bannerRef, setPlaylist }: {
 
   async function getPlaylists() {
     if (!user?.id) return;
-    const { data } = await playHistoryService.getPlaylists(user.id);
-    if (data?.items) setPlaylists(data.items);
+    const { data } = await playHistoryService.getLastPlaylistsPlayed(user.id);
+    data && setPlaylists(data);
   }
 
   async function getPlaylistSongs(playlist: Playlist, isCurrent: boolean) {
@@ -61,8 +61,9 @@ const LastPlaylistPlayed = ({ bannerRef, setPlaylist }: {
           const playlist = it.playlist;
           if (!playlist) return null;
 
+          const coverImages = playlist.coverImages;
           const cover = playlistService.playlistCover(playlist.id, playlist?.cover);
-          const isCoverImgs = !cover && it.coverImages && it.coverImages.length > 3;
+          const isCoverImgs = !cover && coverImages && coverImages.length > 3;
           const isCurrent = currentPlaylist?.id === playlist.id;
 
           return (
@@ -82,7 +83,7 @@ const LastPlaylistPlayed = ({ bannerRef, setPlaylist }: {
                   }}
                 />
 
-                {isCoverImgs && it.coverImages.map((img, i) => {
+                {isCoverImgs && coverImages.map((img, i) => {
                   const className = i === 0
                     ? 'top-0 left-0' : i === 1
                       ? 'top-0 right-0' : i === 3
