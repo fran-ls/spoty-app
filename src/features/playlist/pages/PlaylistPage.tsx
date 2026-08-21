@@ -22,7 +22,7 @@ const PlaylistPage = () => {
   const { playlistId } = useParams();
   const { user } = useAuth();
   const { libraryStatus, removePlaylist } = useLibrary();
-  const { currentPlaylist, isPlaying, isQueue, play, togglePlay, onPlaylistChange } = usePlayer();
+  const { currentPlaylist, isPlaying, isQueue, isPlayer, play, togglePlay, onPlaylistChange } = usePlayer();
   const {
     isPlay, isPublic, playlistSongs, searchMeta, playlist, isBackground, isRemove, isLayoutMenu,
     isOpenAction, loadingPlaylistSongs, searchSongs, playlistMeta, playlistItems,
@@ -643,7 +643,7 @@ const PlaylistPage = () => {
       {isOpenAction &&
         <div
           onMouseLeave={() => setIsOpenAction(false)}
-          className={`${!isQueue ? 'md:right-76 right-2' : 'md:right-22 right-2'} w-45 z-100 bg-[#282828] rounded fixed bottom-22`}
+          className={`${!isPlayer ? 'md:right-15 right-2' : 'md:right-76 right-2'} w-45 z-100 bg-[#282828] rounded fixed bottom-22`}
         >
           <ActionMenu
             onClose={() => setIsOpenAction(false)}
