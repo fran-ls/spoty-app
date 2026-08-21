@@ -92,7 +92,7 @@ const AuthPage: React.FC = () => {
             }}
             className="space-y-4"
           >
-            <div className="space-y-4 max-h-37 overflow-auto input-wrap">
+            <div className="space-y-4 overflow-auto input-wrap">
               {inputs.map((input) => (
                 <div
                   className={`${!input.isHide ? 'block' : 'hidden'} space-y-1.5 relative`}
