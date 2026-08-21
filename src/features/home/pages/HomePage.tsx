@@ -13,7 +13,7 @@ const HomePage = () => {
 
   return (
     <div
-      className="pt-6 pb-10 min-h-full bg-[#131313] text-white select-none scroll-smooth animate-fade-in"
+      className="pt-8 pb-10 min-h-full bg-[#131313] text-white select-none scroll-smooth animate-fade-in"
       id="spotify-home-stage"
     >
       <GradientBanner
