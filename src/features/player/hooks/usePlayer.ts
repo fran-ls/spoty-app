@@ -5,17 +5,46 @@ import playerService from "../services/player.service";
 import { PlayerContext } from "../context/PlayerContext";
 import playlistService from "../../playlist/services/playlist.service";
 import songService from "../../song/services/song.service";
+import { getLocalPlayer } from "../../../shared/utils/localPlayer";
 
 const usePlayer = () => {
   const ctx = useContext(PlayerContext);
-  const { currentPlaylist, queueMeta, setPlayer, setQueue, setQueueMeta, setPlayingTracks } = ctx;
+  const {
+    currentPlaylist, queueMeta, player, localPlayer, setLocalPlayer,
+    setPlayer, setQueue, setQueueMeta, setPlayingTracks, resetPlayer
+  } = ctx;
 
   const [isLoading, setIsLoading] = useState(false);
 
   async function getPlayer(userId: string, include?: PlayerInclude) {
     const { data } = await playerService.getPlayer(userId, include);
-    if (data) setPlayer(data);
     return data;
+  }
+
+  const getPlayerData = async (userId: string) => {
+    if (!userId) {
+      resetPlayer();
+      return;
+    }
+
+    const [data, item] = await Promise.all([
+      getPlayer(userId),
+      getLocalPlayer()
+    ]);
+
+    if (data && item) {
+      setPlayer({ ...data, ...item });
+      setLocalPlayer({ ...localPlayer!, ...item });
+      return;
+    }
+    else if (data && !item) {
+      setPlayer(data);
+      return;
+    }
+    else if (item) {
+      player && setPlayer({ ...player, ...item });
+      setLocalPlayer({ ...localPlayer!, ...item });
+    }
   }
 
   async function getQueueSongs(page: number, filters?: Pick<PaginationQuery, 'page' | 'limit'>) {
@@ -64,7 +93,7 @@ const usePlayer = () => {
   return {
     ...ctx,
     isLoading, setIsLoading,
-    getPlayer, getQueueSongs
+    getPlayer: getPlayerData, getQueueSongs
   }
 }
 

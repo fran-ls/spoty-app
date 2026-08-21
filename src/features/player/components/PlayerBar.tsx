@@ -9,25 +9,26 @@ import songService from '../../song/services/song.service';
 import SmartImage from '../../../shared/components/SmartImage';
 import { RepeatIcon, SkipForwardIcon } from '../../../shared/components/Icons';
 import useAuth from '../../auth/hooks/useAuth';
+import { updateLocalPlayer } from '../../../shared/utils/localPlayer';
 
 export const PlayerBar = () => {
   const { user } = useAuth();
   const {
-    audioRef, player, currentSong, progress, duration, isPlaying, volume, isMuted, isPlayer,
+    localPlayer, player, currentSong, progress, duration, isPlaying, volume, isMuted, isPlayer,
     isQueue, isRepeat, isShuffle, seek, next, prev, togglePlay, toggleMute, setIsQueue,
-    toggleRepeat, toggleShuffle, volumeSeek, setProgress, setDuration, setPlayer,
-    updatePlayer, onPlayerChange, resetPlayer, getPlayer, setIsPlayer, addToPlayHistory
+    toggleRepeat, toggleShuffle, volumeSeek, updatePlayer, onPlayerChange, getPlayer,
+    setIsPlayer, addToPlayHistory, setLocalPlayer
   } = usePlayer();
 
   const progressRef = useRef<HTMLDivElement>(null);
   const volumeRef = useRef<HTMLDivElement>(null);
-  const audio = audioRef.current;
 
   const [hoverTime, setHoverTime] = useState<number | null>(null);
   const [hoverX, setHoverX] = useState<number>(0);
   const [isDragging, setIsDragging] = useState<boolean>(false);
 
   const [isLiked, setIsLiked] = useState(false);
+
 
   const progressSeek = (clientX: number) => {
     if (!currentSong || !progressRef.current) return;
@@ -53,16 +54,15 @@ export const PlayerBar = () => {
 
     const handleMouseMove = (moveEvent: MouseEvent) => {
       progressSeek(moveEvent.clientX);
+      if (!progressRef.current) return;
 
-      if (progressRef.current) {
-        const rect = progressRef.current.getBoundingClientRect();
-        const hoverXPos = moveEvent.clientX - rect.left;
-        const width = rect.width;
-        const clickRatio = Math.max(0, Math.min(1, hoverXPos / width));
-        const targetSecond = Math.floor(clickRatio * duration);
-        setHoverTime(targetSecond);
-        setHoverX(Math.max(0, Math.min(width, hoverXPos)));
-      }
+      const rect = progressRef.current.getBoundingClientRect();
+      const hoverXPos = moveEvent.clientX - rect.left;
+      const width = rect.width;
+      const clickRatio = Math.max(0, Math.min(1, hoverXPos / width));
+      const targetSecond = Math.floor(clickRatio * duration);
+      setHoverTime(targetSecond);
+      setHoverX(Math.max(0, Math.min(width, hoverXPos)));
     }
 
     const handleMouseUp = () => {
@@ -96,8 +96,11 @@ export const PlayerBar = () => {
     const clickX = clientX - rect.left;
     const width = rect.width;
     const clickRatio = Math.max(0, Math.min(1, clickX / width));
+    const vol = Math.round(clickRatio * 100);
     volumeSeek(clickRatio);
-    updatePlayer({ volume: Math.round(clickRatio * 100) });
+    updatePlayer({ volume: vol });
+    setLocalPlayer({ ...localPlayer!, volume: vol });
+    updateLocalPlayer({ volume: vol }, localPlayer!);
   }
 
   const handleVolumeChange = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -131,10 +134,7 @@ export const PlayerBar = () => {
   //   }
   // }, [progress]);
 
-  useEffect(() => {
-    (user && user.id) ? getPlayer(user.id).then(setPlayer) : resetPlayer();
-  }, [user]);
-
+  useEffect(() => { (user && user.id) && getPlayer(user.id) }, [user]);
   useEffect(() => { onPlayerChange(player) }, [player]);
 
   return (
@@ -343,19 +343,6 @@ export const PlayerBar = () => {
           <LaptopIcon size={18} />
         </button>
       </div>
-
-      <audio
-        ref={audioRef}
-        onTimeUpdate={() => {
-          if (audio) {
-            setProgress(audio.currentTime);
-            updatePlayer({ progress: audio.currentTime });
-          }
-        }}
-        onLoadedMetadata={() => audio && setDuration(audio.duration)}
-        onEnded={next} // 🔥 autoplay siguiente
-        crossOrigin="anonymous"
-      />
     </footer>
   )
 }

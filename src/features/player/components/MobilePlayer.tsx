@@ -13,13 +13,11 @@ import useAuth from "../../auth/hooks/useAuth";
 const MobilePlayer = () => {
   const { user } = useAuth();
   const {
-    audioRef, player,
-    currentPlaylist, currentSong, progress, duration, isPlaying, isRepeat, isShuffle,
-    seek, next, prev, togglePlay, toggleShuffle, toggleRepeat, setProgress, setDuration,
-    updatePlayer, onPlayerChange, setPlayer, resetPlayer, getPlayer, addToPlayHistory
+    player, currentPlaylist, currentSong, progress, duration, isPlaying, isRepeat, isShuffle,
+    seek, next, prev, togglePlay, toggleShuffle, toggleRepeat, onPlayerChange,
+    getPlayer, addToPlayHistory
   } = usePlayer();
 
-  const audio = audioRef.current;
   const progressRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<HTMLDivElement>(null);
   const progressEl = progressRef.current;
@@ -81,10 +79,7 @@ const MobilePlayer = () => {
     icon: 'text-white/40'
   }
 
-  useEffect(() => {
-    (user && user.id) ? getPlayer(user.id).then(setPlayer) : resetPlayer();
-  }, [user]);
-
+  useEffect(() => { (user && user.id) && getPlayer(user.id) }, [user]);
   useEffect(() => { player && onPlayerChange(player) }, [player]);
 
   return (
@@ -352,19 +347,6 @@ const MobilePlayer = () => {
             </button>
           </footer>
         </div>
-
-        <audio
-          ref={audioRef}
-          onTimeUpdate={() => {
-            if (audio) {
-              setProgress(audio.currentTime);
-              updatePlayer({ progress: audio.currentTime });
-            }
-          }}
-          onLoadedMetadata={() => audio && setDuration(audio.duration)}
-          onEnded={next} // 🔥 autoplay siguiente
-          crossOrigin="anonymous"
-        />
       </div>
 
       <MobileQueue

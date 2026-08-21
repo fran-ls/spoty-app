@@ -8,6 +8,7 @@ import songService from '../../song/services/song.service';
 import playerService from '../../player/services/player.service';
 import { paginationMeta } from '../../../shared/data/search.data';
 import playHistoryService from '../services/playHistory.service';
+import { updateLocalPlayer, type LocalPlayer } from '../../../shared/utils/localPlayer';
 
 export type ViewType = 'home' | 'search' | 'library' | 'playlist' | 'create-playlist' | 'songs';
 
@@ -30,6 +31,7 @@ interface PlayerContextType {
   player: Player | null;
   playingTracks: Song[];
   isPlayer: boolean;
+  localPlayer: LocalPlayer | null;
   next: () => void;
   prev: () => void;
   seek: (time: number) => void;
@@ -61,6 +63,7 @@ interface PlayerContextType {
   setIsShuffle: React.Dispatch<React.SetStateAction<boolean>>;
   setPlayingTracks: React.Dispatch<React.SetStateAction<Song[]>>;
   setIsPlayer: React.Dispatch<React.SetStateAction<boolean>>;
+  setLocalPlayer: React.Dispatch<React.SetStateAction<LocalPlayer | null>>;
 }
 
 export const PlayerContext = createContext<PlayerContextType>({
@@ -84,6 +87,7 @@ export const PlayerContext = createContext<PlayerContextType>({
   queueMeta: paginationMeta,
   currentPlaylist: null,
   playingTracks: [],
+  localPlayer: null,
   play: () => { },
   next: () => { },
   prev: () => { },
@@ -114,7 +118,8 @@ export const PlayerContext = createContext<PlayerContextType>({
   setPlayingTracks: () => { },
   shuffleTracks: () => { },
   setIsPlayer: () => { },
-  addToPlayHistory: () => { }
+  addToPlayHistory: () => { },
+  setLocalPlayer: () => { }
 });
 
 export const PlayerProvider = ({ children }: any) => {
@@ -141,6 +146,12 @@ export const PlayerProvider = ({ children }: any) => {
   const [player, setPlayer] = useState<Player | null>(null);
   const [isRepeat, setIsRepeat] = useState(false);
   const [isShuffle, setIsShuffle] = useState(false);
+  const [localPlayer, setLocalPlayer] = useState<LocalPlayer | null>({
+    shuffle: false,
+    repeat: false,
+    progress: 0,
+    volume: 100
+  });
 
   const playQueueSong = (track: Song, index: number) => {
     if (!audio) return;
@@ -403,6 +414,7 @@ export const PlayerProvider = ({ children }: any) => {
         currentPlaylist, setCurrentPlaylist,
         playingTracks, setPlayingTracks,
         isPlayer, setIsPlayer,
+        localPlayer, setLocalPlayer,
         play, togglePlay,
         next, prev,
         seek, volumeSeek,
@@ -419,6 +431,18 @@ export const PlayerProvider = ({ children }: any) => {
       }}
     >
       {children}
+      <audio
+        ref={audioRef}
+        onTimeUpdate={() => {
+          if (audio) {
+            setProgress(audio.currentTime);
+            updateLocalPlayer({ progress: audio.currentTime }, localPlayer!);
+          }
+        }}
+        onLoadedMetadata={() => audio && setDuration(audio.duration)}
+        onEnded={next} // 🔥 autoplay siguiente
+        crossOrigin="anonymous"
+      />
     </PlayerContext.Provider>
   )
 }
