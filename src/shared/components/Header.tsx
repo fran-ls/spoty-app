@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Bell, Users, User, Search, Sparkles, XIcon, GlobeIcon, CircleUserRoundIcon, SettingsIcon, LaptopMinimalIcon, LogOutIcon, UploadIcon, MusicIcon, DownloadIcon, LibraryIcon, Headphones } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Bell, Users, Search, Sparkles, XIcon, GlobeIcon, CircleUserRoundIcon, SettingsIcon, LaptopMinimalIcon, LogOutIcon, UploadIcon, MusicIcon, DownloadIcon, LibraryIcon, Headphones } from 'lucide-react';
 import useAuth from '../../features/auth/hooks/useAuth';
 import { routes } from '../utils/routes';
 import { getDeviceType } from '../utils/getDeviceType';
@@ -46,7 +46,7 @@ export const Header: React.FC<HeaderProps> = ({ onExplorePremiumClick }) => {
 
   return (
     <header
-      className="flex justify-between items-center px-4 py-2 w-full h-16 bg-black transition-all duration-300"
+      className="flex justify-between items-center pl-4 pr-3 py-2 w-full h-16 bg-black transition-all duration-300"
       id="spotify-header"
     >
       <div className="flex items-center gap-4 max-w-140 md:w-[60%] w-[80%]">
@@ -134,7 +134,11 @@ export const Header: React.FC<HeaderProps> = ({ onExplorePremiumClick }) => {
               onClick={() => setShowUserDropdown(!showUserDropdown)}
               className="text-[#adaaaa] hover:text-white hover:bg-[#181717] rounded-full p-1.5 transition-all flex items-center justify-center cursor-pointer border border-[#adaaaa]/10 bg-black/20"
             >
-              <User size={20} className="text-white" />
+              <div className="w-8 h-8 min-w-8 bg-primary rounded-full relative">
+                <span className="text-[15px] text-black font-bold absolute top-1/2 left-1/2 -translate-1/2 block">
+                  {user?.username[0].toUpperCase()}
+                </span>
+              </div>
             </button>
 
             {showUserDropdown && (
