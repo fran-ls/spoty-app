@@ -6,6 +6,7 @@ export const routes = {
   playlists: '/playlists',
   newPlaylist: '/playlists/new',
   songs: '/songs',
+  recents: '/recents',
   upload: '/upload',
   YTDrop: {
     download: '/download',

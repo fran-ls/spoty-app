@@ -1,9 +1,20 @@
-import type { HistoryPlaylist, HistorySong, PlayHistory, PlayHistoryDTO, PlayHistoryFilters } from "../playHistory.types";
+import type { HistoryPlaylist, HistorySong, PlayHistory, PlayHistoryDTO, PlayHistoryFilters, THistoryRes } from "../playHistory.types";
+import type { SearchResponse } from "../../../shared/types/common.types";
 import { api, apiFetch } from "../../../shared/utils/api";
 import { tokenService } from "../../auth/services/token.service";
-import type { SearchResponse } from "../../../shared/types/common.types";
 
 class PlayHistoryService {
+  async searchHistory(userId: string, filters?: PlayHistoryFilters) {
+    return await apiFetch<SearchResponse<PlayHistory[]>>(() => (
+      api.get(`/play-history/${userId}/search`, {
+        params: filters,
+        headers: {
+          'Authorization': `Bearer ${tokenService.getToken()}`
+        }
+      })
+    ))
+  }
+
   async getLastPlaylistsPlayed(userId: string, filters?: PlayHistoryFilters) {
     return await apiFetch<HistoryPlaylist[]>(() => (
       api.get(`/play-history/${userId}/last-playlists`, {
@@ -16,7 +27,7 @@ class PlayHistoryService {
   }
 
   async getHistory(userId: string, filters?: PlayHistoryFilters) {
-    return await apiFetch<SearchResponse<PlayHistory[]>>(() => (
+    return await apiFetch<THistoryRes>(() => (
       api.get(`/play-history/${userId}`, {
         params: filters,
         headers: {

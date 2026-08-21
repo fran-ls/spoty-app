@@ -1,4 +1,4 @@
-import type { PaginationQuery } from "../../shared/types/common.types";
+import type { PaginationMeta, PaginationQuery } from "../../shared/types/common.types";
 import type { User } from "../auth/auth.types";
 import type { Playlist, PlaylistCover } from "../playlist/playlist.types";
 import type { Song } from "../song/song.types";
@@ -37,3 +37,17 @@ export type HistoryPlaylist = Omit<PlayHistory, 'songId' | 'song'> & {
 export type HistorySong = Omit<PlayHistory, 'playlistId'>;
 
 export type PlayHistoryFilters = Partial<PlayHistory> & PaginationQuery;
+
+
+export type THistoryRes = {
+  items: THistory;
+  meta: PaginationMeta;
+}
+
+export type THistory = Record<string, THistoryItem>;
+
+export type THistoryItem = {
+  date: string;
+  createdAt: any;
+  items: PlayHistory[];
+}
