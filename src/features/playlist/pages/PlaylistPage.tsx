@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { CircleMinusIcon, EllipsisIcon, GlobeIcon, HeartIcon, ListIcon, ListPlusIcon, LockIcon, Music2Icon, MusicIcon, PaletteIcon, PauseIcon, PenIcon, PlayIcon, PlusIcon, SearchIcon, Share2Icon, ShareIcon, XIcon } from 'lucide-react';
 import { Toaster as SonnerToaster, toast } from 'sonner';
@@ -17,6 +17,7 @@ import TrackModal from '../../song/components/TrackModal';
 import useLibrary from '../../library/hooks/useLibrary';
 import useAuth from '../../auth/hooks/useAuth';
 import PlaylistCoverImgs from '../components/PlaylistCoverImgs';
+import { convertColor } from '../utils/convertColor';
 
 const PlaylistPage = () => {
   const { playlistId } = useParams();
@@ -44,12 +45,13 @@ const PlaylistPage = () => {
 
   const cover = form.fileUrl || form.cover;
   const username = playlist?.user?.username || 'Username';
-  const isPlaylistOwner = user && user.id === playlist?.user?.id;
   const isCoverImgs = playlist && playlist.coverImages && playlist.coverImages.length > 3;
   const { trackCountText, duration } = trackMeta;
 
   const [coverSize, setCoverSize] = useState<Record<string, string | number>>({});
   const [titleSize, setTitleSize] = useState('16px');
+
+  const isPlaylistOwner = useMemo(() => (user && user.id === playlist?.user?.id), [user, playlist]);
 
   const onRemoveSongFromPlaylist = async (id: string) => {
     if (!id) return;
@@ -134,12 +136,18 @@ const PlaylistPage = () => {
 
   useEffect(() => { handleResize() }, [libraryStatus.collapsed, isQueue]);
 
+  const colors = useMemo(() => ({
+    bg: bgColor, // #0070E0FF, #0009, #535353
+    base: gradientColor, // #00218FFF, #131313
+    base70: convertColor(gradientColor, 'hsl', 70) // rgba(0, 33, 143, 0.7)
+  }), [bgColor, gradientColor, playlist]);
+
   return (
     <div className="min-h-full text-white select-none relative">
       <div className="animate-fade-in relative">
         <section
           style={{
-            background: `linear-gradient(to bottom, ${bgColor} 0%, ${gradientColor} 100%)`
+            background: `linear-gradient(in oklch to bottom, ${colors.bg} 0%, ${colors.base} 100%)`
           }}
           className="min-[500px]:flex-row min-[500px]:pb-6 pb-3 p-6 flex-col flex items-center gap-x-6 overflow-auto hide-scrollbar max-[500px]:relative"
           ref={playlistWrapRef}
@@ -152,7 +160,7 @@ const PlaylistPage = () => {
               maxWidth: '232px',
               maxHeight: '232px'
             }}
-            className="min-[925px]:max-w-58 min-[925px]:max-h-58 min-w-40 min-h-40 w-[25vw] h-[25vw] min-[500px]:rounded bg-[#262626] overflow-hidden relative transition-all duration-100"
+            className="min-[925px]:max-w-58 min-[925px]:max-h-58 min-w-40 min-h-40 w-[25vw] h-[25vw] min-[500px]:rounded bg-[#262626] overflow-hidden relative transition-all duration-100 shadow-[0_4px_60px_#00000080]"
           >
             <SmartImage
               wrapClassName="w-full h-full"
@@ -281,7 +289,7 @@ const PlaylistPage = () => {
         {/* MOBILE */}
         <div
           style={{
-            background: `linear-gradient(to bottom, ${gradientColor} 0%, #131313 100%)`
+            background: `linear-gradient(to bottom, ${colors.base} 0%, #131313 100%)`
           }}
           className="min-[500px]:hidden w-full px-6 pb-5"
         >
@@ -394,9 +402,10 @@ const PlaylistPage = () => {
         {/* DESKTOP */}
         <div
           style={{
-            backgroundImage: `linear-gradient(in oklch to bottom, color-mix(in srgb, ${gradientColor} 70%, #131313), #131313 100%)`,
+            backgroundImage: `linear-gradient(in oklch to bottom, ${colors.base70}, transparent), none`
+            // backgroundImage: `linear-gradient(in oklch to bottom, color-mix(in srgb, ${bgColor} 70%, transparent), transparent), none`
           }}
-          className="min-[500px]:block hidden absolute left-0 h-36 w-full"
+          className="min-[500px]:block hidden absolute left-0 h-43.25 w-full"
         />
 
         <div className="min-[500px]:flex hidden py-5 px-6 mb-2 text-sm text-[#adaaaa] items-center justify-between relative">
@@ -504,17 +513,18 @@ const PlaylistPage = () => {
           </div>
         </div>
 
-        {(!isSongSearch && !playlistSongs.length && isPlaylistOwner) &&
+        {(!isSongSearch && !playlistSongs.length && isPlaylistOwner) && (
           <div className="text-white ml-auto flex-1 flex">
             <button
               onClick={() => setIsSongSearch(true)}
-              className="font-bold py-1 px-2 my-5 ml-auto mr-6 text-white text-xs rounded-full"
+              className="z-2 font-bold py-1 px-2 my-5 ml-auto mr-6 text-white text-xs rounded-full"
               type="button"
+              disabled={false}
             >
               Buscar más
             </button>
           </div>
-        }
+        )}
 
         {(playlistSongs.length > 0 && !isSongSearch) && (
           <section className="sm:px-5 p-1 animate-fade-in z-50">
@@ -537,7 +547,7 @@ const PlaylistPage = () => {
               }}
             />
 
-            {(playlistSongs.length && isPlaylistOwner) && (
+            {isPlaylistOwner && (
               <div className="text-white ml-auto flex-1 flex">
                 <button
                   onClick={() => setIsSongSearch(true)}
@@ -552,12 +562,7 @@ const PlaylistPage = () => {
         )}
 
         {(isSongSearch && isPlaylistOwner) && (
-          <section
-            className="bg-[#131313] min-h-[75vh] sm:p-6 px-3 pb-6 pt-0 space-y-6 relative"
-            style={{
-              // background: `linear-gradient(to bottom, ${gradientColor} 0%, #131313 100%)`,
-            }}
-          >
+          <section className="min-h-[75vh] sm:p-6 px-3 pb-6 pt-0 space-y-6 relative">
             <div className="h-px bg-white/10" />
 
             <div className="mb-8 relative animate-fade-in">
@@ -621,24 +626,24 @@ const PlaylistPage = () => {
             />
           </section>
         )}
+      </div>
 
-        {isBackground &&
-          <BackgroundColor
-            bgColor={bgColor}
-            gradientColor={gradientColor}
-            isBackground={isBackground}
-            setBgColor={setBgColor}
-            setGradientColor={setGradientColor}
-            onClose={() => setIsBackground(false)}
-            onSave={async () => {
-              const data = await updatePlaylist(playlistId!, {
-                ...form, bgColor, gradientColor
-              });
-              if (data?.id) setIsBackground(false);
-            }}
-          />
-        }
-      </div >
+      {isBackground && (
+        <BackgroundColor
+          bgColor={bgColor}
+          gradientColor={gradientColor}
+          isBackground={isBackground}
+          setBgColor={setBgColor}
+          setGradientColor={setGradientColor}
+          onClose={() => setIsBackground(false)}
+          onSave={async () => {
+            const data = await updatePlaylist(playlistId!, {
+              ...form, bgColor, gradientColor
+            });
+            if (data?.id) setIsBackground(false);
+          }}
+        />
+      )}
 
       {isOpenAction &&
         <div

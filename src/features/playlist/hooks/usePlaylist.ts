@@ -15,8 +15,8 @@ import libraryService from "../../library/services/library.service";
 const usePlaylist = () => {
   const { setPlaylists: setLibPlaylists } = useLibrary();
 
-  const [gradientColor, setGradientColor] = useState('#121212');
-  const [bgColor, setBgColor] = useState('#3a3a3a');
+  const [gradientColor, setGradientColor] = useState('#3a3a3a');
+  const [bgColor, setBgColor] = useState('#535353');
   const [isPublic, setIsPublic] = useState(false);
   const [form, setForm] = useState<PlaylistDTO>({
     name: '',

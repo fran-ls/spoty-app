@@ -56,7 +56,7 @@ const PlaylistSongs = (props: PlaylistSongsProps) => {
         </span>
       </div>
 
-      <div className="pb-3 bg-[#131313] min-w-fit">
+      <div className="pb-3 bg--[#131313] min-w-fit">
         {items.map((item, i) => {
           const track = item.song!;
           const isCurrentPlayingNow = currentSong?.id === track.id;

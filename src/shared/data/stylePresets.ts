@@ -6,5 +6,6 @@ export const STYLE_PRESETS = [
   { name: 'Gold Luxury', bgColor: '#d4af37', gradientColor: '#1c1704' },
   { name: 'Cyberpunk Neon', bgColor: '#7928ca', gradientColor: '#0b0c10' },
   { name: 'Arctic Ice', bgColor: '#2575fc', gradientColor: '#12192a' },
-  { name: 'Obsidian Matte', bgColor: '#3b3b3b', gradientColor: '#111111' }
+  // { name: 'Obsidian Matte', bgColor: '#3b3b3b', gradientColor: '#111111' }
+  { name: 'Obsidian Matte', bgColor: '#535353', gradientColor: '#3b3b3b' }
 ];
