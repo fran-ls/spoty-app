@@ -1,7 +1,8 @@
 import { useMemo, useRef, useState } from "react";
-import { MusicIcon, RotateCcwIcon, SearchIcon, UserIcon, XIcon } from "lucide-react";
+import { MusicIcon, RefreshCwIcon, RotateCcwIcon, SearchIcon, UserIcon, XIcon } from "lucide-react";
 import type { Artist, Playlist } from "../../types/upload.types";
 import type { Playlist as SongfyPlaylist } from "../../../features/playlist/playlist.types";
+import type { SearchMeta } from "../../../shared/types/common.types";
 import { useAppCtx } from "../../../shared/context/AppContext";
 import { config } from "../../../shared/data/config.data";
 import useArtist from "../../../features/artist/hooks/useArtist";
@@ -9,7 +10,8 @@ import SmartImage from "../../../shared/components/SmartImage";
 import artistService from "../../../features/artist/services/artist.service";
 import SearchWidget from "./SearchWidget";
 import playlistService from "../../../features/playlist/services/playlist.service";
-import type { SearchMeta } from "../../../shared/types/common.types";
+import { genColors } from "../../../features/playlist/utils/genColors";
+import PlaylistPreview from "./PlaylistPreview";
 
 interface UploadSidebarProps {
   artist: Artist;
@@ -43,17 +45,14 @@ const UploadSidebar = ({ artist, playlist, setArtist, setPlaylist, onSave }: Upl
   const { isSettingsModal, setIsSettingsModal } = useAppCtx();
 
   const colors = {
-    bg: '#3b3b3b',
-    gradient: '#111111'
+    bg: '#535353',
+    base: '#3b3b3b'
   }
 
-  const stops = useMemo(() => ([
-    { color: playlist.bgColor, pos: 50 },
-    { color: playlist.gradientColor, pos: 100 }
-  ]), [playlist]);
-  const sorted = [...stops].sort((a, b) => a.pos - b.pos);
-  const gradientDirection = 'to bottom';
-  const gradientStops = sorted.map((s) => `${s.color} ${s.pos}%`).join(", ");
+  const gradient = useMemo(() => ({
+    bg: playlist.bgColor || colors.bg,
+    base: playlist.gradientColor || colors.base
+  }), [playlist]);
 
   function loadImage(file: File | null | undefined, cb: (url: string) => void) {
     if (!file) return;
@@ -289,8 +288,8 @@ const UploadSidebar = ({ artist, playlist, setArtist, setPlaylist, onSave }: Upl
                 onClick={() => setPlaylist({
                   name: '',
                   cover: '',
-                  bgColor: '#3b3b3b',
-                  gradientColor: '#111111',
+                  bgColor: colors.bg,
+                  gradientColor: colors.base,
                   file: null,
                   coverUrl: ''
                 })}
@@ -401,12 +400,33 @@ const UploadSidebar = ({ artist, playlist, setArtist, setPlaylist, onSave }: Upl
 
               <div className="field-group">
                 <div className="flex items-center justify-between gap-2">
-                  <label className="field-label">Color de Fondo</label>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        const { bg, base } = genColors('hex');
+                        setPlaylist({
+                          ...playlist,
+                          bgColor: bg,
+                          gradientColor: base
+                        });
+                      }}
+                      style={{
+                        padding: '2px',
+                        color: 'var(--muted)'
+                      }}
+                      className="cursor-pointer"
+                      type="button"
+                    >
+                      <RefreshCwIcon size={16} />
+                    </button>
+                    <label className="field-label">Color de Fondo</label>
+                  </div>
+
                   <button
                     onClick={() => setPlaylist({
                       ...playlist,
                       bgColor: colors.bg,
-                      gradientColor: colors.gradient
+                      gradientColor: colors.base
                     })}
                     style={{
                       padding: '2px',
@@ -425,19 +445,19 @@ const UploadSidebar = ({ artist, playlist, setArtist, setPlaylist, onSave }: Upl
                       className="color-pick-wrap"
                     >
                       <div
-                        style={{ background: playlist.bgColor }}
+                        style={{ background: gradient.bg }}
                         className="color-swatch"
                         id="swatch1"
                       />
                       <span className="color-val" id="cv1">
-                        {playlist.bgColor}
+                        {gradient.bg}
                       </span>
                       <input
                         onChange={(e) => setPlaylist({
                           ...playlist,
                           bgColor: e.target.value
                         })}
-                        value={playlist.bgColor}
+                        value={gradient.bg}
                         ref={color1InputRef}
                         id="cp1"
                         type="color"
@@ -453,17 +473,17 @@ const UploadSidebar = ({ artist, playlist, setArtist, setPlaylist, onSave }: Upl
                       <div
                         className="color-swatch"
                         id="swatch2"
-                        style={{ background: playlist.gradientColor }}
+                        style={{ background: gradient.base }}
                       />
                       <span className="color-val" id="cv2">
-                        {playlist.gradientColor}
+                        {gradient.base}
                       </span>
                       <input
                         onChange={(e) => setPlaylist({
                           ...playlist,
                           gradientColor: e.target.value
                         })}
-                        value={playlist.gradientColor}
+                        value={gradient.base}
                         ref={color2InputRef}
                         type="color"
                         id="cp2"
@@ -471,14 +491,12 @@ const UploadSidebar = ({ artist, playlist, setArtist, setPlaylist, onSave }: Upl
                     </div>
                   </div>
                 </div>
-                <div
-                  className="gradient-preview"
-                  style={{
-                    background: `linear-gradient(${gradientDirection}, ${gradientStops})`,
-                    marginTop: '10px'
-                  }}
-                  id="gradient-preview"
-                />
+
+                <PlaylistPreview playlist={{
+                  ...playlist,
+                  bgColor: gradient.bg,
+                  gradientColor: gradient.base
+                }} />
               </div>
             </div>
           </div>

@@ -74,8 +74,8 @@ const DownloadPage = () => {
   const [playlist, setPlaylist] = useState<Playlist>({
     name: '',
     cover: '',
-    bgColor: '#3b3b3b',
-    gradientColor: '#111111',
+    bgColor: '',
+    gradientColor: '',
     file: null,
     coverUrl: ''
   });
