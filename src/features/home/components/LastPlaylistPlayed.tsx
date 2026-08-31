@@ -10,6 +10,7 @@ import SmartImage from "../../../shared/components/SmartImage";
 import { routes } from "../../../shared/utils/routes";
 import usePlayer from "../../player/hooks/usePlayer";
 import { getFmtDate } from "../../../shared/utils/getFormatDate";
+import PlaylistCoverImgs from "../../playlist/components/PlaylistCoverImgs";
 
 const LastPlaylistPlayed = ({ bannerRef, setPlaylist }: {
   bannerRef: React.RefObject<HTMLDivElement | null>;
@@ -83,25 +84,13 @@ const LastPlaylistPlayed = ({ bannerRef, setPlaylist }: {
                   }}
                 />
 
-                {isCoverImgs && coverImages.map((img, i) => {
-                  const className = i === 0
-                    ? 'top-0 left-0' : i === 1
-                      ? 'top-0 right-0' : i === 3
-                        ? 'bottom-0 right-0' : 'bottom-0 left-0';
-
-                  return (
-                    <img
-                      className={`${className} absolute w-1/2 h-1/2 object-cover`}
-                      crossOrigin="anonymous"
-                      src={img.url}
-                      alt="cover"
-                      key={img.id}
-                    />
-                  )
-                })}
+                {isCoverImgs && <PlaylistCoverImgs images={coverImages} />}
               </div>
 
-              <h3 className="px-5 flex-1 font-headline font-extrabold text-[#ffffff] text-sm truncate google-sans-flex-font">
+              <h3
+                className="px-5 flex-1 font-headline font-extrabold text-[#ffffff] text-sm truncate google-sans-flex-font"
+                title={playlist.name}
+              >
                 {playlist.name}
               </h3>
               <button
