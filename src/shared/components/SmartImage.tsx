@@ -49,7 +49,7 @@ const SmartImage = (props: SmartImageProps) => {
         ...wrapStyles,
         ...values.imgWrap.style
       }}
-      className={`${cn("w-12 h-12 bg-[#262626] relative overflow-hidden hover:badge:bg-blue-500", wrapClassName, values.imgWrap.className)} img-wrap`}
+      className={`${cn("w-12 h-12 bg-[#262626] text-[#adaaaa] relative overflow-hidden", wrapClassName, values.imgWrap.className)} img-wrap`}
     >
       {url && (
         <img
