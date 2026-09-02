@@ -171,8 +171,8 @@ export default function GradientEditor(props: GradientEditorProps) {
 
   return (
     <DraggableWidget
-      isBackground={isBackground}
-      size={size}
+      isOpen={isBackground}
+      style={size}
     >
       <div
         className="bg-[#282828] min-w-full min-h-full h-full z-100 flex flex-col gap-4 border-white/5 p-6 rounded"

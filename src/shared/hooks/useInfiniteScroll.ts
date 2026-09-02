@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 
 export const useInfiniteScroll = (callback: () => void) => {
-  const loaderRef = useRef<any | null>(null);
+  const loaderRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => {

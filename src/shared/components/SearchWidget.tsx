@@ -64,7 +64,7 @@ const SearchWidget = (props: SearchWidgetProps) => {
         boxShadow: '0px 0px 5px 2px #0e0e0e',
         backgroundColor: bgColor
       }}
-      className={`${open ? 'translate-y-0' : 'translate-y-[100vh]'} max-h-[calc(100vh-73px-56px)] h-100 p-5 text-gray-400 overflow-hidden w-full z-50 transition duration-150 absolute bottom-0 right-0`}
+      className={`pb-10 ${open ? 'translate-y-0' : 'translate-y-[100vh]'} max-h-[calc(100vh-73px-56px)] h-100 p-5 text-gray-400 overflow-hidden w-full z-50 transition duration-150 absolute bottom-0 right-0`}
     >
       <div className="animate-fade-in">
         <div className="flex items-center justify-between mb-2">
@@ -144,18 +144,20 @@ const SearchWidget = (props: SearchWidgetProps) => {
           )
         })}
 
-        {isLoadMore &&
-          <li
-            className="flex items-center justify-center overflow-hidden py-1"
-            ref={loaderRef}
-          >
-            <Loader
-              className="border-transparent border-t-slate-200"
-              size={20}
-              stroke={2}
-            />
+        {isLoadMore && (
+          <li className="flex items-center justify-center overflow-hidden py-1">
+            <div
+              className="flex-1 flex items-center justify-center"
+              ref={loaderRef}
+            >
+              <Loader
+                className="border-transparent border-t-slate-200"
+                size={20}
+                stroke={2}
+              />
+            </div>
           </li>
-        }
+        )}
       </ul>
     </div>
   )

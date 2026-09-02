@@ -76,3 +76,10 @@ export interface PlaylistSongInclude {
   playlist?: IncludeArgs;
   song?: IncludeArgs;
 }
+
+
+export type PlaylistColors = {
+  bg: string;
+  base: string;
+  base70: string;
+}

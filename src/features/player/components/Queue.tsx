@@ -177,15 +177,17 @@ const Queue = () => {
           })}
 
           {hasMore && (
-            <li
-              className="flex items-center justify-center px-6 py-1 overflow-hidden"
-              ref={loaderRef}
-            >
-              <Loader
-                className="border-transparent border-t-slate-200"
-                size={20}
-                stroke={2}
-              />
+            <li className="flex items-center justify-center py-1 overflow-hidden">
+              <div
+                className="flex-1 flex items-center justify-center"
+                ref={loaderRef}
+              >
+                <Loader
+                  className="border-transparent border-t-slate-200"
+                  size={20}
+                  stroke={2}
+                />
+              </div>
             </li>
           )}
         </ul>

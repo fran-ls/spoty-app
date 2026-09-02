@@ -36,9 +36,9 @@ interface LibraryProps {
 }
 
 export const Library = (props: LibraryProps) => {
-  const { user, isAdmin } = useAuth();
+  const { user } = useAuth();
   const {
-    library, layout, orderBy, systemPlaylists, libraryStatus, playlists, playlistMeta, isLoading,
+    library, layout, orderBy, libraryStatus, playlists, playlistMeta, isLoading,
     playlistVerticalScroll, playlistScrollTop, newPlaylist, onLayoutChange, onSortBy, onSizeChange,
     setLibraryStatus, getPlaylists, getLibrary, setPlaylistVerticalScroll, setPlaylistScrollTop
   } = useLibrary();
@@ -395,7 +395,7 @@ export const Library = (props: LibraryProps) => {
             className={`${isCollapsed ? 'pl-0 pb-5' : 'pl-2 pb-2'} w-full absolute top-0 left-0 ${(layoutKind.grid && !isCollapsed) ? 'grid' : ''} ${!isExpanded ? 'grid-cols-2' : `${grid.ul.s} ${grid.ul.md} ${grid.ul.lg} ${grid.ul['2xl']}`} ${(isExpanded && !layoutKind.grid) ? 'sm:mt-10' : ''}`}
             ref={ulRef}
           >
-            {isAdmin && (
+            {/* {isAdmin && (
               <Playlists
                 grid={grid}
                 layoutKind={layoutKind}
@@ -404,7 +404,7 @@ export const Library = (props: LibraryProps) => {
                 hoverId={hoverId}
                 setHoverId={setHoverId}
               />
-            )}
+            )} */}
 
             <Playlists
               grid={grid}
@@ -415,18 +415,20 @@ export const Library = (props: LibraryProps) => {
               setHoverId={setHoverId}
             />
 
-            {(!isLoading && playlistMeta.hasNextPage) &&
-              <li
-                className="flex items-center justify-center overflow-hidden py-1"
-                ref={loaderRef}
-              >
-                <Loader
-                  className="border-transparent border-t-slate-200"
-                  size={20}
-                  stroke={2}
-                />
+            {(!isLoading && playlistMeta.hasNextPage) && (
+              <li className="flex items-center justify-center overflow-hidden py-1">
+                <div
+                  className="flex-1 flex items-center justify-center"
+                  ref={loaderRef}
+                >
+                  <Loader
+                    className="border-transparent border-t-slate-200"
+                    size={20}
+                    stroke={2}
+                  />
+                </div>
               </li>
-            }
+            )}
           </ul>
         </nav>
       </div>

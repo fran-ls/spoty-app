@@ -1,24 +1,27 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type HTMLAttributes } from "react";
 import type { DragOrigin, GradientEditorPos } from "../../features/playlist/gradientEditor.types";
 
-interface DraggableWidgetProps {
+interface DraggableWidgetProps extends HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
-  isBackground: boolean;
-  size?: {
-    width: string | number,
-    height: string | number
-  }
+  isOpen: boolean;
 }
 
-function DraggableWidget({ children, isBackground, size }: DraggableWidgetProps) {
+function DraggableWidget({ children, isOpen, style, draggable = true, ...props }: DraggableWidgetProps) {
   const [pos, setPos] = useState<GradientEditorPos>({ x: 0, y: 0 });
   const [dragging, setDragging] = useState<boolean>(false);
+  const [dragged, setDragged] = useState<boolean>(false);
+
   const dragStart = useRef<DragOrigin | null>(null);
 
   const onMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    if ((e.target as HTMLElement).closest("input, button, select")) return;
+    if ((e.target as HTMLElement).closest("input, button, select") || !draggable) {
+      return;
+    }
+
     e.preventDefault();
     setDragging(true);
+    setDragged(true);
+
     dragStart.current = {
       mx: e.clientX,
       my: e.clientY,
@@ -71,7 +74,10 @@ function DraggableWidget({ children, isBackground, size }: DraggableWidgetProps)
   }, [dragging]);
 
   const onTouchStart = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
-    if ((e.target as HTMLElement).closest("input, button, select")) return;
+    if ((e.target as HTMLElement).closest("input, button, select") || !draggable) {
+      return;
+    }
+
     const t = e.touches[0];
     setDragging(true);
     dragStart.current = {
@@ -82,23 +88,32 @@ function DraggableWidget({ children, isBackground, size }: DraggableWidgetProps)
     }
   }, [pos]);
 
+  useEffect(() => {
+    return () => {
+      setPos({ x: 0, y: 0 });
+    }
+  }, []);
+
   return (
     <div
+      {...props}
       onMouseDown={onMouseDown}
       onTouchStart={onTouchStart}
       style={{
-        transform: `translate(${pos.x}px, ${pos.y}px)`,
-        cursor: dragging ? "grabbing" : "grab",
+        // display: isOpen ? "block" : "none",
+        transform: !isOpen ? "translate(0%, 100%)" : dragging ? `translate(${pos.x}px, ${pos.y}px)` : dragged ? `translate(${pos.x}px, ${pos.y}px)` : "translate(0%, 0%)",
+        cursor: dragging ? "grabbing" : draggable ? "grab" : "",
         userSelect: "none",
-        transition: dragging ? "none" : "width 0.2s, height 0.2s, box-shadow 0.2s",
+        transition: dragging ? "none" : dragged && !isOpen ? "none" : "all 0.2s", //"width 0.2s, height 0.2s, box-shadow 0.2s",
         position: "absolute",
-        top: 20,
-        right: 20,
+        bottom: 0,
+        right: 0,
         zIndex: dragging ? 100 : 1,
         borderRadius: '4px',
         overflow: 'hidden',
-        opacity: isBackground ? 1 : 0,
-        ...(size && size)
+        opacity: isOpen ? 1 : 0,
+        width: '100%',
+        ...(style && style)
       }}
     >
       {children}

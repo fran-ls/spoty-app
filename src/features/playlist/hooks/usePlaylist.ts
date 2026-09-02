@@ -2,12 +2,10 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { Playlist, PlaylistDTO, PlaylistInclude, PlaylistSong, PlaylistSongDTO, PlaylistSongInclude } from "../playlist.types";
 import type { PaginationMeta } from "../../../shared/types/common.types";
-import type { Song, TrackFilters, TrackInclude } from "../../song/song.types";
+import type { Song } from "../../song/song.types";
 import playlistService from "../services/playlist.service";
-import songService from "../../song/services/song.service";
 import { routes } from "../../../shared/utils/routes";
 import useAuth from "../../auth/hooks/useAuth";
-import { getTimeParts } from "../../../shared/utils/formatTime";
 import { paginationMeta } from "../../../shared/data/search.data";
 import useLibrary from "../../library/hooks/useLibrary";
 import libraryService from "../../library/services/library.service";
@@ -15,16 +13,13 @@ import libraryService from "../../library/services/library.service";
 const usePlaylist = () => {
   const { setPlaylists: setLibPlaylists } = useLibrary();
 
-  const [gradientColor, setGradientColor] = useState('#3a3a3a');
-  const [bgColor, setBgColor] = useState('#535353');
-  const [isPublic, setIsPublic] = useState(false);
   const [form, setForm] = useState<PlaylistDTO>({
     name: '',
     description: '',
     cover: '',
-    isPublic,
-    gradientColor,
-    bgColor,
+    isPublic: false,
+    gradientColor: '#3a3a3a',
+    bgColor: '#535353',
     userId: '',
     file: null,
     fileUrl: ''
@@ -37,56 +32,13 @@ const usePlaylist = () => {
   const [loadingPlaylistSongs, setLoadingPlaylistSongs] = useState(false);
   const [playlistMeta, setPlaylistMeta] = useState<PaginationMeta>(paginationMeta);
 
-  const [isPlaylistMenu, setIsPlaylistMenu] = useState(false);
-  const [isBackground, setIsBackground] = useState(false);
   const [isOpenAction, setIsOpenAction] = useState(false);
-  const [isRemove, setIsRemove] = useState(false);
-  const [isCoverHover, setIsCoverHover] = useState(false);
-  const [isLayoutMenu, setIsLayoutMenu] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
-
-  const [songSearchQuery, setSongSearchQuery] = useState('');
-  const [isSongSearch, setIsSongSearch] = useState(true);
-  const [searchSongs, setSearchSongs] = useState<Song[]>([]);
-  const [searchMeta, setSearchMeta] = useState<PaginationMeta>(paginationMeta);
-
-  const [trackMeta, setTrackMeta] = useState({
-    trackCountText: '',
-    duration: ''
-  });
 
   const [activeItem, setActiveItem] = useState<PlaylistSong | null>(null);
 
   const { user } = useAuth();
   const navigate = useNavigate();
-
-  const getTrackMeta = (playlist: Playlist) => {
-    const { hours, min, secs } = getTimeParts(playlist.duration || 0);
-    const duration = hours > 0
-      ? `${hours} h ${min > 0 ? `${min} min` : ''}`
-      : `${min > 0 ? `${min} min` : ''} ${secs > 0 ? `${secs} s` : ''}`.trim();
-
-    const manyTracks = playlist.trackCount !== 1;
-
-    const meta = {
-      duration,
-      manyTracks,
-      trackCountText: `${manyTracks ? 'canciones' : 'canción'}${playlist?.trackCount ? ',' : ''}`
-    }
-
-    setTrackMeta(meta);
-    return meta;
-  }
-
-  const onFileChange = (e: React.ChangeEvent<HTMLInputElement, HTMLInputElement>) => {
-    const file = e.target.files?.[0] || null;
-    const fileUrl = form.fileUrl;
-    if (fileUrl) URL.revokeObjectURL(fileUrl);
-    if (file) setForm({
-      ...form, file,
-      fileUrl: URL.createObjectURL(file)
-    });
-  }
 
   const onSetForm = (data: Playlist) => {
     setForm({
@@ -95,10 +47,6 @@ const usePlaylist = () => {
       description: data.description || '',
       cover: data.cover!
     });
-
-    setBgColor(data.bgColor);
-    setGradientColor(data.gradientColor);
-    setIsPublic(data.isPublic);
   }
 
   const getPlaylist = async (playlistId: string, include?: PlaylistInclude) => {
@@ -114,7 +62,6 @@ const usePlaylist = () => {
     if (!r.data) return r.data;
 
     setPlaylist(r.data);
-    getTrackMeta(r.data);
     onSetForm(r.data);
 
     return r.data;
@@ -145,9 +92,7 @@ const usePlaylist = () => {
       ...values,
       name: values.name.trim(),
       description: values.description.trim(),
-      userId: user?.id!,
-      gradientColor,
-      bgColor
+      userId: user?.id!
     });
   }
 
@@ -155,7 +100,7 @@ const usePlaylist = () => {
     if (!playlistId) return null;
 
     return await updatePlaylist(playlistId, {
-      ...form, isPublic: !isPublic
+      ...form, isPublic: !form.isPublic
     });
   }
 
@@ -168,7 +113,6 @@ const usePlaylist = () => {
     setLoadingPlaylistSongs(false);
     if (!data) return data;
 
-    setIsSongSearch(data.items.length === 0);
     setPlaylistMeta(data.meta);
 
     if (filters?.page > 1) {
@@ -178,20 +122,6 @@ const usePlaylist = () => {
     else {
       setPlaylistItems(data.items);
       setPlaylistSongs(data.songs);
-    }
-
-    return data;
-  }
-
-  const searchTracks = async (filters?: TrackFilters | undefined, include?: TrackInclude) => {
-    const { data } = await songService.searchSongs({
-      title: songSearchQuery,
-      ...filters
-    }, include);
-
-    if (data) {
-      setSearchMeta(data.meta);
-      setSearchSongs(data.items);
     }
 
     return data;
@@ -211,12 +141,6 @@ const usePlaylist = () => {
     if (!playlist) return res;
     const newDuration = data.song ? playlist.duration + data.song.duration : playlist.duration;
     const newTrackCount = playlist.trackCount + 1;
-
-    getTrackMeta({
-      ...playlist,
-      trackCount: newTrackCount,
-      duration: newDuration
-    });
 
     setPlaylist({
       ...playlist,
@@ -240,12 +164,6 @@ const usePlaylist = () => {
     const newDuration = data.song ? playlist.duration - data.song.duration : playlist.duration;
     const newTrackCount = playlist.trackCount - 1;
 
-    getTrackMeta({
-      ...playlist,
-      trackCount: newTrackCount,
-      duration: newDuration
-    });
-
     setPlaylist({
       ...playlist,
       trackCount: newTrackCount,
@@ -256,40 +174,23 @@ const usePlaylist = () => {
   }
 
   return {
-    isPlay: playlistSongs.length > 0,
-    trackMeta, setTrackMeta,
     playlist, setPlaylist,
     playlistMeta, setPlaylistMeta,
     playlistSongs, setPlaylistSongs,
     playlistItems, setPlaylistItems,
     playlists, setPlaylists,
-    gradientColor, setGradientColor,
-    bgColor, setBgColor,
-    isPublic, setIsPublic,
     form, setForm,
-    isBackground, setIsBackground,
-    isRemove, setIsRemove,
-    isCoverHover, setIsCoverHover,
-    isLayoutMenu, setIsLayoutMenu,
     isEdit, setIsEdit,
     isOpenAction, setIsOpenAction,
-    songSearchQuery, setSongSearchQuery,
-    isSongSearch, setIsSongSearch,
-    searchSongs, setSearchSongs,
-    searchMeta, setSearchMeta,
     activeItem, setActiveItem,
-    isPlaylistMenu, setIsPlaylistMenu,
     loadingPlaylistSongs, setLoadingPlaylistSongs,
-    onFileChange,
     getPlaylist,
     updatePlaylist,
     newPlaylist,
     onChangeVisibility,
     getPlaylistTracks,
-    searchTracks,
     addSongToPlaylist,
-    removeSongFromPlaylist,
-    getTrackMeta
+    removeSongFromPlaylist
   }
 }
 
