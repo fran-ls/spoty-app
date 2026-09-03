@@ -1,3 +1,9 @@
+export const playlistBg = {
+  name: 'Obsidian Matte',
+  bgColor: '#535353',
+  gradientColor: '#2e2e2e'
+}
+
 export const STYLE_PRESETS = [
   { name: 'Deep Space', bgColor: '#16192b', gradientColor: '#090a10' },
   { name: 'Sunset Fusion', bgColor: '#bf226e', gradientColor: '#300f2e' },
@@ -7,5 +13,6 @@ export const STYLE_PRESETS = [
   { name: 'Cyberpunk Neon', bgColor: '#7928ca', gradientColor: '#0b0c10' },
   { name: 'Arctic Ice', bgColor: '#2575fc', gradientColor: '#12192a' },
   // { name: 'Obsidian Matte', bgColor: '#3b3b3b', gradientColor: '#111111' }
-  { name: 'Obsidian Matte', bgColor: '#535353', gradientColor: '#3b3b3b' }
+  // { name: 'Obsidian Matte', bgColor: '#535353', gradientColor: '#3b3b3b' },
+  playlistBg
 ];

@@ -11,6 +11,7 @@ import { routes } from "../../../shared/utils/routes";
 import useAuth from "../../auth/hooks/useAuth";
 import { getFmtDate } from "../../../shared/utils/getFormatDate";
 import { LibraryContext } from "../context/LibraryContext";
+import { playlistBg } from "../../../shared/data/stylePresets";
 
 const useLibrary = () => {
   const { user, isAdmin } = useAuth();
@@ -127,8 +128,8 @@ const useLibrary = () => {
       description: '',
       cover: '',
       isPublic: false,
-      gradientColor: '',
-      bgColor: '',
+      gradientColor: playlistBg.gradientColor,
+      bgColor: playlistBg.bgColor,
       userId: user?.id,
       file: null
     });

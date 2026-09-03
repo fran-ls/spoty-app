@@ -1,10 +1,15 @@
 import { useState } from "react";
 import type { PlaylistCover as Cover } from "../playlist.types";
 
-const PlaylistCoverImgs = ({ images }: { images: Cover[] }) => {
+interface PlaylistCoverImgsProps {
+  images: Cover[];
+  onError?: (error: boolean) => void;
+}
+
+const PlaylistCoverImgs = ({ images, onError }: PlaylistCoverImgsProps) => {
   const [isError, setIsError] = useState(false);
 
-  if (isError) return null
+  if (isError) return null;
 
   return images.map((img, i) => {
     const className = i === 0
@@ -15,7 +20,10 @@ const PlaylistCoverImgs = ({ images }: { images: Cover[] }) => {
     return (
       <img
         className={`${className} absolute w-1/2 h-1/2 object-cover`}
-        onError={() => setIsError(true)}
+        onError={(e) => {
+          setIsError(true);
+          onError?.(e.isTrusted);
+        }}
         crossOrigin="anonymous"
         referrerPolicy="no-referrer"
         src={img.url}

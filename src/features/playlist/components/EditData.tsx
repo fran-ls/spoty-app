@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { EllipsisIcon, GlobeIcon, InfoIcon, LockIcon, PenIcon, XIcon } from "lucide-react";
-import type { PlaylistDTO } from "../playlist.types";
+import type { Playlist, PlaylistDTO } from "../playlist.types";
 import SmartImage from "../../../shared/components/SmartImage";
+import PlaylistCoverImgs from "./PlaylistCoverImgs";
 
 interface EditDataProps {
   form: PlaylistDTO;
-  isPublic: boolean;
+  playlist: Playlist | null;
   coverInputRef: React.RefObject<HTMLInputElement | null>
   coverImages: { id: string, url: string }[];
   setForm: React.Dispatch<React.SetStateAction<PlaylistDTO>>;
@@ -16,23 +17,57 @@ interface EditDataProps {
 
 const EditData = (props: EditDataProps) => {
   const {
-    isPublic, form, coverInputRef, coverImages,
+    form, playlist, coverInputRef, coverImages,
     setForm, onChangeVisibility, onClose, onSave
   } = props;
 
   const [isInfoMsg, setIsInfoMsg] = useState(false);
-  const [isChange, setIsChange] = useState(false);
   const [isHover, setIsHover] = useState(false);
+  const [isError, setIsError] = useState(false);
+
   const cover = form.fileUrl || form.cover;
+
+  const isChange = useMemo(() => (
+    form.name.trim() !== playlist?.name.trim() ||
+    form.description.trim() !== playlist.description?.trim() ||
+    !!form.file
+  ), [form]);
 
   const onFormChange = (field: keyof PlaylistDTO, value: any) => {
     setForm({ ...form, [field]: value });
-    setIsChange(true);
+  }
+
+  const resetForm = () => {
+    if (form.fileUrl) URL.revokeObjectURL(form.fileUrl);
+
+    setForm({
+      ...form,
+      file: null,
+      fileUrl: '',
+      name: playlist!.name,
+      description: playlist!.description || ''
+    });
+  }
+
+  const onCloseModal = () => {
+    if (isInfoMsg) {
+      onClose();
+      setIsInfoMsg(false);
+      resetForm();
+      return;
+    }
+    if (!isChange) {
+      return onClose();
+    }
+    setIsInfoMsg(true);
   }
 
   return (
     <>
-      <div className="bg-black/60 min-h-screen w-full fixed top-0 left-0 z-999" />
+      <div
+        className="bg-black/60 min-h-screen w-full fixed top-0 left-0 z-999"
+        onClick={onCloseModal}
+      />
 
       <div className="space-y-4 bg-[#212121] p-6 rounded-lg w-full min-[525px]:max-w-131 max-w-100 z-999 fixed top-1/2 left-1/2 -translate-1/2">
         <div className="flex items-center justify-between gap-3">
@@ -40,17 +75,7 @@ const EditData = (props: EditDataProps) => {
             Editar información
           </h1>
           <button
-            onClick={() => {
-              if (isInfoMsg) {
-                onClose();
-                setIsInfoMsg(false);
-                return;
-              }
-              if (!isChange) {
-                return onClose();
-              }
-              setIsInfoMsg(true);
-            }}
+            onClick={onCloseModal}
             className="hover:bg-[#3a3a3a] transition duration-100 p-1.5 rounded-full"
             type="button"
           >
@@ -58,51 +83,39 @@ const EditData = (props: EditDataProps) => {
           </button>
         </div>
 
-        {isInfoMsg && isChange &&
+        {(isInfoMsg && isChange) && (
           <div className="text-xs flex items-center gap-2 bg-blue-600 px-2 py-1.5 rounded">
             <InfoIcon className="rotate-180" size={18} />
             <span>
               Pulsa Guardar para conservar los cambios realizados
             </span>
           </div>
-        }
+        )}
 
         <div className="min-[525px]:flex-row flex-col flex items-center justify-center gap-4">
           <div
             onPointerEnter={() => setIsHover(true)}
             onMouseLeave={() => setIsHover(false)}
-            className="font-medium text-center min-w-45 w-45 h-45 rounded bg-[#282828] overflow-hidden relative"
+            className="shadow-[0_4px_60px_#00000080] font-medium text-center min-w-45 w-45 h-45 rounded bg-[#282828] overflow-hidden relative"
           >
             <SmartImage
-              wrapClassName="w-full h-full"
-              iconClassName="w-1/4 h-1/4"
+              wrapClassName="text-[#7f7f7f] w-full h-full"
+              iconClassName="w-[35%] h-[35%]"
               url={cover}
             />
 
-            {!cover && coverImages.length > 3 && (
-              coverImages.map((d, i) => {
-                const className = i === 0
-                  ? 'top-0 left-0' : i === 1
-                    ? 'top-0 right-0' : i === 3
-                      ? 'bottom-0 left-0' : 'bottom-0 right-0';
-
-                return (
-                  <img
-                    className={`${className} absolute w-1/2 h-1/2 object-cover`}
-                    crossOrigin="anonymous"
-                    src={d.url}
-                    alt=""
-                    key={d.id}
-                  />
-                )
-              })
+            {(!cover && coverImages.length > 3) && (
+              <PlaylistCoverImgs
+                images={coverImages}
+                onError={(ok) => setIsError(ok)}
+              />
             )}
 
             {isHover && (
               <>
                 <button
                   onClick={() => coverInputRef.current?.click()}
-                  className={`${(cover || coverImages.length > 3) ? 'bg-black/50' : 'bg-[#282828]'} hover:text-white w-full h-full flex flex-col items-center gap-1 justify-center absolute top-1/2 left-1/2 -translate-1/2`}
+                  className={`${((cover || coverImages.length > 3) && !isError) ? 'bg-black/50' : form.file ? 'bg-black/50' : 'bg-[#282828]'} hover:text-white w-full h-full flex flex-col items-center gap-1 justify-center absolute top-1/2 left-1/2 -translate-1/2`}
                   type="button"
                 >
                   <PenIcon className="w-[23%] h-[23%]" />
@@ -112,13 +125,7 @@ const EditData = (props: EditDataProps) => {
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    if (form.fileUrl) URL.revokeObjectURL(form.fileUrl);
-
-                    setForm({
-                      ...form,
-                      file: null,
-                      fileUrl: ''
-                    });
+                    resetForm();
                   }}
                   className="hover:text-white bg-black w-7 h-7 rounded-full flex flex-col items-center gap-1 justify-center absolute top-2 right-2"
                   type="button"
@@ -171,12 +178,12 @@ const EditData = (props: EditDataProps) => {
             className="hover:bg-[#3e3e3e] border-[#3e3e3e] border rounded-full transition-all duration-100 flex items-center gap-2 cursor-pointer px-4 py-2"
             type="button"
           >
-            {!isPublic
+            {!form.isPublic
               ? <GlobeIcon className="w-4 h-4" />
               : <LockIcon className="w-4 h-4" />
             }
             <span>
-              {isPublic ? 'Hacer privada' : 'Hacer pública'}
+              {form.isPublic ? 'Hacer privada' : 'Hacer pública'}
             </span>
           </button>
           <button

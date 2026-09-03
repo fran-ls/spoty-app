@@ -23,6 +23,8 @@ const PlaylistCard = (props: PlaylistCardProps) => {
   const { libraryStatus } = useLibrary();
 
   const [isCoverHover, setIsCoverHover] = useState(false);
+  const [isError, setIsError] = useState(false);
+
   const [coverSize, setCoverSize] = useState<Record<string, string | number>>({});
   const [titleSize, setTitleSize] = useState('16px');
 
@@ -120,8 +122,11 @@ const PlaylistCard = (props: PlaylistCardProps) => {
           url={cover}
         />
 
-        {(!playlist?.cover && isCoverImgs) && (
-          <PlaylistCoverImgs images={playlist.coverImages || []} />
+        {(!cover && isCoverImgs) && (
+          <PlaylistCoverImgs
+            images={playlist.coverImages || []}
+            onError={(ok) => setIsError(ok)}
+          />
         )}
 
         {isCoverHover && (
@@ -132,7 +137,7 @@ const PlaylistCard = (props: PlaylistCardProps) => {
                 coverInputRef.current?.click();
                 setIsEdit(true);
               }}
-              className={`${(cover || isCoverImgs) ? 'bg-black/50' : 'bg-[#262626]'} hover:text-white w-full h-full flex flex-col items-center gap-1 justify-center absolute top-1/2 left-1/2 -translate-1/2`}
+              className={`${((cover || isCoverImgs) && !isError) ? 'bg-black/50' : form.file ? 'bg-black/50' : 'bg-[#282828]'} hover:text-white w-full h-full flex flex-col items-center gap-1 justify-center absolute top-1/2 left-1/2 -translate-1/2`}
               type="button"
             >
               <PenIcon className="w-1/4 h-1/4 sm:max-w-11 sm:max-h-11" />

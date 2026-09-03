@@ -240,7 +240,7 @@ const PlaylistPage = () => {
       {isEdit && (
         <EditData
           form={form}
-          isPublic={form.isPublic}
+          playlist={playlist}
           coverImages={playlist?.coverImages || []}
           coverInputRef={coverInputRef}
           setForm={setForm}
