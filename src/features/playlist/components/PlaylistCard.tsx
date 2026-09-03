@@ -6,6 +6,7 @@ import PlaylistCoverImgs from "./PlaylistCoverImgs";
 import useLibrary from "../../library/hooks/useLibrary";
 import usePlayer from "../../player/hooks/usePlayer";
 import { getTimeParts } from "../../../shared/utils/formatTime";
+import { playlistBg } from "../../../shared/data/stylePresets";
 
 interface PlaylistCardProps {
   playlist: Playlist | null;
@@ -33,6 +34,7 @@ const PlaylistCard = (props: PlaylistCardProps) => {
   const cover = form.fileUrl || form.cover;
   const username = playlist?.user?.username || 'Username';
   const isCoverImgs = playlist && playlist.coverImages && playlist.coverImages.length > 3;
+  const bgBase = form.gradientColor !== playlistBg.gradientColor ? form.gradientColor : '#282828';
 
   const { trackCountText, trackCount } = useMemo(() => {
     const { hours, min, secs } = getTimeParts(playlist?.duration || 0);
@@ -111,13 +113,14 @@ const PlaylistCard = (props: PlaylistCardProps) => {
         onMouseLeave={() => isPlaylistOwner && setIsCoverHover(false)}
         style={{
           ...(window.innerWidth >= 500 && coverSize),
+          background: bgBase,
           maxWidth: '232px',
           maxHeight: '232px'
         }}
-        className="min-[925px]:max-w-58 min-[925px]:max-h-58 min-w-40 min-h-40 w-[25vw] h-[25vw] min-[500px]:rounded bg-[#262626] overflow-hidden relative transition-all duration-100 shadow-[0_4px_60px_#00000080]"
+        className="min-[925px]:max-w-58 min-[925px]:max-h-58 min-w-40 min-h-40 w-[25vw] h-[25vw] min-[500px]:rounded bg-[#282828] overflow-hidden relative transition-all duration-100 shadow-[0_4px_60px_#00000080]"
       >
         <SmartImage
-          wrapClassName="text-[#7f7f7f] w-full h-full"
+          wrapClassName="bg-transparent text-[#7f7f7f] w-full h-full"
           icon={<MusicIcon className="w-[30%] h-[30%]" />}
           url={cover}
         />
@@ -138,6 +141,9 @@ const PlaylistCard = (props: PlaylistCardProps) => {
                 setIsEdit(true);
               }}
               className={`${((cover || isCoverImgs) && !isError) ? 'bg-black/50' : form.file ? 'bg-black/50' : 'bg-[#282828]'} hover:text-white w-full h-full flex flex-col items-center gap-1 justify-center absolute top-1/2 left-1/2 -translate-1/2`}
+              style={{
+                background: bgBase
+              }}
               type="button"
             >
               <PenIcon className="w-1/4 h-1/4 sm:max-w-11 sm:max-h-11" />
