@@ -3,6 +3,7 @@ import { UserIcon } from "lucide-react";
 import useArtist from "../../artist/hooks/useArtist";
 import Slider from "../../../shared/components/Slider";
 import artistService from "../../artist/services/artist.service";
+import { routes } from "../../../shared/utils/routes";
 
 const ArtistSlider = () => {
   const { artists, searchArtists } = useArtist();
@@ -18,8 +19,8 @@ const ArtistSlider = () => {
       title="Artistas"
       subtext="Artista"
       items={artists}
-      // linkToRedirect={routes.home}
-      // linkToViewAll={routes.home}
+      linkToRedirect={routes.artists}
+      linkToViewAll={routes.artists}
       loadImage={(artist) => (artistService.artistImage(artist.id, artist.image))}
       icon={(
         <UserIcon className="w-[20%] h-[20%]" />

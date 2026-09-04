@@ -5,6 +5,14 @@ import { tokenService } from "../../auth/services/token.service";
 import { envs } from "../../../shared/utils/envs";
 
 class ArtistService {
+  async getArtist(id: string, include?: ArtistInclude) {
+    const response = await this.searchArtists({ id }, include);
+    return {
+      ...response,
+      data: response.data?.items[0] || null
+    }
+  }
+
   async searchArtists(filters?: ArtistFilters, include?: ArtistInclude) {
     return await apiFetch<SearchResponse<Artist[]>>(() => (
       api.get(`/artists/search`, {

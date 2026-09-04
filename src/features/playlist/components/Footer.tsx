@@ -166,9 +166,13 @@ const Footer: React.FC<FooterProps> = (props) => {
           <ListIcon className="inline-flex w-5 h-5" />
         </button>
 
-        {isOpen &&
-          <LayoutMenu onClose={() => setIsOpen(!isOpen)} />
-        }
+        {isOpen && (
+          <LayoutMenu
+            layout="LIST"
+            setLayout={() => { }}
+            onClose={() => setIsOpen(!isOpen)}
+          />
+        )}
       </div>
     </div>
   )

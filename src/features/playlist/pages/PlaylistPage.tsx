@@ -18,6 +18,7 @@ import PlaylistCard from '../components/PlaylistCard';
 import PlaylistActionBar from '../components/PlaylistActionBar';
 import { STYLES } from '../../../shared/utils/styles';
 import SearchSongsForPlaylist from '../components/SearchSongsForPlaylist';
+import { PlaylistLayout } from '../../library/library.types';
 
 const PlaylistPage = () => {
   const { playlistId } = useParams();
@@ -33,6 +34,7 @@ const PlaylistPage = () => {
   const [isRemove, setIsRemove] = useState(false);
   const [isSongSearch, setIsSongSearch] = useState(true);
   const [openBgEditor, setOpenBgEditor] = useState(false);
+  const [layout, setLayout] = useState<PlaylistLayout>(PlaylistLayout.LIST);
 
   const [page, setPage] = useState(0);
   const [toasterTime, setToasterTime] = useState(2500);
@@ -110,6 +112,7 @@ const PlaylistPage = () => {
         <PlaylistActionBar
           form={form}
           colors={colors}
+          layout={layout}
           playlist={playlist}
           isPlaylistOwner={isPlaylistOwner}
           playable={playlistSongs.length > 0}
@@ -118,6 +121,7 @@ const PlaylistPage = () => {
           setOpenBgEditor={setOpenBgEditor}
           setIsRemove={setIsRemove}
           setIsEdit={setIsEdit}
+          setLayout={setLayout}
         />
 
         {(!isSongSearch && !playlistSongs.length && isPlaylistOwner) && (

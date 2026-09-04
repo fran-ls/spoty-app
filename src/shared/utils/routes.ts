@@ -8,6 +8,7 @@ export const routes = {
   songs: '/songs',
   recents: '/recents',
   upload: '/upload',
+  artists: '/artists',
   YTDrop: {
     download: '/download',
     history: '/history',

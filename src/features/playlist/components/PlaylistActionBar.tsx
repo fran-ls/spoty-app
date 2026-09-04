@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { HeartIcon, ListIcon, PauseIcon, PlayIcon, Share2Icon } from "lucide-react";
 import type { Playlist, PlaylistColors, PlaylistDTO } from "../playlist.types";
+import type { PlaylistLayout } from "../../library/library.types";
 import PlaylistActionsMenu from "./PlaylistActionsMenu";
 import LayoutMenu from "./LayoutMenu";
 import usePlayer from "../../player/hooks/usePlayer";
 import { getDeviceType } from "../../../shared/utils/getDeviceType";
 
 interface PlaylistActionBarProps {
+  layout: PlaylistLayout;
   form: PlaylistDTO;
   playlist: Playlist | null;
   colors: PlaylistColors;
@@ -17,11 +19,12 @@ interface PlaylistActionBarProps {
   setIsEdit: React.Dispatch<React.SetStateAction<boolean>>;
   setIsRemove: React.Dispatch<React.SetStateAction<boolean>>;
   setOpenBgEditor: React.Dispatch<React.SetStateAction<boolean>>;
+  setLayout: React.Dispatch<React.SetStateAction<PlaylistLayout>>;
 }
 
 const PlaylistActionBar = (props: PlaylistActionBarProps) => {
   const {
-    playlist, form, isPlaylistOwner, colors, playable,
+    playlist, form, isPlaylistOwner, colors, playable, layout, setLayout,
     onPlay, setIsEdit, setOpenBgEditor, setIsRemove, onChangeVisibility
   } = props;
   const { currentPlaylist, isPlaying, togglePlay, onPlaylistChange } = usePlayer();
@@ -109,7 +112,13 @@ const PlaylistActionBar = (props: PlaylistActionBarProps) => {
             <ListIcon className="inline-flex" size={20} />
           </button>
 
-          {isLayoutMenu && <LayoutMenu onClose={() => setIsLayoutMenu(!isLayoutMenu)} />}
+          {isLayoutMenu && (
+            <LayoutMenu
+              layout={layout}
+              setLayout={setLayout}
+              onClose={() => setIsLayoutMenu(!isLayoutMenu)}
+            />
+          )}
         </div>
       </div>
     </>

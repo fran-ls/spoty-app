@@ -54,9 +54,20 @@ const Slider = (props: SliderProps) => {
     <section className="mb-12">
       {title && (
         <div className="px-8 flex justify-between items-end mb-3">
-          <h2 className="text-2xl font-bold font-headline text-white hover:underline cursor-pointer tracking-tight">
-            {title}
-          </h2>
+          {linkToViewAll ? (
+            <Link
+              className="text-white hover:underline cursor-pointer"
+              to={linkToViewAll || '/'}
+            >
+              <h2 className="text-2xl font-bold font-headline tracking-tight">
+                {title}
+              </h2>
+            </Link>
+          ) : (
+            <h2 className="text-2xl font-bold font-headline text-white tracking-tight">
+              {title}
+            </h2>
+          )}
 
           {linkToViewAll && (
             <Link
