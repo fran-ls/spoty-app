@@ -3,6 +3,7 @@ import { ChevronLeftIcon, PanelTopCloseIcon } from "lucide-react";
 import usePlayer from "../hooks/usePlayer";
 import PlayerTrackCard from "./PlayerTrackCard";
 import RelatedTracks from "./RelatedTracks";
+import PlayerArtistCard from "./PlayerArtistCard";
 
 interface PlayingProps {
   asideRef: React.RefObject<HTMLElement | null>;
@@ -57,6 +58,8 @@ const Playing = ({ }: PlayingProps) => {
           <PlayerTrackCard />
 
           <RelatedTracks />
+
+          <PlayerArtistCard />
         </div>
       </div>
     </div>
