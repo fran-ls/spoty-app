@@ -4,6 +4,7 @@ import usePlayer from "../hooks/usePlayer";
 import PlayerTrackCard from "./PlayerTrackCard";
 import RelatedTracks from "./RelatedTracks";
 import PlayerArtistCard from "./PlayerArtistCard";
+import OpenQueueCard from "./OpenQueueCard";
 
 interface PlayingProps {
   asideRef: React.RefObject<HTMLElement | null>;
@@ -60,6 +61,8 @@ const Playing = ({ }: PlayingProps) => {
           <RelatedTracks />
 
           <PlayerArtistCard />
+
+          <OpenQueueCard />
         </div>
       </div>
     </div>

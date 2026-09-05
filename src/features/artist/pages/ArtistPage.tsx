@@ -13,7 +13,7 @@ import { playlistBg } from "../../../shared/data/stylePresets";
 import { convertColor } from "../../playlist/utils/convertColor";
 
 const ArtistPage = () => {
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(0);
   const [artist, setArtist] = useState<Artist | null>(null);
   const [layout, setLayout] = useState<PlaylistLayout>(PlaylistLayout.LIST);
 
