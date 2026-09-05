@@ -13,7 +13,7 @@ const ArtistsPage = () => {
 
   return (
     <div className="sm:px-8 px-4 py-8 text-white">
-      <h1 className="mb-2 text-2xl font-bold font-headline tracking-tight">
+      <h1 className="mb-5 text-2xl font-bold font-headline tracking-tight">
         Artistas
       </h1>
 
@@ -37,18 +37,20 @@ const ArtistsPage = () => {
                     )}
                   />
                 </div>
-              </Link>
 
-              <Link
-                className="hover:underline"
-                to={`${routes.artists}/${a.id}`}
-              >
                 <h3
-                  className="font-light text-white mb-0 truncate text-sm sm:text-base google-sans-flex-font"
+                  className="text-white mb-0 truncate text-sm sm:text-base google-sans-flex-font"
+                  style={{
+                    fontWeight: 500
+                  }}
                   title={a.name}
                 >
                   {a.name || ''}
                 </h3>
+
+                <span className="text-sm text-[#adaaaa] leading-relaxed">
+                  Artista
+                </span>
               </Link>
             </li>
           )
