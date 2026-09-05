@@ -18,7 +18,7 @@ const ArtistPage = () => {
   const [layout, setLayout] = useState<PlaylistLayout>(PlaylistLayout.LIST);
 
   const { id } = useParams();
-  const { play } = usePlayer();
+  const { play, onPlaylistChange } = usePlayer();
   const { tracks, trackMeta, searchTracks } = useTrack();
 
   const cover = artist ? artistService.artistImage(artist.id, artist.image) : null;
@@ -59,6 +59,9 @@ const ArtistPage = () => {
           <h1
             className={`text-4xl font-black truncate ${window.innerWidth >= 500 ? 'playlist-title google-sans-flex-font' : 'playlist-title-font'}`}
             title={artist?.name}
+            style={{
+              textShadow: '0px 0px 4px rgba(0,0,0,0.3)'
+            }}
           >
             {artist?.name || 'Artista'}
           </h1>
@@ -92,7 +95,10 @@ const ArtistPage = () => {
         colors={colors}
         playable={tracks.length > 0}
         setLayout={setLayout}
-        onPlay={() => play(tracks, 0, trackMeta)}
+        onPlay={() => {
+          play(tracks, 0, trackMeta);
+          onPlaylistChange(null);
+        }}
       />
 
       {(tracks.length > 0) && (

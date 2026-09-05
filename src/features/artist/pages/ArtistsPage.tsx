@@ -39,7 +39,7 @@ const ArtistsPage = () => {
                 </div>
 
                 <h3
-                  className="text-white mb-0 truncate text-sm sm:text-base google-sans-flex-font"
+                  className="hover:underline text-white mb-0 truncate text-sm sm:text-base google-sans-flex-font"
                   style={{
                     fontWeight: 500
                   }}
