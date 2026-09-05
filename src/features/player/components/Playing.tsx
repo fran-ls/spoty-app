@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ChevronLeftIcon, PanelTopCloseIcon } from "lucide-react";
 import usePlayer from "../hooks/usePlayer";
 import PlayerTrackCard from "./PlayerTrackCard";
+import RelatedTracks from "./RelatedTracks";
 
 interface PlayingProps {
   asideRef: React.RefObject<HTMLElement | null>;
@@ -54,6 +55,8 @@ const Playing = ({ }: PlayingProps) => {
           onScroll={(e) => setScrollTop(e.currentTarget.scrollTop)}
         >
           <PlayerTrackCard />
+
+          <RelatedTracks />
         </div>
       </div>
     </div>
