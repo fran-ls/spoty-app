@@ -11,8 +11,7 @@ const OpenQueueCard = () => {
   const lastIndex = queue.length - 1;
   const nextIndex = currentIndex + 1;
   const nextTrack = nextIndex > lastIndex ? queue[lastIndex] : queue[nextIndex];
-
-  const cover = songService.songCoverUrl(currentSong?.id || '', currentSong?.cover);
+  const cover = nextTrack ? songService.songCoverUrl(nextTrack.id, nextTrack.cover) : null;
 
   return (
     <div className="p-2 mx-4 mt-1 mb-4 bg-[#1f1f1f] rounded-lg overflow-hidden">
