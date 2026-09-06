@@ -1,15 +1,26 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { UserIcon } from "lucide-react";
 import useArtist from "../hooks/useArtist";
 import SmartImage from "../../../shared/components/SmartImage";
 import artistService from "../services/artist.service";
 import { routes } from "../../../shared/utils/routes";
+import Loader from "../../../shared/components/Loader";
+import { useInfiniteScroll } from "../../../shared/hooks/useInfiniteScroll";
 
 const ArtistsPage = () => {
-  const { artists, searchArtists } = useArtist();
+  const { artists, artistMeta, searchArtists } = useArtist();
 
-  useEffect(() => { searchArtists() }, []);
+  const [page, setPage] = useState(1);
+
+  const { loaderRef } = useInfiniteScroll(async () => {
+    if (!artistMeta.hasNextPage) return;
+    const nextPage = page + 1;
+    await searchArtists({ page: nextPage });
+    setPage(nextPage);
+  });
+
+  useEffect(() => { searchArtists({ page }) }, []);
 
   return (
     <div className="sm:px-8 px-4 py-8 text-white">
@@ -55,6 +66,21 @@ const ArtistsPage = () => {
             </li>
           )
         })}
+
+        {artistMeta.hasNextPage && (
+          <li className="flex-1 flex items-center justify-center py-1 overflow-hidden">
+            <div
+              className="flex-1 flex items-center justify-center"
+              ref={loaderRef}
+            >
+              <Loader
+                className="border-transparent border-t-slate-200"
+                size={20}
+                stroke={2}
+              />
+            </div>
+          </li>
+        )}
       </ul>
     </div>
   )
