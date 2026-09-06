@@ -30,7 +30,7 @@ const PlayerArtistCard = () => {
           to={`${routes.artists}/${currentSong?.artistId || ''}`}
         >
           <h3
-            className="text-lg truncate block google-sans-flex-font"
+            className="text-white text-base truncate block google-sans-flex-font"
             style={{
               fontWeight: 600
             }}

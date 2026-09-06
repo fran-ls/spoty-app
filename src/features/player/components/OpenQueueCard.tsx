@@ -16,7 +16,7 @@ const OpenQueueCard = () => {
   return (
     <div className="p-2 mx-4 mt-1 mb-4 bg-[#1f1f1f] rounded-lg overflow-hidden">
       <div className="p-2 pb-3 flex items-center justify-between gap-3">
-        <span className="text-sm truncate font-bold">
+        <span className="text-white text-sm truncate font-bold">
           {nextIndex > lastIndex ? 'Sonando' : 'A continuación en la cola'}
         </span>
 
