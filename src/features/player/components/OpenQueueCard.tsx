@@ -86,16 +86,16 @@ const OpenQueueCard = () => {
 
         <div
           onDoubleClick={() => playQueueSong(nextTrack, nextIndex)}
-          className="w-full"
+          className="w-full overflow-hidden"
         >
           <h4
-            className="mt-1 text-[15px] font-semibold line-clamp-1 text-white"
+            className="mt-1 text-[15px] font-semibold truncate text-white"
             title={nextTrack?.title}
           >
             {nextTrack?.title}
           </h4>
-          <div className="text-[13px] font-medium">
-            <span className="line-clamp-1 w-full">
+          <div className="text-[13px] truncate font-medium overflow-hidden">
+            <span className="w-full">
               {nextTrack?.artist?.name}
             </span>
           </div>
