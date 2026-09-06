@@ -32,7 +32,7 @@ const RelatedTracks = () => {
     }
 
     return result;
-  }, [tracks]);
+  }, [tracks, currentSong]);
 
   const step = () => slider.clientWidth;
 
@@ -54,9 +54,14 @@ const RelatedTracks = () => {
     }
   }, [tracks]);
 
-  useEffect(() => { getTracks() }, [currentSong]);
+  useEffect(() => {
+    getTracks();
+    setPage(1);
+    setSection(1);
+    if (slider) slider.scrollLeft = 0;
+  }, [currentSong]);
 
-  return (
+  return !sliderItems.length ? null : (
     <div className="mx-2 text-white">
       <h2 className="ml-2 mb-3 text-white font-black text-nowrap">
         Relacionado
@@ -83,7 +88,7 @@ const RelatedTracks = () => {
         </button>
 
         <div
-          className="px--1 w-full flex overflow-auto relative hide-scrollbar slider"
+          className="w-full flex overflow-auto relative hide-scrollbar slider"
           onScroll={(e) => {
             const target = e.currentTarget;
             setIsPrevBtn(target.scrollLeft > 0);
