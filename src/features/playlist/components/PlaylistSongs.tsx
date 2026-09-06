@@ -111,7 +111,7 @@ const PlaylistSongs = (props: PlaylistSongsProps) => {
               </div>
 
               <div className="lg:block hidden text-[#adaaaa] text-sm truncate select-none">
-                {track?.createdAt ? getFmtDate(track?.createdAt, 'dd MMM yyyy') : ''}
+                {item?.createdAt ? getFmtDate(item.createdAt, 'dd MMM yyyy') : ''}
               </div>
 
               <div className="sm:flex hidden items-center justify-center">

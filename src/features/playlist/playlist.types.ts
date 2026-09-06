@@ -42,6 +42,7 @@ export interface PlaylistSong {
   playlistId: string;
   position: number;
   song?: Song | null;
+  createdAt?: any;
 }
 
 export interface PlaylistSongDTO {
