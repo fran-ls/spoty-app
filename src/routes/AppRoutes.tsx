@@ -4,7 +4,7 @@ import HomePage from "../features/home/pages/HomePage";
 // import SearchPage from "../features/search/SearchPage";
 import LibraryPage from "../features/library/pages/LibraryPage";
 import PlaylistPage from "../features/playlist/pages/PlaylistPage";
-import SongPage from "../features/song/pages/SongPage";
+import SongsPage from "../features/song/pages/SongsPage";
 import { routes } from "../shared/utils/routes";
 import SearchPlaylistPage from "../features/playlist/pages/SearchPlaylistPage";
 import YTDropHomePage from "../yt_drop/pages/HomePage";
@@ -13,6 +13,7 @@ import DownloadStatPage from "../yt_drop/pages/DownloadStatPage";
 import RecentPage from "../features/home/pages/RecentPage";
 import ArtistsPage from "../features/artist/pages/ArtistsPage";
 import ArtistPage from "../features/artist/pages/ArtistPage";
+import SongPage from "../features/song/pages/SongPage";
 
 const AppRoutes = () => {
   return (
@@ -23,7 +24,8 @@ const AppRoutes = () => {
         <Route path={routes.library} element={<LibraryPage />} />
         <Route path={routes.playlists} element={<PlaylistPage />} />
         <Route path={`${routes.playlists}/:playlistId`} element={<PlaylistPage />} />
-        <Route path={routes.songs} element={<SongPage />} />
+        <Route path={routes.songs} element={<SongsPage />} />
+        <Route path={`${routes.tracks}/:id`} element={<SongPage />} />
         <Route path={routes.recents} element={<RecentPage />} />
         <Route path={routes.artists} element={<ArtistsPage />} />
         <Route path={`${routes.artists}/:id`} element={<ArtistPage />} />

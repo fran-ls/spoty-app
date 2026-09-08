@@ -6,6 +6,7 @@ export const routes = {
   playlists: '/playlists',
   newPlaylist: '/playlists/new',
   songs: '/songs',
+  tracks: '/tracks',
   recents: '/recents',
   upload: '/upload',
   artists: '/artists',

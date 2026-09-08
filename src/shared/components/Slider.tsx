@@ -9,6 +9,7 @@ import PlaylistCoverImgs from "../../features/playlist/components/PlaylistCoverI
 
 interface SliderProps {
   keys: {
+    id?: string;
     title: string;
     subtext?: string;
   };
@@ -117,11 +118,12 @@ const Slider = (props: SliderProps) => {
             const title = getValue(it, keys.title);
             const isCurrent = isCurrentPlaying?.(it) || false;
             const isCoverImgs = it.coverImages && it.coverImages.length > 3;
+            const redirectTo = `${linkToRedirect}/${keys.id ? getValue(it, keys.id) : it.id}`;
 
             return (
               <div
                 className={`min-w-50 grow max-w-50 group h-fit group hover:bg-[#1f1f1f] p-3 rounded-lg transition-all duration-300 flex flex-col playlist-item ${linkToRedirect ? 'cursor-pointer' : ''}`}
-                onClick={() => linkToRedirect && navigate(`${linkToRedirect}/${it.id}`)}
+                onClick={() => linkToRedirect && navigate(redirectTo)}
                 key={it.id}
               >
                 <div className="shadow-[0_8px_24px_#00000080] relative mb-2 aspect-square rounded-md overflow-hidden bg-[#333333]">
@@ -160,7 +162,7 @@ const Slider = (props: SliderProps) => {
                 {linkToRedirect ? (
                   <Link
                     className="hover:underline"
-                    to={`${linkToRedirect}/${it.id}`}
+                    to={redirectTo}
                   >
                     <h3
                       className="font-light text-white mb-0 truncate text-sm sm:text-base google-sans-flex-font"
