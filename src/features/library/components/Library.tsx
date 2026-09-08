@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { PlusIcon, SearchIcon, ListIcon, XIcon, PanelTopCloseIcon, PanelTopOpenIcon, LayoutGridIcon, TextAlignJustify, Minimize2Icon, GlobeIcon, LockIcon, GlobeLockIcon } from 'lucide-react';
+import { PlusIcon, SearchIcon, ListIcon, XIcon, PanelTopCloseIcon, PanelTopOpenIcon, LayoutGridIcon, TextAlignJustify, Minimize2Icon, GlobeIcon, LockIcon, GlobeLockIcon, LibraryIcon } from 'lucide-react';
 import type { PlaylistFilters } from '../../playlist/playlist.types';
 import { PlaylistLayout, PlaylistOrderBy, PlaylistVisibility, type LayoutKind } from '../library.types';
 import CustomMenu from './CustomMenu';
@@ -53,6 +53,7 @@ export const Library = (props: LibraryProps) => {
   const [isSearch, setIsSearch] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [hoverId, setHoverId] = useState('');
+  const [btnHover, setBtnHover] = useState(false);
 
   const ulRef = useRef<HTMLUListElement>(null);
   const navRef = useRef<HTMLElement>(null);
@@ -186,19 +187,27 @@ export const Library = (props: LibraryProps) => {
                   collapsed: !isCollapsed,
                   expanded: false
                 })}
+                onPointerEnter={() => setBtnHover(true)}
+                onMouseLeave={() => setBtnHover(false)}
                 className="p-2 rounded-lg text-[#adaaaa] hover:text-white cursor-pointer transition-colors duration-100"
                 title={isCollapsed ? "Abre Tu biblioteca" : "Contraer Tu biblioteca"}
               >
-                {isCollapsed ?
-                  <PanelTopOpenIcon
-                    className="-rotate-90"
-                    size={20}
-                  /> :
+                {isCollapsed ? (
+                  btnHover ?
+                    <PanelTopOpenIcon
+                      className="-rotate-90"
+                      size={20}
+                    /> :
+                    <LibraryIcon
+                      className=""
+                      size={20}
+                    />
+                ) : (
                   <PanelTopCloseIcon
                     className="-rotate-90"
                     size={20}
                   />
-                }
+                )}
               </button>
             )}
 
