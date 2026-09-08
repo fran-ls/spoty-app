@@ -67,6 +67,12 @@ const MobilePlayer = () => {
     setIsLiked(!isLiked);
   }
 
+  const onMinimize = () => {
+    setIsExpanded(false);
+    setIsOpenModal(false);
+    setIsMobileQueue(false);
+  }
+
   const progressPercent = Math.min(100, (progress / duration) * 100);
   const songCover = currentSong ? songService.songCoverUrl(currentSong.id, currentSong.cover) : '';
 
@@ -115,7 +121,7 @@ const MobilePlayer = () => {
               )}
             />
 
-            <div>
+            <div className="overflow-hidden">
               <h1
                 className="text-[13px] font-bold text-white w-full line-clamp-1"
                 title={currentSong?.title}
@@ -123,7 +129,7 @@ const MobilePlayer = () => {
                 {currentSong?.title || 'Tema'}
               </h1>
               <span
-                className="font-medium block text-xs text-white/95 truncate"
+                className="font-medium text-xs text-white/95 line-clamp-1"
                 title={currentSong?.artist?.name}
               >
                 {currentSong?.artist?.name || 'Artista'}
@@ -189,12 +195,20 @@ const MobilePlayer = () => {
             >
               <ChevronDownIcon size={28} />
             </button>
-            <h2
-              className={`${!currentSong?.title ? 'uppercase' : ''} text-xs w-full text-center font-bold text-white hover:underline cursor-pointer truncate`}
-              title={currentSong?.title}
+
+            <Link
+              className="hover:underline cursor-pointer overflow-hidden"
+              to={`${routes.tracks}/${currentSong?.id || ''}`}
+              onClick={onMinimize}
             >
-              {currentSong?.title || 'Tema'}
-            </h2>
+              <h2
+                className={`${!currentSong?.title ? 'uppercase' : ''} text-xs w-full text-center font-bold text-white truncate`}
+                title={currentSong?.title}
+              >
+                {currentSong?.title || 'Tema'}
+              </h2>
+            </Link>
+
             <button
               onClick={() => setIsOpenModal(true)}
               className="ml-auto p-2 text-white hover:text-white transition-colors duration-200 cursor-pointer"
@@ -228,7 +242,7 @@ const MobilePlayer = () => {
               <Link
                 className="group text-white hover:underline cursor-pointer"
                 to={`${routes.tracks}/${currentSong?.id || ''}`}
-                onClick={() => setIsExpanded(false)}
+                onClick={onMinimize}
               >
                 <h1
                   className="text-lg font-bold text-white truncate"
@@ -241,7 +255,7 @@ const MobilePlayer = () => {
               <Link
                 className="group text-[#adaaaa] hover:underline truncate cursor-pointer"
                 to={`${routes.artists}/${currentSong?.artistId || ''}`}
-                onClick={() => setIsExpanded(false)}
+                onClick={onMinimize}
               >
                 <span
                   className="font-medium text-sm text-[#adaaaa] group-hover:text-white"
@@ -420,12 +434,15 @@ const MobilePlayer = () => {
             <HeartIcon className={isLiked ? 'fill-primary stroke-0' : ''} size={24} />
             <span className="font-semibold">Me gusta</span>
           </button>
+
           <button className="flex items-center gap-3 text-white w-fit h-fit transition-colors duration-200 cursor-pointer">
             <Share2Icon size={24} />
             <span className="font-semibold">Compartir música</span>
           </button>
+
           <Link
-            to={"/"}
+            to={`${routes.tracks}/${currentSong?.id || ''}`}
+            onClick={onMinimize}
             className="flex items-center gap-3 text-white w-fit h-fit transition-colors duration-200 cursor-pointer"
           >
             <Music2Icon size={20} />
