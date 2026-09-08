@@ -53,7 +53,7 @@ const UserPlaylistsSlider = () => {
       title="Tus listas"
       subtext={`De ${user?.username}`}
       items={playlists}
-      // linkToViewAll={routes.home}
+      linkToViewAll={routes.playlists}
       linkToRedirect={routes.playlists}
       isCurrentPlaying={(it) => currentPlaylist?.id === it.id}
       loadImage={(p) => playlistService.playlistCover(p.id, p.cover)}

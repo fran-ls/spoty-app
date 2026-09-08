@@ -14,6 +14,7 @@ import RecentPage from "../features/home/pages/RecentPage";
 import ArtistsPage from "../features/artist/pages/ArtistsPage";
 import ArtistPage from "../features/artist/pages/ArtistPage";
 import SongPage from "../features/song/pages/SongPage";
+import PlaylistsPage from "../features/home/pages/PlaylistsPage";
 
 const AppRoutes = () => {
   return (
@@ -22,7 +23,7 @@ const AppRoutes = () => {
         <Route path="/" element={<HomePage />} />
         <Route path={routes.search} element={<SearchPlaylistPage />} />
         <Route path={routes.library} element={<LibraryPage />} />
-        <Route path={routes.playlists} element={<PlaylistPage />} />
+        <Route path={routes.playlists} element={<PlaylistsPage />} />
         <Route path={`${routes.playlists}/:playlistId`} element={<PlaylistPage />} />
         <Route path={routes.songs} element={<SongsPage />} />
         <Route path={`${routes.tracks}/:id`} element={<SongPage />} />
