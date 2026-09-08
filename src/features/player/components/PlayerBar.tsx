@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Volume2, VolumeX, MusicIcon, HeartIcon, ShuffleIcon, PauseIcon,
   PlayIcon, ListIcon, RadioIcon, LaptopIcon
@@ -10,6 +11,7 @@ import SmartImage from '../../../shared/components/SmartImage';
 import { RepeatIcon, SkipForwardIcon } from '../../../shared/components/Icons';
 import useAuth from '../../auth/hooks/useAuth';
 import { updateLocalPlayer } from '../../../shared/utils/localPlayer';
+import { routes } from '../../../shared/utils/routes';
 
 export const PlayerBar = () => {
   const { user } = useAuth();
@@ -148,25 +150,36 @@ export const PlayerBar = () => {
           className="w-full h-full object-cover transition-transform duration-300"
           url={songCover}
           icon={(
-            <MusicIcon className="text-white absolute top-1/2 left-1/2 -translate-1/2" />
+            <MusicIcon className="absolute top-1/2 left-1/2 -translate-1/2" />
           )}
         />
 
         {currentSong &&
           <>
-            <div className="flex flex-col truncate min-w-0 pr-2 max-w-64">
-              <span
-                className="text-sm font-bold text-white hover:underline cursor-pointer truncate"
-                title={currentSong?.title}
+            <div className="flex flex-col truncate min-w-0 pr-2 max-w-64 overflow-hidden">
+              <Link
+                className="group text-white hover:underline truncate cursor-pointer"
+                to={`${routes.tracks}/${currentSong.id}`}
               >
-                {currentSong?.title}
-              </span>
-              <span
-                className="text-xs text-[#adaaaa] hover:text-white hover:underline cursor-pointer truncate mt-0.5"
-                title={currentSong?.artist?.name}
+                <span
+                  className="text-sm font-bold group-text-white"
+                  title={currentSong.title}
+                >
+                  {currentSong.title}
+                </span>
+              </Link>
+
+              <Link
+                className="group text-[#adaaaa] hover:text-white hover:underline truncate cursor-pointer"
+                to={`${routes.artists}/${currentSong.artistId}`}
               >
-                {currentSong?.artist?.name}
-              </span>
+                <span
+                  className="text-xs text-[#adaaaa] group-hover:text-white cursor-pointer mt-0.5"
+                  title={currentSong.artist?.name}
+                >
+                  {currentSong.artist?.name}
+                </span>
+              </Link>
             </div>
             <button
               onClick={toggleLikeTrack}

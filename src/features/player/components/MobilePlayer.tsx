@@ -9,6 +9,7 @@ import { getDeviceType } from "../../../shared/utils/getDeviceType";
 import { RepeatIcon, ShuffleIcon, SkipForwardIcon } from "../../../shared/components/Icons";
 import MobileQueue from "./MobileQueue";
 import useAuth from "../../auth/hooks/useAuth";
+import { routes } from "../../../shared/utils/routes";
 
 const MobilePlayer = () => {
   const { user } = useAuth();
@@ -223,19 +224,32 @@ const MobilePlayer = () => {
           />
 
           <div className="px-5 my-8 w-full flex items-center justify-between gap-2">
-            <div className="flex flex-col">
-              <h1
-                className="text-lg font-bold text-white hover:underline cursor-pointer truncate"
-                title={currentSong?.title}
+            <div className="flex flex-col overflow-hidden">
+              <Link
+                className="group text-white hover:underline cursor-pointer"
+                to={`${routes.tracks}/${currentSong?.id || ''}`}
+                onClick={() => setIsExpanded(false)}
               >
-                {currentSong?.title || 'Tema'}
-              </h1>
-              <span
-                className="font-medium text-sm text-[#adaaaa] hover:text-white hover:underline cursor-pointer truncate"
-                title={currentSong?.artist?.name}
+                <h1
+                  className="text-lg font-bold text-white truncate"
+                  title={currentSong?.title}
+                >
+                  {currentSong?.title || 'Tema'}
+                </h1>
+              </Link>
+
+              <Link
+                className="group text-[#adaaaa] hover:underline truncate cursor-pointer"
+                to={`${routes.artists}/${currentSong?.artistId || ''}`}
+                onClick={() => setIsExpanded(false)}
               >
-                {currentSong?.artist?.name || 'Artista'}
-              </span>
+                <span
+                  className="font-medium text-sm text-[#adaaaa] group-hover:text-white"
+                  title={currentSong?.artist?.name}
+                >
+                  {currentSong?.artist?.name || 'Artista'}
+                </span>
+              </Link>
             </div>
             <button
               onClick={toggleLikeTrack}
