@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { CircleMinusIcon, ListPlusIcon, Music2Icon, MusicIcon, PlusIcon, ShareIcon } from 'lucide-react';
 import { Toaster as SonnerToaster, toast } from 'sonner';
 import type { PlaylistSong } from '../playlist.types';
@@ -19,6 +19,7 @@ import PlaylistActionBar from '../components/PlaylistActionBar';
 import { STYLES } from '../../../shared/utils/styles';
 import SearchSongsForPlaylist from '../components/SearchSongsForPlaylist';
 import { PlaylistLayout } from '../../library/library.types';
+import { routes } from '../../../shared/utils/routes';
 
 const PlaylistPage = () => {
   const { playlistId } = useParams();
@@ -40,6 +41,8 @@ const PlaylistPage = () => {
   const [toasterTime, setToasterTime] = useState(2500);
   const [isViewTrack, setIsViewTrack] = useState(false);
   const [activeItem, setActiveItem] = useState<PlaylistSong | null>(null);
+
+  const navigate = useNavigate();
 
   const coverInputRef = useRef<HTMLInputElement>(null);
 
@@ -230,7 +233,7 @@ const PlaylistPage = () => {
               icon: (
                 <Music2Icon size={18} />
               ),
-              onAction: () => setIsViewTrack(true)
+              onAction: () => activeItem?.id && navigate(`${routes.tracks}/${activeItem.songId}`)
             }, {
               label: 'Compartir',
               icon: (
