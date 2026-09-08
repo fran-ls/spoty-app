@@ -1,25 +1,24 @@
-import { useEffect, useMemo, useState } from "react";
-import type { THistory, THistoryItem } from "../../player/playHistory.types";
+import { useEffect, useState } from "react";
+import type { PlayHistory, THistoryItem } from "../../player/playHistory.types";
 import useAuth from "../../auth/hooks/useAuth";
 import playHistoryService from "../../player/services/playHistory.service";
 import { useInfiniteScroll } from "../../../shared/hooks/useInfiniteScroll";
 import { paginationMeta } from "../../../shared/data/search.data";
 import Loader from "../../../shared/components/Loader";
 import HistoryItem from "../components/HistoryItem";
-import HistoryDetail from "../components/HistoryDetail";
 
 const RecentPage = () => {
   const { user } = useAuth();
 
-  const [playHistory, setPlayHistory] = useState<THistory>({});
-
+  const [firstHistoryItem, setFirstHistoryItem] = useState<PlayHistory | null>(null);
+  const [playHistory, setPlayHistory] = useState<THistoryItem[]>([]);
   const [meta, setMeta] = useState(paginationMeta);
+
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  const [activeItem, setActiveItem] = useState<THistoryItem | null>(null);
-
-  const historyList = useMemo(() => (Object.values(playHistory)), [playHistory]);
+  const lastIndex = playHistory.length - 1;
+  const hasMore = firstHistoryItem ? firstHistoryItem.createdAt !== playHistory[lastIndex]?.createdAt : true;
 
   const { loaderRef } = useInfiniteScroll(async () => {
     if (page > meta.totalPages) return;
@@ -32,16 +31,29 @@ const RecentPage = () => {
     if (!user?.id || loading) return;
 
     setLoading(true);
-    const { data } = await playHistoryService.getHistory(user.id, { page });
+    const { data } = await playHistoryService.getHistory(user.id, {
+      page,
+      pagination: false
+    } as any);
+
     setLoading(false);
     if (!data) return;
 
-    setMeta(data.meta);
+    if (!meta && data.meta) setMeta(data.meta);
 
-    (page < 2) ? setPlayHistory(data.items) : setPlayHistory((prev) => ({
-      ...prev,
-      ...data.items
-    }));
+    (page < 2) ? setPlayHistory(data.items) : setPlayHistory([...playHistory, ...data.items]);
+
+    if (firstHistoryItem) return;
+
+    const r = await playHistoryService.searchHistory(user.id, {
+      page: 1,
+      limit: 1,
+      order: 'asc',
+      orderBy: 'playedAt',
+      pagination: false
+    } as any);
+
+    setFirstHistoryItem(r.data?.items[0] || null);
   }
 
   useEffect(() => { getPlayHistory() }, []);
@@ -53,29 +65,28 @@ const RecentPage = () => {
           Recientes
         </h1>
 
-        <div className="max-w-3xl mx-auto mt-8 space-y-8">
-          {historyList.map((item) => (
+        <div className="max-w-3xl mx-auto mt-12 space-y-8">
+          {playHistory?.map((item) => (
             <HistoryItem
-              onSetItem={(it) => setActiveItem(it)}
               item={item}
-              key={item.date}
+              userId={user?.id || ''}
+              key={item.createdAt}
             />
           ))}
 
-          {meta.hasNextPage && !loading &&
+          {hasMore && (
             <div
               className="flex items-center justify-center"
               ref={loaderRef}
             >
-              <Loader size={24} stroke={2} />
+              <Loader
+                className="border-[#adaaaa5d] border-t-white"
+                size={20}
+                stroke={1}
+              />
             </div>
-          }
+          )}
         </div>
-
-        <HistoryDetail
-          item={activeItem}
-          onSetItem={() => setActiveItem(null)}
-        />
       </div>
     </div>
   )

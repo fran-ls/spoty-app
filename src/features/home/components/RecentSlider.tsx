@@ -26,12 +26,14 @@ const RecentSlider = () => {
   return (
     <Slider
       keys={{
+        id: 'songId',
         title: 'song.title'
       }}
       title="Recientes"
       subtext="Canción"
       items={playHistory}
       linkToViewAll={routes.recents}
+      linkToRedirect={routes.tracks}
       loadImage={(s) => (songService.songCoverUrl(s.song.id, s.song.cover))}
       isCurrentPlaying={(it) => currentSong?.id === it?.songId}
       onPlay={(it) => {

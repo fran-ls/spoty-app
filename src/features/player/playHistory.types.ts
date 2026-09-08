@@ -40,14 +40,12 @@ export type PlayHistoryFilters = Partial<PlayHistory> & PaginationQuery;
 
 
 export type THistoryRes = {
-  items: THistory;
-  meta: PaginationMeta;
+  items: THistoryItem[];
+  meta?: PaginationMeta;
 }
 
-export type THistory = Record<string, THistoryItem>;
-
 export type THistoryItem = {
-  date: string;
   createdAt: any;
   items: PlayHistory[];
+  meta?: PaginationMeta;
 }
