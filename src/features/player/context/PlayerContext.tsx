@@ -280,12 +280,16 @@ export const PlayerProvider = ({ children }: any) => {
   const toggleShuffle = () => {
     const shuffle = !isShuffle;
     setIsShuffle(shuffle);
+    setLocalPlayer({ ...localPlayer!, shuffle });
+    updateLocalPlayer({ shuffle }, localPlayer!);
     updatePlayer({ shuffle });
   }
 
   const toggleRepeat = () => {
     const repeat = !isRepeat;
     setIsRepeat(repeat);
+    setLocalPlayer({ ...localPlayer!, repeat });
+    updateLocalPlayer({ repeat }, localPlayer!);
     updatePlayer({ repeat });
   }
 
