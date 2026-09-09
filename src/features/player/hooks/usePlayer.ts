@@ -4,13 +4,12 @@ import type { PaginationQuery } from "../../../shared/types/common.types";
 import playerService from "../services/player.service";
 import { PlayerContext } from "../context/PlayerContext";
 import playlistService from "../../playlist/services/playlist.service";
-import songService from "../../song/services/song.service";
 import { getLocalPlayer } from "../../../shared/utils/localPlayer";
 
 const usePlayer = () => {
   const ctx = useContext(PlayerContext);
   const {
-    currentPlaylist, queueMeta, player, localPlayer, setLocalPlayer,
+    currentPlaylist, player, localPlayer, setLocalPlayer,
     setPlayer, setQueue, setQueueMeta, setPlayingTracks, resetPlayer
   } = ctx;
 
@@ -52,20 +51,20 @@ const usePlayer = () => {
     const playlistId = currentPlaylist?.id;
 
     if (!playlistId) {
-      setIsLoading(true);
-      const { data } = await songService.searchSongs({ page, limit: 10 });
-      setIsLoading(false);
-      if (!data) return;
-      setQueueMeta({ ...queueMeta, ...data.meta });
+      // setIsLoading(true);
+      // const { data } = await songService.searchSongs({ page, limit: 10 });
+      // setIsLoading(false);
+      // if (!data) return;
+      // setQueueMeta({ ...queueMeta, ...data.meta });
 
-      if (page > 1) {
-        setQueue((prev) => [...prev, ...data.items]);
-        setPlayingTracks((prev) => [...prev, ...data.items]);
-      }
-      else {
-        setQueue(data.items);
-        setPlayingTracks(data.items);
-      }
+      // if (page > 1) {
+      //   setQueue((prev) => [...prev, ...data.items]);
+      //   setPlayingTracks((prev) => [...prev, ...data.items]);
+      // }
+      // else {
+      //   setQueue(data.items);
+      //   setPlayingTracks(data.items);
+      // }
 
       return;
     }
