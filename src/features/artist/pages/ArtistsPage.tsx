@@ -15,7 +15,7 @@ const ArtistsPage = () => {
   const [currentArtistId, setCurrentArtistId] = useState('');
 
   const { loaderRef } = useInfiniteScroll(async () => {
-    if (!artistMeta.hasNextPage) return;
+    if (page > 1 && !artistMeta.hasNextPage) return;
     const nextPage = page + 1;
     await searchArtists({ page: nextPage });
     setPage(nextPage);
