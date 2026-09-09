@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import type { Playlist, PlaylistDTO, PlaylistInclude, PlaylistSong, PlaylistSongDTO, PlaylistSongInclude } from "../playlist.types";
+import type { Playlist, PlaylistDTO, PlaylistFilters, PlaylistInclude, PlaylistSong, PlaylistSongDTO, PlaylistSongInclude } from "../playlist.types";
 import type { PaginationMeta } from "../../../shared/types/common.types";
 import type { Song } from "../../song/song.types";
 import playlistService from "../services/playlist.service";
@@ -173,6 +173,20 @@ const usePlaylist = () => {
     return true;
   }
 
+  async function searchPlaylists(
+    filters?: PlaylistFilters,
+    include?: PlaylistInclude
+  ) {
+    const { data } = await playlistService.searchPlaylists(filters, include);
+    if (!data) return data;
+
+    (filters?.page && filters.page > 1)
+      ? setPlaylists([...playlists, ...data.items])
+      : setPlaylists(data.items);
+
+    return data;
+  }
+
   return {
     playlist, setPlaylist,
     playlistMeta, setPlaylistMeta,
@@ -184,6 +198,7 @@ const usePlaylist = () => {
     isOpenAction, setIsOpenAction,
     activeItem, setActiveItem,
     loadingPlaylistSongs, setLoadingPlaylistSongs,
+    searchPlaylists,
     getPlaylist,
     updatePlaylist,
     newPlaylist,
