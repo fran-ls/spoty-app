@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Play, Heart, Clock, Plus, Check } from 'lucide-react';
-import { mockGenres, mockPlaylists, mockTracks } from '../../shared/data/music.data';
+import { mockGenres, mockPlaylists, mockTracks } from '../../../shared/data/music.data';
 
-const SearchPage: React.FC = () => {
+const SearchPageMock: React.FC = () => {
   const searchQuery = '';
   const [activeTrackAddMenuId, setActiveTrackAddMenuId] = useState<string | null>(null);
 
@@ -269,4 +269,4 @@ const SearchPage: React.FC = () => {
   )
 }
 
-export default SearchPage;
+export default SearchPageMock;

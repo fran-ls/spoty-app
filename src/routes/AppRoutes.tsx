@@ -1,12 +1,11 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import AppLayout from "../shared/layout/AppLayout";
 import HomePage from "../features/home/pages/HomePage";
-// import SearchPage from "../features/search/SearchPage";
+import SearchPage from "../features/search/pages/SearchPage";
 import LibraryPage from "../features/library/pages/LibraryPage";
 import PlaylistPage from "../features/playlist/pages/PlaylistPage";
 import SongsPage from "../features/song/pages/SongsPage";
 import { routes } from "../shared/utils/routes";
-import SearchPlaylistPage from "../features/playlist/pages/SearchPlaylistPage";
 import YTDropHomePage from "../yt_drop/pages/HomePage";
 import DownloadPage from "../yt_drop/pages/DownloadPage";
 import DownloadStatPage from "../yt_drop/pages/DownloadStatPage";
@@ -21,7 +20,7 @@ const AppRoutes = () => {
     <AppLayout>
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path={routes.search} element={<SearchPlaylistPage />} />
+        <Route path={routes.search} element={<SearchPage />} />
         <Route path={routes.library} element={<LibraryPage />} />
         <Route path={routes.playlists} element={<PlaylistsPage />} />
         <Route path={`${routes.playlists}/:playlistId`} element={<PlaylistPage />} />

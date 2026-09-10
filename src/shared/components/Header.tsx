@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Bell, Users, Search, Sparkles, XIcon, GlobeIcon, CircleUserRoundIcon, SettingsIcon, LaptopMinimalIcon, LogOutIcon, UploadIcon, MusicIcon, DownloadIcon, LibraryIcon, Headphones } from 'lucide-react';
 import useAuth from '../../features/auth/hooks/useAuth';
 import { routes } from '../utils/routes';
 import { getDeviceType } from '../utils/getDeviceType';
-import { useAppCtx } from '../context/AppContext';
+import { fmtSearchUrl } from '../../features/search/utils/fmtSearchUrl';
 
 interface HeaderProps {
   onExplorePremiumClick?: () => void;
@@ -12,10 +12,9 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ onExplorePremiumClick }) => {
   const { user, isAdmin, dispatch, showProfile, logout } = useAuth();
-  const { searchQuery, setSearchQuery } = useAppCtx();
-  const location = useLocation();
-  const pathname = location.pathname;
+  const { search, pathname } = useLocation();
 
+  const [searchQuery, setSearchQuery] = useState('');
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [isActive, setIsActive] = useState(false);
 
@@ -29,20 +28,16 @@ export const Header: React.FC<HeaderProps> = ({ onExplorePremiumClick }) => {
     setIsActive(false);
   }
 
-  const onQueryChange = (e: React.ChangeEvent<HTMLInputElement, HTMLInputElement>) => {
-    const value = e.target.value;
-    setSearchQuery(value);
-
-    if (pathname === routes.search) {
-      navigate(!value.trim() ? pathname : `${pathname}?q=${value.trim()}`);
-    }
-  }
-
   const onPressKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key.toLowerCase() === 'enter') {
-      navigate(!searchQuery.trim() ? routes.search : `${routes.search}?q=${searchQuery.trim()}`);
-    }
+    if (e.key.toLowerCase() !== 'enter') return;
+    const q = searchQuery.trim().replaceAll(' ', '-');
+    navigate(!searchQuery.trim() ? routes.search : `${routes.search}?q=${q}`);
   }
+
+  useEffect(() => {
+    const q = fmtSearchUrl({ text: search, reverse: true });
+    q && setSearchQuery(q);
+  }, [search]);
 
   return (
     <header
@@ -80,7 +75,7 @@ export const Header: React.FC<HeaderProps> = ({ onExplorePremiumClick }) => {
 
             <input
               value={searchQuery}
-              onChange={onQueryChange}
+              onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={onPressKey}
               className="bg-[#262626] border-none rounded-full py-3 pl-12 pr-22 w-full text-sm font-medium focus:ring-2 focus:ring-white/20 text-white placeholder:text-[#adaaaa] transition-all outline-none"
               placeholder="¿Qué quieres escuchar?"
