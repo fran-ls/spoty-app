@@ -31,7 +31,7 @@ const Queue = () => {
   const isCollapsed = !isPlayer;
   const hasMore = !isLoading && page < queueMeta.totalPages;
 
-  useEffect(() => { currentPlaylist && getQueueSongs(1) }, [currentPlaylist]);
+  useEffect(() => { setPage(1) }, [currentPlaylist]);
 
   useEffect(() => {
     const lastIndex = queue.length - 1;
