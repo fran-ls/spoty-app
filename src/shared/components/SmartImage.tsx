@@ -1,4 +1,4 @@
-import { useState, type ImgHTMLAttributes } from "react";
+import { useEffect, type ImgHTMLAttributes } from "react";
 import { MusicIcon } from "lucide-react";
 import { getStyles, type ItemStyle, type Style } from "../utils/getStyles";
 import { cn } from "../utils/tailwindCn";
@@ -36,13 +36,12 @@ type SmartImageProps = ImgHTMLAttributes<HTMLImageElement> & {
   wrapStyles?: React.CSSProperties;
   icon?: React.ReactNode;
   styles?: Styles;
+  deps?: any[];
   onErr?: (e: React.SyntheticEvent<HTMLImageElement, Event>, selectors: DOMSelectors) => void | undefined;
 }
 
 const SmartImage = (props: SmartImageProps) => {
   const { url, wrapClassName = '', iconClassName = '', styles, onErr, ...imgProps } = props;
-
-  const [isError, setIsError] = useState(false);
 
   const fmtStyles: Partial<Record<StyleK, ItemStyle>> = {};
   styleKeys.forEach((k) => {
@@ -51,14 +50,13 @@ const SmartImage = (props: SmartImageProps) => {
   });
   const values = fmtStyles as Record<StyleK, ItemStyle>;
 
+  useEffect(() => { }, props.deps || []);
+
   return (
     <div
       style={{
         ...props.wrapStyles,
-        ...values.imgWrap.style,
-        ...(isError && {
-          background: 'transparent'
-        })
+        ...values.imgWrap.style
       }}
       className={`${cn("w-12 h-12 bg-[#262626] text-[#adaaaa] relative overflow-hidden", wrapClassName, values.imgWrap.className)} ${selectors.wrap}`}
     >
@@ -71,7 +69,6 @@ const SmartImage = (props: SmartImageProps) => {
           {...imgProps}
           className={props.className ? `${props.className} ${selectors.img}` : cn(`object-cover w-full h-full ${selectors.img}`, props.className, values.img.className)}
           onError={(e) => {
-            setIsError(true);
             props.onError?.(e);
             onErr?.(e, selectors);
             showIcon(e.currentTarget, `.${selectors.wrap}`);
@@ -82,12 +79,12 @@ const SmartImage = (props: SmartImageProps) => {
       {!props.icon ? (
         <MusicIcon
           style={values.icon.style}
-          className={`${cn(`w-[50%] h-[50%] absolute top-1/2 left-1/2 -translate-1/2 ${url ? 'hidden opacity-0' : ''}`, iconClassName, values.icon.className)} ${selectors.icon}`}
+          className={`${cn(`${url ? 'hidden opacity-0' : ''} w-[50%] h-[50%] absolute top-1/2 left-1/2 -translate-1/2`, iconClassName, values.icon.className)} ${selectors.icon}`}
         />
       ) : (
         <div
           style={values.iconWrap.style}
-          className={cn(`w-full h-full absolute top-1/2 left-1/2 -translate-1/2 flex items-center justify-center ${url ? 'hidden opacity-0' : ''} ${selectors.icon}`, values.iconWrap.className)}
+          className={cn(`${url ? 'hidden opacity-0' : ''} w-full h-full absolute top-1/2 left-1/2 -translate-1/2 flex items-center justify-center ${selectors.icon}`, values.iconWrap.className)}
         >
           {props.icon}
         </div>
