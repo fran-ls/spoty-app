@@ -50,7 +50,8 @@ const BackgroundColor = (props: BackgroundColorProps) => {
       isOpen={open}
       style={{
         ...wrapSize,
-        maxWidth: 535
+        maxWidth: 535,
+        zIndex: 10
       }}
     >
       <div

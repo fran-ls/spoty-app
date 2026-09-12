@@ -20,6 +20,7 @@ import { STYLES } from '../../../shared/utils/styles';
 import SearchSongsForPlaylist from '../components/SearchSongsForPlaylist';
 import { PlaylistLayout } from '../../library/library.types';
 import { routes } from '../../../shared/utils/routes';
+import { CustomScrollbar } from '../../../shared/components/CustomScrollbar';
 
 const PlaylistPage = () => {
   const { playlistId } = useParams();
@@ -101,7 +102,16 @@ const PlaylistPage = () => {
 
   return (
     <div className={`${STYLES.maxHeightMain} text-white select-none relative overflow-hidden`}>
-      <div className={`${STYLES.maxHeightMain} ${STYLES.minHeightMain} overflow-auto animate-fade-in relative`}>
+      <CustomScrollbar
+        scrollbarMode="vertical"
+        viewport={{
+          className: `${STYLES.maxHeightMain} ${STYLES.minHeightMain} animate-fade-in relative`,
+          style: {
+            minHeight: "calc(100dvh - 64px - 88px)",
+            maxHeight: "calc(100dvh - 64px - 88px)"
+          }
+        }}
+      >
         <PlaylistCard
           form={form}
           colors={colors}
@@ -186,7 +196,7 @@ const PlaylistPage = () => {
             setIsSongSearch={setIsSongSearch}
           />
         )}
-      </div>
+      </CustomScrollbar>
 
       <BackgroundColor
         open={openBgEditor}
