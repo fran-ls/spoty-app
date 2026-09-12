@@ -17,6 +17,7 @@ import YTDropAppLayout from "../../yt_drop/components/layout/YTDropAppLayout";
 import MobilePlayer from "../../features/player/components/MobilePlayer";
 import { getDeviceType } from "../utils/getDeviceType";
 import MobileTabs from "./MobileTabs";
+import { CustomScrollbar } from "../components/CustomScrollbar";
 
 const AppLayout = ({ children }: { children: React.ReactNode }) => {
   const { pathname } = useLocation();
@@ -67,9 +68,14 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
         )}
 
         <main className={`${isDesktop ? 'rounded-lg' : ''} w-full bg-[#131313] overflow-hidden`}>
-          <div className={`${STYLES.maxHeightMain} ${STYLES.minHeightMain} flex-1 overflow-y-auto ${isDesktop ? '' : 'hide-scrollbar'}`}>
+          <CustomScrollbar
+            scrollbarMode="vertical"
+            viewport={{
+              className: `${STYLES.maxHeightMain} ${STYLES.minHeightMain} flex-1 ${isDesktop ? '' : 'hide-scrollbar'}`
+            }}
+          >
             {children}
-          </div>
+          </CustomScrollbar>
         </main>
 
         <Player />
