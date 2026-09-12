@@ -1,3 +1,4 @@
+import React, { useRef, useState } from "react";
 import { routes } from "../../../shared/utils/routes";
 
 export type SearchFilter = 'playlists' | 'artists' | 'tracks' | 'all';
@@ -15,6 +16,10 @@ interface SearchHeaderProps {
 }
 
 const SearchHeader = ({ filter, setFilter }: SearchHeaderProps) => {
+  const [scrollLeft, setScrollLeft] = useState(0);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const content = contentRef.current;
+
   const btns: Btn[] = [
     {
       label: 'Todo',
@@ -38,13 +43,24 @@ const SearchHeader = ({ filter, setFilter }: SearchHeaderProps) => {
     }
   ];
 
-  return (
-    <div className="mb-4 text-white flex items-center gap-2">
-      {btns.map((btn) => {
-        // const q = query.trim().replaceAll(' ', '-');
-        // const redirectTo = !query ? btn.link : `${btn.link}?q=${q}`;
+  const style: React.CSSProperties = {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    width: 32,
+    height: '100%',
+    transition: 'opacity .15s ease-out',
+    zIndex: 2
+  }
 
-        return (
+  return (
+    <div className="mb-4 text-white overflow-hidden relative">
+      <div
+        className="flex items-center gap-2 overflow-x-auto hide-scrollbar"
+        onScroll={({ currentTarget }) => setScrollLeft(currentTarget.scrollLeft)}
+        ref={contentRef}
+      >
+        {btns.map((btn) => (
           <button
             className="hover:bg-[#282828] font-semibold text-[13px] px-3.5 py-1.5 rounded-full cursor-pointer"
             onClick={() => setFilter(btn.filter)}
@@ -59,8 +75,26 @@ const SearchHeader = ({ filter, setFilter }: SearchHeaderProps) => {
               {btn.label}
             </span>
           </button>
-        )
-      })}
+        ))}
+      </div>
+
+      <div style={{
+        ...style,
+        display: scrollLeft > 0 ? 'block' : 'none',
+        opacity: scrollLeft > 0 ? '1' : '0',
+        left: 0,
+        insetInlineStart: 0,
+        background: 'linear-gradient(90deg, #131313 0%, transparent 100%)'
+      }} />
+
+      <div style={{
+        ...style,
+        display: content && scrollLeft >= content.scrollWidth - content.clientWidth - 1 ? 'none' : 'block',
+        opacity: content && scrollLeft >= content.scrollWidth - content.clientWidth - 1 ? '0' : '1',
+        right: 0,
+        insetInlineEnd: 0,
+        background: 'linear-gradient(-90deg, #131313 0%, transparent 100%)'
+      }} />
     </div>
   )
 }

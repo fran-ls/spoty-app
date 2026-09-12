@@ -8,31 +8,49 @@ import SearchHeader from "../components/SearchHeader";
 import ResultsContainer from "../components/ResultsContainer";
 import SearchPlaylistPage from "../../playlist/pages/SearchPlaylistPage";
 import { fmtSearchUrl } from "../utils/fmtSearchUrl";
+import { getDeviceType } from "../../../shared/utils/getDeviceType";
+import SearchInput from "../components/SearchInput";
 
 const SearchPage = () => {
   const { search } = useLocation();
 
   const [filter, setFilter] = useState<SearchFilter>('all');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [hoverId, setHoverId] = useState('');
+  const [query, setQuery] = useState('');
 
   const isAllFilter = filter === 'all';
-
-  const [hoverId, setHoverId] = useState('');
+  const isDesktop = getDeviceType() === 'desktop';
 
   useEffect(() => {
     const q = fmtSearchUrl({ text: search, reverse: true });
-    q && setSearchQuery(q);
+    q && setQuery(q);
   }, [search]);
 
-  if (!searchQuery) return (
+  if (!query && isDesktop) return (
     <SearchPlaylistPage />
   )
 
+  if (!query && !isDesktop) return (
+    <div className="mt-8 px-4">
+      <SearchInput
+        query={query}
+        setQuery={setQuery}
+      />
+    </div>
+  )
+
   return (
-    <div className="md:px-8 px-2 py-8">
+    <div className="md:px-8 px-4 py-8">
+      {!isDesktop && (
+        <SearchInput
+          query={query}
+          setQuery={setQuery}
+        />
+      )}
+
       <SearchHeader
         filter={filter}
-        query={searchQuery}
+        query={query}
         setFilter={setFilter}
       />
 
@@ -42,14 +60,14 @@ const SearchPage = () => {
       >
         {(filter === 'artists' || isAllFilter) && (
           <ArtistResults
-            query={searchQuery}
+            query={query}
             filter={filter}
           />
         )}
 
         {(filter === 'tracks' || isAllFilter) && (
           <TrackResults
-            query={searchQuery}
+            query={query}
             filter={filter}
             hoverId={hoverId}
             setHoverId={setHoverId}
@@ -58,7 +76,7 @@ const SearchPage = () => {
 
         {(filter === 'playlists' || isAllFilter) && (
           <PlaylistResults
-            query={searchQuery}
+            query={query}
             filter={filter}
             hoverId={hoverId}
             setHoverId={setHoverId}

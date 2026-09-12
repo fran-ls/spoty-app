@@ -1,8 +1,9 @@
 import { Link, useNavigate } from "react-router-dom";
-import { EllipsisIcon, ListIcon, ListPlusIcon, Music2Icon, MusicIcon, PauseIcon, PlayIcon, ShareIcon } from "lucide-react";
+import { EllipsisIcon, ListIcon, ListPlusIcon, Music2Icon, MusicIcon, PauseIcon, PlayIcon, ShareIcon, UserIcon } from "lucide-react";
 import SmartImage from "../../../shared/components/SmartImage";
 import usePlayer from "../../player/hooks/usePlayer";
 import ActionMenu from "../../../shared/components/ActionMenu";
+import { getDeviceType } from "../../../shared/utils/getDeviceType";
 
 interface SearchItemProps {
   type?: 'artist' | 'playlist' | 'song';
@@ -31,6 +32,7 @@ const SearchItem = (props: SearchItemProps) => {
   const navigate = useNavigate();
 
   const item = payload();
+  const isDesktop = getDeviceType() === 'desktop';
 
   const is = {
     song: type === 'song',
@@ -38,20 +40,28 @@ const SearchItem = (props: SearchItemProps) => {
     playlist: type === 'playlist'
   }
 
+  const grid = {
+    sm: 'grid-cols-[1fr_40px]',
+    md: 'md:grid-cols-[1fr_250px]'
+  }
+
   return (
     <div className={`hover:bg-[#262626] group rounded-md flex items-center gap-2 text-white google-sans-flex-font ${is.artist ? 'p-4' : 'px-3 py-2'}`}>
-      <div className="grid grid-cols-[1fr_250px] items-center w-full gap-3 relative">
-        <div className={`flex items-center ${is.artist ? 'gap-6' : 'gap-3'}`}>
+      <div className={`${isDesktop ? grid.sm : 'grid-cols-1'} ${grid.md} grid items-center w-full gap-3 relative`}>
+        <div className={`flex items-center ${is.artist ? isDesktop ? 'gap-6' : 'gap-3' : 'gap-3'}`}>
           <div className="relative">
             <SmartImage
-              wrapClassName="shrink-0 text-[#7f7f7f] w-16 h-16"
+              wrapClassName={`${isDesktop ? 'w-16 h-16' : 'w-12 h-12'} shrink-0 text-[#7f7f7f]`}
               styles={{
                 imgWrap: {
                   boxShadow: '0 4px 60px #00000080',
                   borderRadius: is.artist ? '100%' : '4px'
                 }
               }}
-              icon={<MusicIcon className="w-[30%] h-[30%]" />}
+              icon={(is.artist
+                ? <UserIcon className="w-[40%] h-[40%]" />
+                : <MusicIcon className="w-[40%] h-[40%]" />
+              )}
               url={loadImage?.(item) || null}
             />
 
@@ -103,7 +113,7 @@ const SearchItem = (props: SearchItemProps) => {
               className="hover:underline block"
               to={item.link}
             >
-              <span className={`block ${is.artist ? 'text-2xl' : 'text-base'} ${!is.artist ? 'font-normal' : ''}`}>
+              <span className={`block ${is.artist ? 'md:text-2xl text-base' : 'text-base'} ${!is.artist ? 'font-normal' : !isDesktop ? 'font-medium' : ''}`}>
                 {item.title}
               </span>
             </Link>
@@ -127,7 +137,7 @@ const SearchItem = (props: SearchItemProps) => {
           </div>
         </div>
 
-        <div className="flex items-center justify-between gap-4">
+        <div className="md:flex hidden items-center justify-between gap-4">
           <div>
             {!is.artist && (
               <span className="text-xs text-[#b3b3b3] bg-[#ffffff1a] rounded px-1 py-0.5">
