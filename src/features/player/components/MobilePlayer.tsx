@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { ChevronDownIcon, EllipsisVerticalIcon, HeartIcon, ListMusicIcon, Music2Icon, MusicIcon, PauseIcon, PlayIcon, Share2Icon } from "lucide-react";
+import { ChevronDownIcon, EllipsisVerticalIcon, HeartIcon, ListMusicIcon, MusicIcon, PauseIcon, PlayIcon } from "lucide-react";
 import SmartImage from "../../../shared/components/SmartImage";
 import usePlayer from "../hooks/usePlayer";
 import songService from "../../song/services/song.service";
@@ -10,6 +10,7 @@ import { RepeatIcon, ShuffleIcon, SkipForwardIcon } from "../../../shared/compon
 import MobileQueue from "./MobileQueue";
 import useAuth from "../../auth/hooks/useAuth";
 import { routes } from "../../../shared/utils/routes";
+import MobilePlayerModal from "./MobilePlayerModal";
 
 const MobilePlayer = () => {
   const { user } = useAuth();
@@ -73,17 +74,24 @@ const MobilePlayer = () => {
     setIsMobileQueue(false);
   }
 
-  const progressPercent = Math.min(100, (progress / duration) * 100);
-  const songCover = currentSong ? songService.songCoverUrl(currentSong.id, currentSong.cover) : '';
+  const song = {
+    id: currentSong?.id || '',
+    title: currentSong?.title || 'Tema',
+    artistName: currentSong?.artist?.name || 'Artista',
+    artistId: currentSong?.artistId || '',
+    cover: currentSong ? songService.songCoverUrl(currentSong.id, currentSong.cover) : ''
+  }
 
   const playerBg = 'bg-[#212121]';
   const playerImgWidth = playerWrap ? `calc(${playerWrap.offsetWidth}px - 12px * 2)` : '';
+  const progressPercent = Math.min(100, (progress / duration) * 100);
 
   const device = getDeviceType();
   const isDesktop = device === 'desktop';
 
   const colors = {
-    icon: 'text-white/40'
+    icon: 'text-white/40',
+    shadow: '0 0 25px rgb(0, 0, 0, 0.25)'
   }
 
   useEffect(() => { (user && user.id) && getPlayer(user.id) }, [user]);
@@ -107,32 +115,38 @@ const MobilePlayer = () => {
             <SmartImage
               styles={{
                 imgWrap: {
-                  ...(!songCover && {
-                    boxShadow: '0 0 25px rgb(0, 0, 0, 0.25)',
+                  ...(!song.cover && {
+                    boxShadow: colors.shadow,
                     background: 'transparent'
                   })
                 }
               }}
               wrapClassName="min-w-9 w-9 h-9 bg-[#262626] rounded overflow-hidden shrink-0 group relative cursor-pointer"
               className="aspect-square w-full h-full object-cover transition-transform duration-300"
-              url={songCover}
+              url={song.cover}
               icon={(
                 <MusicIcon className="w-4 h-4 text-white absolute top-1/2 left-1/2 -translate-1/2" />
               )}
+              onErr={({ e, selectors }) => {
+                const el = e.currentTarget.closest(`.${selectors.wrap}`) as HTMLDivElement;
+                if (!el) return;
+                el.style.boxShadow = colors.shadow;
+                el.style.background = 'transparent';
+              }}
             />
 
             <div className="overflow-hidden">
               <h1
                 className="text-[13px] font-bold text-white w-full line-clamp-1"
-                title={currentSong?.title}
+                title={song.title}
               >
-                {currentSong?.title || 'Tema'}
+                {song.title}
               </h1>
               <span
                 className="font-medium text-xs text-white/95 line-clamp-1"
-                title={currentSong?.artist?.name}
+                title={song.artistName}
               >
-                {currentSong?.artist?.name || 'Artista'}
+                {song.artistName}
               </span>
             </div>
           </div>
@@ -191,27 +205,27 @@ const MobilePlayer = () => {
                 setIsExpanded(false);
                 setIsMobileQueue(false);
               }}
-              className="ml-auto p-2 text-white hover:text-white transition-colors duration-200 cursor-pointer"
+              className="p-2 text-white hover:text-white transition-colors duration-200 cursor-pointer"
             >
               <ChevronDownIcon size={28} />
             </button>
 
             <Link
               className="hover:underline cursor-pointer overflow-hidden"
-              to={`${routes.tracks}/${currentSong?.id || ''}`}
+              to={`${routes.tracks}/${song.id}`}
               onClick={onMinimize}
             >
               <h2
-                className={`${!currentSong?.title ? 'uppercase' : ''} text-xs w-full text-center font-bold text-white truncate`}
-                title={currentSong?.title}
+                className={`${!song.title ? 'uppercase' : ''} text-xs w-full text-center font-bold text-white truncate`}
+                title={song.title}
               >
-                {currentSong?.title || 'Tema'}
+                {song.title}
               </h2>
             </Link>
 
             <button
               onClick={() => setIsOpenModal(true)}
-              className="ml-auto p-2 text-white hover:text-white transition-colors duration-200 cursor-pointer"
+              className="p-2 text-white hover:text-white transition-colors duration-200 cursor-pointer"
             >
               <EllipsisVerticalIcon className="rotate-90" size={24} />
             </button>
@@ -222,46 +236,53 @@ const MobilePlayer = () => {
               imgWrap: {
                 width: playerImgWidth || '100%',
                 height: playerImgWidth || '100%',
-                ...(!songCover && {
+                ...(!song.cover && {
                   borderRadius: '20px',
-                  boxShadow: '0 0 25px rgb(0, 0, 0, 0.25)',
+                  boxShadow: colors.shadow,
                   background: 'transparent'
                 })
               }
             }}
+            deps={[currentSong]}
             wrapClassName="sm:w-84 sm:h-84 mx-3 w-[calc(100vw-12px*2)] h-[calc(100vw-12px*2)] bg-[#262626] overflow-hidden shadow-2xl shrink-0 group relative"
             className="aspect-square w-full h-full object-cover transition-transform duration-300"
-            url={songCover}
+            url={song.cover}
             icon={(
               <MusicIcon className="w-1/4 h-1/4 text-white absolute top-1/2 left-1/2 -translate-1/2" />
             )}
+            onErr={({ e, selectors }) => {
+              const el = e.currentTarget.closest(`.${selectors.wrap}`) as HTMLDivElement;
+              if (!el) return;
+              el.style.boxShadow = 'none';
+              el.style.background = 'transparent';
+            }}
           />
 
           <div className="px-5 my-8 w-full flex items-center justify-between gap-2">
             <div className="flex flex-col overflow-hidden">
               <Link
                 className="group text-white hover:underline cursor-pointer"
-                to={`${routes.tracks}/${currentSong?.id || ''}`}
+                to={`${routes.tracks}/${song.id}`}
                 onClick={onMinimize}
               >
                 <h1
                   className="text-lg font-bold text-white truncate"
-                  title={currentSong?.title}
+                  title={song.title}
                 >
-                  {currentSong?.title || 'Tema'}
+                  {song.title}
                 </h1>
               </Link>
 
               <Link
                 className="group text-[#adaaaa] hover:underline truncate cursor-pointer"
-                to={`${routes.artists}/${currentSong?.artistId || ''}`}
+                to={`${routes.artists}/${song.artistId}`}
                 onClick={onMinimize}
               >
                 <span
                   className="font-medium text-sm text-[#adaaaa] group-hover:text-white"
-                  title={currentSong?.artist?.name}
+                  title={song.artistName}
                 >
-                  {currentSong?.artist?.name || 'Artista'}
+                  {song.artistName}
                 </span>
               </Link>
             </div>
@@ -389,72 +410,15 @@ const MobilePlayer = () => {
           style={{
             width: playerWrap ? playerWrap.offsetWidth : '100%'
           }}
-          className="google-sans-flex-font flex flex-col gap-8 z-100 bg-black/60 px-3 py-6 fixed top-0 left-0 h-dvh max-h-dvh min-h-dvh"
+          className="google-sans-flex-font flex flex-col gap-8 z-100 bg-black/60 px-4 py-6 fixed top-0 left-0 h-dvh max-h-dvh min-h-dvh"
         >
-          <div className="mt-12 flex items-center gap-4">
-            <SmartImage
-              styles={{
-                imgWrap: {
-                  ...(!songCover && {
-                    boxShadow: '0 0 25px rgb(0, 0, 0, 0.25)',
-                    ...(currentPlaylist && {
-                      background: currentPlaylist.bgColor,
-                    })
-                  })
-                }
-              }}
-              wrapClassName="w-15 h-15 bg-[#262626] overflow-hidden shadow-2xl shrink-0 group relative cursor-pointer"
-              className="aspect-square w-full h-full object-cover transition-transform duration-300"
-              url={songCover}
-              icon={(
-                <MusicIcon className="w-[35%] h-[35%] text-white absolute top-1/2 left-1/2 -translate-1/2" />
-              )}
-            />
-
-            <div className="flex flex-col">
-              <h1
-                className="text-base font-bold text-white hover:underline cursor-pointer truncate"
-                title={currentSong?.title}
-              >
-                {currentSong?.title || 'Tema'}
-              </h1>
-              <span
-                className="font-medium text-xs text-[#adaaaa] hover:text-white hover:underline cursor-pointer truncate"
-                title={currentSong?.artist?.name}
-              >
-                {currentSong?.artist?.name || 'Artista'}
-              </span>
-            </div>
-          </div>
-
-          <button
-            className="flex items-center gap-3 text-white w-fit h-fit transition-colors duration-200 cursor-pointer"
-            onClick={toggleLikeTrack}
-          >
-            <HeartIcon className={isLiked ? 'fill-primary stroke-0' : ''} size={24} />
-            <span className="font-semibold">Me gusta</span>
-          </button>
-
-          <button className="flex items-center gap-3 text-white w-fit h-fit transition-colors duration-200 cursor-pointer">
-            <Share2Icon size={24} />
-            <span className="font-semibold">Compartir música</span>
-          </button>
-
-          <Link
-            to={`${routes.tracks}/${currentSong?.id || ''}`}
-            onClick={onMinimize}
-            className="flex items-center gap-3 text-white w-fit h-fit transition-colors duration-200 cursor-pointer"
-          >
-            <Music2Icon size={20} />
-            <span className="font-semibold">Ver pista</span>
-          </Link>
-
-          <button
-            onClick={() => setIsOpenModal(false)}
-            className="mx-auto mt-auto flex items-center gap-2 text-white w-fit h-fit transition-colors duration-200 cursor-pointer"
-          >
-            <span className="font-semibold">Cerrar</span>
-          </button>
+          <MobilePlayerModal
+            song={song}
+            isLiked={isLiked}
+            onMinimize={onMinimize}
+            toggleLikeTrack={toggleLikeTrack}
+            onClose={() => setIsOpenModal(false)}
+          />
         </div>
       )}
     </>
