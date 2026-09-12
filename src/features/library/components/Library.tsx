@@ -11,8 +11,8 @@ import { getDeviceType } from '../../../shared/utils/getDeviceType';
 import { STYLES } from '../../../shared/utils/styles';
 import useLibrary from '../hooks/useLibrary';
 import Playlists from './Playlists';
-import { hasScroll } from '../../../shared/utils/scroll';
 import { OrderKind } from '../../../shared/types/common.types';
+import { CustomScrollbar } from '../../../shared/components/CustomScrollbar';
 
 export type Grid = {
   li: {
@@ -39,12 +39,13 @@ export const Library = (props: LibraryProps) => {
   const { user } = useAuth();
   const {
     library, layout, orderBy, libraryStatus, playlists, playlistMeta, isLoading,
-    playlistVerticalScroll, playlistScrollTop, newPlaylist, onLayoutChange, onSortBy, onSizeChange,
-    setLibraryStatus, getPlaylists, getLibrary, setPlaylistVerticalScroll, setPlaylistScrollTop
+    newPlaylist, onLayoutChange, onSortBy, onSizeChange, setLibraryStatus, getPlaylists,
+    getLibrary
   } = useLibrary();
 
   const { collapsed: isCollapsed, expanded: isExpanded } = libraryStatus;
 
+  const [playlistScrollTop, setPlaylistScrollTop] = useState(0);
   const [isVisibilityMenu, setIsVisibilityMenu] = useState(false);
   const [visibility, setVisibility] = useState<PlaylistVisibility | ''>('');
 
@@ -56,7 +57,6 @@ export const Library = (props: LibraryProps) => {
   const [btnHover, setBtnHover] = useState(false);
 
   const ulRef = useRef<HTMLUListElement>(null);
-  const navRef = useRef<HTMLElement>(null);
 
   const [gridImgSize, setGridImgSize] = useState(0);
 
@@ -143,13 +143,6 @@ export const Library = (props: LibraryProps) => {
     return () => window.removeEventListener('resize', handleResize);
   }, [layout, libraryStatus]);
 
-  useEffect(() => {
-    if (navRef.current) {
-      const verticalScroll = hasScroll(navRef.current).vertical;
-      setPlaylistVerticalScroll(verticalScroll);
-    }
-  }, [playlists]);
-
   const grid: Grid = {
     li: {
       s: 'min-[420px]:grid-cols-[minmax(200px,2fr)_70px]',
@@ -211,7 +204,7 @@ export const Library = (props: LibraryProps) => {
               </button>
             )}
 
-            {!isCollapsed &&
+            {!isCollapsed && (
               <button
                 onClick={() => onSizeChange(library.id, {
                   collapsed: false,
@@ -224,7 +217,7 @@ export const Library = (props: LibraryProps) => {
                   Tu biblioteca
                 </h3>
               </button>
-            }
+            )}
 
             <div className="flex items-center gap-2">
               <button
@@ -235,11 +228,11 @@ export const Library = (props: LibraryProps) => {
               >
                 <PlusIcon className="w-5 h-5" />
 
-                {(!isCollapsed && isExpanded) &&
+                {(!isCollapsed && isExpanded) && (
                   <span className="text-white">
                     Lista
                   </span>
-                }
+                )}
               </button>
 
               {(isExpanded && !props.isPage) && (
@@ -254,7 +247,7 @@ export const Library = (props: LibraryProps) => {
             </div>
           </div>
 
-          {!isCollapsed &&
+          {!isCollapsed && (
             <div className="min-[520px]:flex-row flex-col mt-4 text-[#adaaaa] flex items-center justify-between gap-5 relative">
               <div
                 onClick={(e) => {
@@ -265,7 +258,7 @@ export const Library = (props: LibraryProps) => {
               >
                 <SearchIcon className="min-w-4 w-4 h-4" />
 
-                {(isSearch || isExpanded) &&
+                {(isSearch || isExpanded) && (
                   <input
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
@@ -273,14 +266,14 @@ export const Library = (props: LibraryProps) => {
                     placeholder="Buscar en Tu biblioteca"
                     type="text"
                   />
-                }
+                )}
 
-                {isSearch && query &&
+                {(isSearch && query) && (
                   <XIcon
                     className="min-w-4 w-5 h-5"
                     onClick={() => setQuery('')}
                   />
-                }
+                )}
               </div>
 
               <div className="min-[520px]:w-fit w-full flex items-center justify-between gap-5">
@@ -291,13 +284,13 @@ export const Library = (props: LibraryProps) => {
                       className="z-5 cursor-pointer hover:text-white text-sm flex items-center gap-2"
                       type="button"
                     >
-                      {(!isSearch || isExpanded) &&
+                      {(!isSearch || isExpanded) && (
                         <span className="font-semibold">
                           {visibility === '' && 'Visibilidad'}
                           {visibility === PlaylistVisibility.PUBLIC && 'Pública'}
                           {visibility === PlaylistVisibility.PRIVATE && 'Privada'}
                         </span>
-                      }
+                      )}
 
                       {visibility === PlaylistVisibility.PUBLIC && <GlobeIcon size={18} />}
                       {visibility === PlaylistVisibility.PRIVATE && <LockIcon size={18} />}
@@ -342,18 +335,18 @@ export const Library = (props: LibraryProps) => {
                   className="z-5 cursor-pointer hover:text-white text-sm flex items-center gap-2"
                   type="button"
                 >
-                  {(!isSearch || isExpanded) &&
+                  {(!isSearch || isExpanded) && (
                     <span className="font-semibold text-nowrap">
                       {orderBy.label}
                     </span>
-                  }
+                  )}
 
                   {layoutKind.list && <ListIcon className="w-5 h-5" />}
                   {layoutKind.compactList && <TextAlignJustify className="w-5 h-5" />}
                   {layoutKind.grid && <LayoutGridIcon className="w-5 h-5" />}
                 </button>
 
-                {isOpen &&
+                {isOpen && (
                   <CustomMenu
                     order={orderBy}
                     layout={layout}
@@ -361,19 +354,22 @@ export const Library = (props: LibraryProps) => {
                     onLayout={(value) => onLayoutChange(library.id, value)}
                     onClose={() => setIsOpen(false)}
                   />
-                }
+                )}
               </div>
             </div>
-          }
+          )}
         </header>
 
-        <nav
-          style={{
-            height: !isDesktop ? `calc(100dvh - 64px - 52px - 62px - ${window.innerWidth >= 520 ? 116 : 156}px)` : ''
+        <CustomScrollbar
+          scrollbarMode="vertical"
+          scrollbar={{
+            style: {
+              height: `calc(100dvh - 64px - 88px - ${isCollapsed ? 120 : isDesktop ? 116 : 156}px)`
+            }
           }}
-          className={`${isCollapsed ? 'h-[calc(100dvh-64px-88px-100px)]' : isExpanded ? `min-[520px]:h-[calc(100dvh-64px-88px-116px)] h-[calc(100dvh-64px-88px-156px)]` : 'h-[calc(100dvh-64px-88px-116px)]'} overflow-y-auto overflow-x-hidden relative ${!isDesktop ? 'hide-scrollbar' : ''}`}
-          onScroll={(e) => setPlaylistScrollTop(e.currentTarget.scrollTop)}
-          ref={navRef}
+          viewport={{
+            onScroll: (e) => setPlaylistScrollTop(e.currentTarget.scrollTop)
+          }}
         >
           {(isExpanded && !layoutKind.grid) && (
             <ul className={`sm:grid hidden ${grid.li.s} ${grid.li.sm} ${grid.li.md} ${grid.li.lg} gap-3 bg-[#131313] text-[13px] text-[#adaaaa] border-b border-white/10 px-4 sticky top-0 z-10`}>
@@ -396,25 +392,9 @@ export const Library = (props: LibraryProps) => {
           )}
 
           <ul
-            style={{
-              ...((!playlistVerticalScroll && !isCollapsed) && {
-                paddingRight: '8px'
-              })
-            }}
-            className={`${isCollapsed ? 'pl-0 pb-5' : 'pl-2 pb-2'} w-full absolute top-0 left-0 ${(layoutKind.grid && !isCollapsed) ? 'grid' : ''} ${!isExpanded ? 'grid-cols-2' : `${grid.ul.s} ${grid.ul.md} ${grid.ul.lg} ${grid.ul['2xl']}`} ${(isExpanded && !layoutKind.grid) ? 'sm:mt-10' : ''}`}
+            className={`${isCollapsed ? 'px-1 pb-1' : `${isDesktop ? 'pb-2' : 'pb-10'} px-2`} w-full ${(layoutKind.grid && !isCollapsed) ? 'grid' : ''} ${!isExpanded ? 'grid-cols-2' : `${grid.ul.s} ${grid.ul.md} ${grid.ul.lg} ${grid.ul['2xl']}`} ${(isExpanded && !layoutKind.grid) ? 'sm:mt-10' : ''}`}
             ref={ulRef}
           >
-            {/* {isAdmin && (
-              <Playlists
-                grid={grid}
-                layoutKind={layoutKind}
-                gridImgSize={gridImgSize}
-                playlists={systemPlaylists}
-                hoverId={hoverId}
-                setHoverId={setHoverId}
-              />
-            )} */}
-
             <Playlists
               grid={grid}
               layoutKind={layoutKind}
@@ -439,7 +419,7 @@ export const Library = (props: LibraryProps) => {
               </li>
             )}
           </ul>
-        </nav>
+        </CustomScrollbar>
       </div>
     </aside>
   )

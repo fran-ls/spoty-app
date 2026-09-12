@@ -24,10 +24,7 @@ const useLibrary = () => {
     playlistMeta, setPlaylistMeta
   } = ctx;
 
-  const [playlistVerticalScroll, setPlaylistVerticalScroll] = useState(false);
-  const [playlistScrollTop, setPlaylistScrollTop] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
-
   const [systemPlaylists, setSystemPlaylists] = useState<Playlist[]>([]);
   const [layout, setLayout] = useState<PlaylistLayout>(PlaylistLayout.LIST);
   const [orderBy, setOrderBy] = useState<CustomMenuOrderItem>({
@@ -224,8 +221,6 @@ const useLibrary = () => {
     orderBy, setOrderBy,
     isLoading, setIsLoading,
     systemPlaylists, setSystemPlaylists,
-    playlistVerticalScroll, setPlaylistVerticalScroll,
-    playlistScrollTop, setPlaylistScrollTop,
     getLibrary, updateLibrary,
     getPlaylists, getSystemPlaylists,
     newPlaylist, removePlaylist,
