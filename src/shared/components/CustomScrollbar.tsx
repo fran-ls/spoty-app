@@ -1,5 +1,5 @@
 import {
-  type CSSProperties, type PointerEvent as ReactPointerEvent, type ReactNode,
+  type PointerEvent as ReactPointerEvent, type ReactNode,
   useCallback, useEffect, useRef, useState,
 } from "react";
 
@@ -7,24 +7,26 @@ import "../../assets/css/custom_scrollbar.css";
 
 type ScrollbarMode = "vertical" | "horizontal" | "both" | "none";
 
-interface CustomScrollbarProps {
-  children: ReactNode;
-  scrollbar?: ScrollbarMode;
-  className?: string;
-  style?: CSSProperties;
+type Prop = React.HTMLAttributes<HTMLDivElement> & {
+  ref?: React.RefObject<HTMLDivElement | null>;
+}
+
+type CustomScrollbarProps = {
+  scrollbarMode?: ScrollbarMode;
   minThumbSize?: number;
+  children: ReactNode;
+  scrollbar?: Prop;
+  viewport?: Prop;
+  content?: Prop;
 }
 
 export function CustomScrollbar(props: CustomScrollbarProps) {
   const {
-    children,
-    scrollbar = "both",
-    className = "",
-    style,
-    minThumbSize = 30
+    children, scrollbar, viewport, content,
+    scrollbarMode = "both", minThumbSize = 30
   } = props;
 
-  const viewportRef = useRef<HTMLDivElement>(null);
+  const viewportRef = viewport?.ref || useRef<HTMLDivElement>(null);
 
   const [isHover, setIsHover] = useState(false);
   const [state, setState] = useState({
@@ -38,8 +40,8 @@ export function CustomScrollbar(props: CustomScrollbarProps) {
     horizontalThumbPosition: 0
   });
 
-  const showVertical = scrollbar === "vertical" || scrollbar === "both";
-  const showHorizontal = scrollbar === "horizontal" || scrollbar === "both";
+  const showVertical = scrollbarMode === "vertical" || scrollbarMode === "both";
+  const showHorizontal = scrollbarMode === "horizontal" || scrollbarMode === "both";
 
   const updateScrollbars = useCallback(() => {
     const el = viewportRef.current;
@@ -222,16 +224,26 @@ export function CustomScrollbar(props: CustomScrollbarProps) {
 
   return (
     <div
-      className={`custom-scrollbar ${className}`}
-      style={style}
+      {...scrollbar}
+      className={`custom-scrollbar ${scrollbar?.className || ''}`}
     >
       <div
+        {...viewport}
         ref={viewportRef}
-        onPointerOver={() => setIsHover(true)}
-        onMouseOut={() => setIsHover(false)}
-        className="custom-scrollbar__viewport"
+        onPointerOver={(e) => {
+          setIsHover(true);
+          viewport?.onPointerOver?.(e);
+        }}
+        onMouseOut={(e) => {
+          setIsHover(false);
+          viewport?.onMouseOut?.(e);
+        }}
+        className={`custom-scrollbar__viewport ${viewport?.className || ''}`}
       >
-        <div className="custom-scrollbar__content">
+        <div
+          {...content}
+          className={`custom-scrollbar__content ${content?.className || ''}`}
+        >
           {children}
         </div>
       </div>

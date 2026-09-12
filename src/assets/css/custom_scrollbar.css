@@ -95,9 +95,9 @@
 
 /* Hover / drag visual */
 .custom-scrollbar__thumb:hover {
-  background: #898989;
+  background: #ffffff80;
 }
 
 .custom-scrollbar__thumb:active {
-  background: #b8b8b8;
+  background: #ffffffb3;
 }
