@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { CircleMinusIcon, ListPlusIcon, Music2Icon, MusicIcon, PlusIcon, ShareIcon } from 'lucide-react';
+import { useParams } from 'react-router-dom';
+import { MusicIcon } from 'lucide-react';
 import { Toaster as SonnerToaster, toast } from 'sonner';
 import type { PlaylistSong } from '../playlist.types';
-import ActionMenu from '../../../shared/components/ActionMenu';
 import EditData from '../components/EditData';
 import BackgroundColor from '../components/BackgroundColor';
 import DeleteConfirm from '../components/DeleteConfirm';
@@ -19,18 +18,17 @@ import PlaylistActionBar from '../components/PlaylistActionBar';
 import { STYLES } from '../../../shared/utils/styles';
 import SearchSongsForPlaylist from '../components/SearchSongsForPlaylist';
 import { PlaylistLayout } from '../../library/library.types';
-import { routes } from '../../../shared/utils/routes';
 import { CustomScrollbar } from '../../../shared/components/CustomScrollbar';
 
 const PlaylistPage = () => {
   const { playlistId } = useParams();
   const { user } = useAuth();
   const { removePlaylist } = useLibrary();
-  const { isPlayer, play, onPlaylistChange } = usePlayer();
+  const { play, onPlaylistChange } = usePlayer();
   const {
-    playlistSongs, playlist, isOpenAction, loadingPlaylistSongs, playlistMeta, playlistItems,
-    form, isEdit, setForm, setIsEdit, setIsOpenAction, getPlaylist, updatePlaylist,
-    getPlaylistTracks, addSongToPlaylist, onChangeVisibility, removeSongFromPlaylist
+    playlistSongs, playlist, loadingPlaylistSongs, playlistMeta, playlistItems,
+    form, isEdit, setForm, setIsEdit, getPlaylist, updatePlaylist, getPlaylistTracks,
+    addSongToPlaylist, onChangeVisibility, removeSongFromPlaylist
   } = usePlaylist();
 
   const [isRemove, setIsRemove] = useState(false);
@@ -42,8 +40,6 @@ const PlaylistPage = () => {
   const [toasterTime, setToasterTime] = useState(2500);
   const [isViewTrack, setIsViewTrack] = useState(false);
   const [activeItem, setActiveItem] = useState<PlaylistSong | null>(null);
-
-  const navigate = useNavigate();
 
   const coverInputRef = useRef<HTMLInputElement>(null);
 
@@ -155,13 +151,12 @@ const PlaylistPage = () => {
             <PlaylistSongs
               items={playlistItems}
               playlistMeta={playlistMeta}
+              isPlaylistOwner={isPlaylistOwner}
+              onRemoveSong={onRemoveSongFromPlaylist}
+              getItem={(item) => setActiveItem(item)}
               onPlay={(index) => {
                 onPlaylistChange(playlist);
                 play(playlistSongs, index, playlistMeta);
-              }}
-              getItem={(item) => {
-                setActiveItem(item);
-                setIsOpenAction(true);
               }}
               loadMore={() => {
                 if (page > playlistMeta.totalPages || loadingPlaylistSongs) return;
@@ -209,50 +204,6 @@ const PlaylistPage = () => {
           if (data?.id) setOpenBgEditor(false);
         }}
       />
-
-      {isOpenAction && (
-        <div
-          onMouseLeave={() => setIsOpenAction(false)}
-          className={`${!isPlayer ? 'md:right-15 right-2' : 'md:right-76 right-2'} w-45 z-100 bg-[#282828] rounded fixed bottom-22`}
-        >
-          <ActionMenu
-            onClose={() => setIsOpenAction(false)}
-            styles={{
-              wrap: "min-w-[160px]"
-            }}
-            items={[{
-              label: 'Añadir a lista',
-              icon: (
-                <PlusIcon size={18} />
-              )
-            },
-            ...(!isPlaylistOwner ? [] : [{
-              label: 'Quitar de la lista',
-              icon: (
-                <CircleMinusIcon size={18} />
-              ),
-              onAction: () => onRemoveSongFromPlaylist(activeItem?.id!)
-            }]),
-            ...[{
-              label: 'Añadir a la cola',
-              icon: (
-                <ListPlusIcon size={18} />
-              )
-            }, {
-              label: 'Ver pista',
-              icon: (
-                <Music2Icon size={18} />
-              ),
-              onAction: () => activeItem?.id && navigate(`${routes.tracks}/${activeItem.songId}`)
-            }, {
-              label: 'Compartir',
-              icon: (
-                <ShareIcon size={18} />
-              )
-            }]]}
-          />
-        </div>
-      )}
 
       {isEdit && (
         <EditData

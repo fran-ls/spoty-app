@@ -32,9 +32,7 @@ const usePlaylist = () => {
   const [loadingPlaylistSongs, setLoadingPlaylistSongs] = useState(false);
   const [playlistMeta, setPlaylistMeta] = useState<PaginationMeta>(paginationMeta);
 
-  const [isOpenAction, setIsOpenAction] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
-
   const [activeItem, setActiveItem] = useState<PlaylistSong | null>(null);
 
   const { user } = useAuth();
@@ -195,7 +193,6 @@ const usePlaylist = () => {
     playlists, setPlaylists,
     form, setForm,
     isEdit, setIsEdit,
-    isOpenAction, setIsOpenAction,
     activeItem, setActiveItem,
     loadingPlaylistSongs, setLoadingPlaylistSongs,
     searchPlaylists,

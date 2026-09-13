@@ -1,4 +1,5 @@
-import { PlayIcon, MusicIcon, EllipsisIcon, ClockIcon, CheckIcon } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { PlayIcon, MusicIcon, EllipsisIcon, ClockIcon, CheckIcon, PlusIcon, CircleMinusIcon, ListPlusIcon, Music2Icon, ShareIcon } from 'lucide-react';
 import type { PlaylistSong } from '../playlist.types';
 import type { PaginationMeta } from '../../../shared/types/common.types';
 import { formatTime } from '../../../shared/utils/formatTime';
@@ -9,19 +10,28 @@ import songService from '../../song/services/song.service';
 import { DropdownIcon } from '../../../shared/components/Icons';
 import SmartImage from '../../../shared/components/SmartImage';
 import usePlayer from '../../player/hooks/usePlayer';
+import { useState } from 'react';
+import ActionMenu from '../../../shared/components/ActionMenu';
+import { routes } from '../../../shared/utils/routes';
 
 interface PlaylistSongsProps {
+  isPlaylistOwner: boolean;
   items: PlaylistSong[];
   playlistMeta: PaginationMeta;
   getItem: (item: PlaylistSong) => void;
   onPlay: (index: number) => void;
+  onRemoveSong: (id: string) => void;
   loadMore: () => void;
 }
 
 const PlaylistSongs = (props: PlaylistSongsProps) => {
-  const { items, playlistMeta, loadMore, getItem, onPlay } = props;
-  const { currentSong } = usePlayer();
+  const { isPlaylistOwner, items, playlistMeta, loadMore, getItem, onPlay, onRemoveSong } = props;
+  const { currentSong, queue, setQueue } = usePlayer();
   const { loaderRef } = useInfiniteScroll(() => loadMore());
+
+  const [activeItem, setActiveItem] = useState<PlaylistSong | null>(null);
+
+  const navigate = useNavigate();
 
   const grid = {
     s: 'grid-cols-[minmax(200px,2fr)_28px]',
@@ -31,7 +41,7 @@ const PlaylistSongs = (props: PlaylistSongsProps) => {
   }
 
   return (
-    <div className={`overflow-x-auto relative ${window.innerWidth <= 768 ? 'hide-scrollbar' : ''}`}>
+    <div className={`relative ${window.innerWidth < 768 ? 'hide-scrollbar' : ''}`}>
       <div className={`sm:grid hidden min-w-fit ${grid.s} ${grid.sm} ${grid.md} ${grid.lg} gap-4 pr-4 py-2 border-b border-white/10 text-[#adaaaa] text-xs font-semibold tracking-wider`}>
         <span className="-mt-1 text-base text-right font-normal block">#</span>
         <span>Título</span>
@@ -132,6 +142,7 @@ const PlaylistSongs = (props: PlaylistSongsProps) => {
               <button
                 onClick={(e) => {
                   e.stopPropagation();
+                  setActiveItem(item);
                   getItem(item);
                 }}
                 className="sm:hidden ml-auto hover:text-white cursor-pointer"
@@ -144,6 +155,7 @@ const PlaylistSongs = (props: PlaylistSongsProps) => {
               <button
                 onClick={(e) => {
                   e.stopPropagation();
+                  setActiveItem(item);
                   getItem(item);
                 }}
                 className="sm:group-hover:block hidden ml-auto hover:text-white cursor-pointer"
@@ -151,11 +163,61 @@ const PlaylistSongs = (props: PlaylistSongsProps) => {
               >
                 <EllipsisIcon size={20} />
               </button>
+
+              {(item.id === activeItem?.id) && (
+                <div
+                  onClick={(e) => e.stopPropagation()}
+                  className={`z-3 absolute right-1 bottom-1 shadow-[0_0_24px_rgba(0,0,0,0.5)]`}
+                  onMouseLeave={() => setActiveItem(null)}
+                >
+                  <ActionMenu
+                    onClose={() => setActiveItem(null)}
+                    styles={{
+                      wrap: "min-w-[160px]"
+                    }}
+                    items={[{
+                      label: 'Añadir a lista',
+                      icon: (
+                        <PlusIcon size={18} />
+                      )
+                    },
+                    ...(!isPlaylistOwner ? [] : [{
+                      label: 'Quitar de la lista',
+                      icon: (
+                        <CircleMinusIcon size={18} />
+                      ),
+                      onAction: () => onRemoveSong(item.id)
+                    }]),
+                    ...[{
+                      label: 'Añadir a la cola',
+                      icon: (
+                        <ListPlusIcon size={18} />
+                      ),
+                      onAction: () => {
+                        if (queue.includes(track!)) return;
+                        setQueue([...queue, track!]);
+                        setActiveItem(null);
+                      }
+                    }, {
+                      label: 'Ver pista',
+                      icon: (
+                        <Music2Icon size={18} />
+                      ),
+                      onAction: () => activeItem?.id && navigate(`${routes.tracks}/${activeItem.id}`)
+                    }, {
+                      label: 'Compartir',
+                      icon: (
+                        <ShareIcon size={18} />
+                      )
+                    }]]}
+                  />
+                </div>
+              )}
             </div>
           )
         })}
 
-        {playlistMeta.hasNextPage &&
+        {playlistMeta.hasNextPage && (
           <div
             className="flex items-center justify-center px-6 py-2 overflow-hidden"
             ref={loaderRef}
@@ -166,7 +228,7 @@ const PlaylistSongs = (props: PlaylistSongsProps) => {
               stroke={2}
             />
           </div>
-        }
+        )}
       </div>
     </div>
   )
