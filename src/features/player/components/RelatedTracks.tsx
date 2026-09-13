@@ -62,7 +62,7 @@ const RelatedTracks = () => {
   }, [currentSong]);
 
   return !sliderItems.length ? null : (
-    <div className="mx-2 text-white">
+    <div className="mb-4 mx-2 text-white">
       <h2 className="ml-2 mb-3 text-white font-black text-nowrap">
         Relacionado
       </h2>

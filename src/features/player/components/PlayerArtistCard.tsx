@@ -14,7 +14,7 @@ const PlayerArtistCard = () => {
   useEffect(() => { }, [currentSong]);
 
   return (
-    <div className="mx-4 bg-[#1f1f1f] rounded-lg overflow-hidden">
+    <div className="mb-4 mx-4 bg-[#1f1f1f] rounded-lg overflow-hidden">
       <SmartImage
         wrapClassName="w-full h-42.5"
         referrerPolicy="no-referrer"
