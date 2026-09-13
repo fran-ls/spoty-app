@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { PlayIcon, MusicIcon, EllipsisIcon, CheckIcon } from 'lucide-react';
 import type { PaginationMeta } from '../../../shared/types/common.types';
 import type { Track } from '../../song/song.types';
@@ -9,6 +10,7 @@ import { useInfiniteScroll } from '../../../shared/hooks/useInfiniteScroll';
 import songService from '../../song/services/song.service';
 import SmartImage from '../../../shared/components/SmartImage';
 import usePlayer from '../../player/hooks/usePlayer';
+import SongActionsMenu from '../../song/components/SongActionsMenu';
 
 interface ArtistSongsProps {
   layout: PlaylistLayout;
@@ -23,6 +25,8 @@ const ArtistSongs = (props: ArtistSongsProps) => {
   const { currentSong, play } = usePlayer();
   const { loaderRef } = useInfiniteScroll(() => loadMore());
 
+  const [activeTrack, setActiveTrack] = useState<Track | null>(null);
+
   const grid = {
     s: 'grid-cols-[minmax(200px,2fr)_28px]',
     sm: 'sm:grid-cols-[5vw_minmax(200px,2fr)_40px_40px_28px]',
@@ -31,8 +35,8 @@ const ArtistSongs = (props: ArtistSongsProps) => {
   }
 
   return (
-    <section className={`sm:px-5 p-1 animate-fade-in overflow-x-auto relative ${window.innerWidth <= 768 ? 'hide-scrollbar' : ''}`}>
-      <h2 className="font-bold text-2xl ml-1 mb-4">
+    <section className={`sm:px-5 p-1 animate-fade-in overflow-x--auto relative ${window.innerWidth <= 768 ? 'hide-scrollbar' : ''}`}>
+      <h2 className="md:text-2xl sm:text-xl max-[640px]:mx-4 text-lg font-bold ml-1 mb-4">
         Canciones
       </h2>
 
@@ -117,6 +121,7 @@ const ArtistSongs = (props: ArtistSongsProps) => {
                 onClick={(e) => {
                   e.stopPropagation();
                   getItem?.(t);
+                  setActiveTrack(t);
                 }}
                 className="sm:hidden ml-auto hover:text-white cursor-pointer"
                 type="button"
@@ -129,12 +134,28 @@ const ArtistSongs = (props: ArtistSongsProps) => {
                 onClick={(e) => {
                   e.stopPropagation();
                   getItem?.(t);
+                  setActiveTrack(t);
                 }}
                 className="sm:group-hover:block hidden ml-auto hover:text-white cursor-pointer"
                 type="button"
               >
                 <EllipsisIcon size={20} />
               </button>
+
+              {(t.id === activeTrack?.id) && (
+                <div
+                  onClick={(e) => e.stopPropagation()}
+                  className={`z-3 absolute right-1 bottom-1 shadow-[0_0_24px_rgba(0,0,0,0.5)]`}
+                  onMouseLeave={() => setActiveTrack(null)}
+                >
+                  <SongActionsMenu
+                    unbox={true}
+                    track={t}
+                    isPlaylistOwner={false}
+                    onClose={() => setActiveTrack(null)}
+                  />
+                </div>
+              )}
             </div>
           )
         })}
