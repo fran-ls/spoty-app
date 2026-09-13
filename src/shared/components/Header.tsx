@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Bell, Users, Search, Sparkles, XIcon, GlobeIcon, CircleUserRoundIcon, SettingsIcon, LaptopMinimalIcon, LogOutIcon, UploadIcon, MusicIcon, DownloadIcon, LibraryIcon, Headphones } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Bell, Users, Search, Sparkles, XIcon, GlobeIcon, CircleUserRoundIcon, SettingsIcon, LaptopMinimalIcon, LogOutIcon, UploadIcon, MusicIcon, DownloadIcon, LibraryIcon } from 'lucide-react';
 import useAuth from '../../features/auth/hooks/useAuth';
 import { routes } from '../utils/routes';
 import { getDeviceType } from '../utils/getDeviceType';
 import { fmtSearchUrl } from '../../features/search/utils/fmtSearchUrl';
+import { AppIcon } from './Icons';
 
 interface HeaderProps {
   onExplorePremiumClick?: () => void;
@@ -53,9 +54,11 @@ export const Header: React.FC<HeaderProps> = ({ onExplorePremiumClick }) => {
         <div className="flex gap-2">
           <Link
             to={routes.home}
-            className="text-white"
+            className="ml-3 text-white"
           >
-            <Headphones />
+            <div className="bg-white rounded-full p-1.5">
+              <AppIcon />
+            </div>
           </Link>
           <button
             onClick={() => navigate(routes.home)}
