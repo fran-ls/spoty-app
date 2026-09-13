@@ -11,17 +11,23 @@ import { routes } from "../../../shared/utils/routes";
 import usePlayer from "../../player/hooks/usePlayer";
 import { getFmtDate } from "../../../shared/utils/getFormatDate";
 import PlaylistCoverImgs from "../../playlist/components/PlaylistCoverImgs";
+import useLibrary from "../../library/hooks/useLibrary";
+import { getDeviceType } from "../../../shared/utils/getDeviceType";
+import Slider from "../../../shared/components/Slider";
 
 const LastPlaylistPlayed = ({ bannerRef, setPlaylist }: {
   bannerRef: React.RefObject<HTMLDivElement | null>;
-  setPlaylist: React.Dispatch<React.SetStateAction<any>>;
+  setPlaylist: React.Dispatch<React.SetStateAction<Playlist>>;
 }) => {
   const { user } = useAuth();
-  const { isPlaying, currentPlaylist, togglePlay, play, onPlaylistChange } = usePlayer();
+  const { libraryStatus } = useLibrary();
+  const { isPlaying, isPlayer, currentPlaylist, togglePlay, play, onPlaylistChange } = usePlayer();
+
+  const [playlists, setPlaylists] = useState<HistoryPlaylist[]>([]);
 
   const navigate = useNavigate();
 
-  const [playlists, setPlaylists] = useState<HistoryPlaylist[]>([]);
+  const isDesktop = getDeviceType() === 'desktop';
 
   const welcome = useMemo(() => {
     const hour = Number(getFmtDate(new Date(), 'HH'));
@@ -49,20 +55,40 @@ const LastPlaylistPlayed = ({ bannerRef, setPlaylist }: {
 
   useEffect(() => { getPlaylists() }, []);
 
+  const grid = {
+    base: 'max-[640px]:grid-cols-2',
+    sm: !libraryStatus.collapsed && isPlayer ? 'grid-cols-1' : 'sm:grid-cols-2',
+    lg: !libraryStatus.collapsed && isPlayer ? 'lg:grid-cols-2' : 'lg:grid-cols-4',
+  }
+
   return (
-    <section className="px-8 mb-12" id="home-greeting-section">
-      <h2 className="text-3xl font-bold font-headline mb-6 tracking-tight text-white select-none google-sans-flex-font">
+    <section className={`${isDesktop ? 'px-8' : 'px-0'} mb-12`} id="home-greeting-section">
+      <h2 className={`${isDesktop ? 'px-0' : 'px-4'} text-3xl font-bold font-headline mb-6 tracking-tight text-white select-none google-sans-flex-font`}>
         {welcome}
       </h2>
+
+      {!isDesktop && (
+        <Slider
+          keys={{
+            title: 'playlist.name'
+          }}
+          items={playlists}
+          linkToViewAll={routes.playlists}
+          linkToRedirect={routes.playlists}
+          isCurrentPlaying={(it) => currentPlaylist?.id === it.id}
+          loadImage={(p) => playlistService.playlistCover(p.id, p.cover)}
+        />
+      )}
+
       <div
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4"
+        className={`grid ${grid.base} ${grid.sm} ${grid.lg} gap-3 ${isDesktop ? 'block' : 'hidden'}`}
         ref={bannerRef}
       >
         {playlists.map((it) => {
           const playlist = it.playlist;
           if (!playlist) return null;
 
-          const coverImages = playlist.coverImages;
+          const coverImages = playlist.coverImages || [];
           const cover = playlistService.playlistCover(playlist.id, playlist?.cover);
           const isCoverImgs = !cover && coverImages && coverImages.length > 3;
           const isCurrent = currentPlaylist?.id === playlist.id;
@@ -80,7 +106,7 @@ const LastPlaylistPlayed = ({ bannerRef, setPlaylist }: {
                   url={cover}
                   styles={{
                     imgWrap: 'w-full h-full',
-                    icon: 'text-white w-[40%] h-[40%]'
+                    icon: 'w-[40%] h-[40%]'
                   }}
                 />
 
