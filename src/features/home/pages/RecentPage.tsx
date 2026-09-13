@@ -6,6 +6,7 @@ import { useInfiniteScroll } from "../../../shared/hooks/useInfiniteScroll";
 import { paginationMeta } from "../../../shared/data/search.data";
 import Loader from "../../../shared/components/Loader";
 import HistoryItem from "../components/HistoryItem";
+import { CustomScrollbar } from "../../../shared/components/CustomScrollbar";
 
 const RecentPage = () => {
   const { user } = useAuth();
@@ -21,7 +22,7 @@ const RecentPage = () => {
   const hasMore = firstHistoryItem ? firstHistoryItem.createdAt !== playHistory[lastIndex]?.createdAt : true;
 
   const { loaderRef } = useInfiniteScroll(async () => {
-    if (page > meta.totalPages) return;
+    if (!hasMore) return;
     const nextPage = page + 1;
     await getPlayHistory(nextPage);
     setPage(nextPage);
@@ -60,7 +61,15 @@ const RecentPage = () => {
 
   return (
     <div className="overflow-hidden w-full h-full text-[#adaaaa] relative">
-      <div className="overflow-auto max-h-[calc(100vh-64px-88px)] md:px-8 px-2 py-8">
+      <CustomScrollbar
+        scrollbarMode="vertical"
+        viewport={{
+          className: "md:px-8 px-2 py-8 relative",
+          style: {
+            maxHeight: `calc(100vh - 64px - 88px)`
+          }
+        }}
+      >
         <h1 className="pl-2 mx-auto max-w-3xl md:text-3xl text-2xl font-bold text-white">
           Recientes
         </h1>
@@ -87,7 +96,7 @@ const RecentPage = () => {
             </div>
           )}
         </div>
-      </div>
+      </CustomScrollbar>
     </div>
   )
 }
