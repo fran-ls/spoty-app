@@ -41,7 +41,7 @@ const ActionBar = (props: ActionBarProps) => {
         className="block absolute left-0 sm:h-43.25 min-[500px]:h-25 h-43.25 w-full"
       />
 
-      <div className="flex py-5 px-6 mb-2 text-sm text-[#adaaaa] items-center justify-between relative">
+      <div className="flex min-[500px]:py-5 px-6 mb-2 text-sm text-[#adaaaa] items-center justify-between relative">
         <div className="max-[500px]:w-full md:gap-5 gap-6 flex items-center">
           {!isDesktop && (
             <>
@@ -85,7 +85,7 @@ const ActionBar = (props: ActionBarProps) => {
           </button>
 
           {cover && (
-            <div className="w-10 h-12 p-0.5 border-2 border-[#adaaaa] rounded-lg overflow-hidden">
+            <div className="min-[500px]:block hidden w-10 h-12 p-0.5 border-2 border-[#adaaaa] rounded-lg overflow-hidden">
               <img
                 className="rounded w-full h-full object-cover"
                 src={cover}
