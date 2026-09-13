@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { HeartIcon, ListIcon, PauseIcon, PlayIcon, Share2Icon } from "lucide-react";
+import { HeartIcon, ListIcon, PauseIcon, PlayIcon, Share2Icon, TextAlignJustifyIcon } from "lucide-react";
 import type { PlaylistColors } from "../../playlist/playlist.types";
 import type { Artist } from "../artist.types";
 import LayoutMenu from "../../playlist/components/LayoutMenu";
@@ -98,14 +98,34 @@ const ActionBar = (props: ActionBarProps) => {
           )}
         </div>
 
-        <div className="min-[500px]:block hidden relative">
+        <div
+          className="min-[500px]:block hidden relative"
+          onMouseLeave={() => setIsLayoutMenu(false)}
+        >
+          {isLayoutMenu && (
+            <div
+              onMouseOver={() => setIsLayoutMenu(true)}
+              className="h-6 w-full absolute top-[95%]"
+            />
+          )}
+
           <button
             onClick={() => setIsLayoutMenu(!isLayoutMenu)}
             className="font-semibold hover:text-white cursor-pointer h-8 flex items-center gap-2"
             type="button"
           >
-            <span>Lista</span>
-            <ListIcon className="inline-flex" size={20} />
+            {layout === 'LIST' && (
+              <>
+                <span>Lista</span>
+                <ListIcon className="inline-flex" size={20} />
+              </>
+            )}
+            {layout === 'COMPACT_LIST' && (
+              <>
+                <span>Compacto</span>
+                <TextAlignJustifyIcon className="inline-flex" size={20} />
+              </>
+            )}
           </button>
 
           {isLayoutMenu && (
