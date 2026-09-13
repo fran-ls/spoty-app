@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
-import { CheckIcon } from "lucide-react";
+import { CheckIcon, UserIcon } from "lucide-react";
 import type { Artist } from "../artist.types";
 import { STYLES } from "../../../shared/utils/styles";
 import artistService from "../services/artist.service";
@@ -11,6 +11,9 @@ import usePlayer from "../../player/hooks/usePlayer";
 import { PlaylistLayout } from "../../library/library.types";
 import { playlistBg } from "../../../shared/data/stylePresets";
 import { convertColor } from "../../playlist/utils/convertColor";
+import { CustomScrollbar } from "../../../shared/components/CustomScrollbar";
+import SmartImage from "../../../shared/components/SmartImage";
+import { getDeviceType } from "../../../shared/utils/getDeviceType";
 
 const ArtistPage = () => {
   const [page, setPage] = useState(0);
@@ -22,6 +25,8 @@ const ArtistPage = () => {
   const { tracks, trackMeta, searchTracks } = useTrack();
 
   const cover = artist ? artistService.artistImage(artist.id, artist.image) : null;
+  const isDesktop = getDeviceType() === 'desktop';
+  const textShadow = '0px 0px 4px rgba(0,0,0,0.3)';
 
   const colors = useMemo(() => ({
     bg: playlistBg.bgColor,
@@ -37,16 +42,29 @@ const ArtistPage = () => {
   }, [id]);
 
   return (
-    <div className={`${STYLES.maxHeightMain} ${STYLES.minHeightMain} text-white overflow-auto animate-fade-in relative`}>
+    <CustomScrollbar
+      scrollbarMode="vertical"
+      viewport={{
+        className: `${STYLES.maxHeightMain} ${STYLES.minHeightMain} text-white overflow-auto animate-fade-in relative`
+      }}
+    >
       <div
         style={{
           background: `linear-gradient(in oklch to bottom, ${colors.bg} 0%, ${colors.base} 100%)`
         }}
         className="pt-10 min-[500px]:flex-row min-[500px]:pb-6 pb-3 p-6 flex-col flex items-center gap-x-6 overflow-hidden relative"
       >
+        <SmartImage
+          styles={{
+            imgWrap: "min-w-40 min-h-40 w-[25vw] h-[25vw] min-[500px]:hidden block text-[#7f7f7f] shadow-[0_4px_60px_#00000080] rounded-full object-cover"
+          }}
+          icon={<UserIcon className="w-[30%] h-[30%]" />}
+          url={cover}
+        />
+
         {cover && (
           <img
-            className="absolute top-0 left-0 w-full h-full object-cover"
+            className="min-[500px]:block hidden absolute top-0 left-0 w-full h-full object-cover"
             src={cover}
             onError={(e) => e.currentTarget.style.display = 'none'}
             alt="cover"
@@ -57,32 +75,38 @@ const ArtistPage = () => {
 
         <div className="z-2 overflow-hidden mt-auto w-full">
           <h1
-            className={`text-4xl font-black truncate ${window.innerWidth >= 500 ? 'playlist-title google-sans-flex-font' : 'playlist-title-font'}`}
+            className={`max-[500px]:mt-5 max-[500px]:mb-2 text-4xl min-[500px]:font-black font-normal truncate ${window.innerWidth >= 500 ? 'playlist-title google-sans-flex-font' : 'playlist-title-font'}`}
             title={artist?.name}
-            style={{
-              textShadow: '0px 0px 4px rgba(0,0,0,0.3)'
-            }}
+            style={{ textShadow }}
           >
             {artist?.name || 'Artista'}
           </h1>
 
-          <div className="flex items-center gap-2">
-            <div
-              onClick={(e) => {
-                e.stopPropagation();
-              }}
-              className="bg-primary text-[#131313] cursor-pointer rounded-full p-1 transition-transform hover:scale-110 active:scale-95"
-            >
-              <CheckIcon className="" size={16} />
-            </div>
+          {isDesktop && (
+            <div className="flex items-center gap-2">
+              <div
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
+                className="bg-primary text-[#131313] cursor-pointer rounded-full p-1 transition-transform hover:scale-110 active:scale-95"
+              >
+                <CheckIcon className="" size={16} />
+              </div>
 
-            <span className="text-sm font-medium">
-              Artista
-            </span>
-          </div>
+              <span
+                className="text-sm font-medium"
+                style={{ textShadow }}
+              >
+                Artista
+              </span>
+            </div>
+          )}
 
           <div className="mt-2 flex items-center">
-            <span className="text-sm text-nowrap">
+            <span
+              className="text-sm text-nowrap"
+              style={{ textShadow }}
+            >
               {tracks.length} {tracks.length !== 1 ? 'canciones' : 'canción'}
             </span>
           </div>
@@ -117,7 +141,7 @@ const ArtistPage = () => {
           }}
         />
       )}
-    </div>
+    </CustomScrollbar>
   )
 }
 
