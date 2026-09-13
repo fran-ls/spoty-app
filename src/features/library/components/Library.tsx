@@ -372,7 +372,14 @@ export const Library = (props: LibraryProps) => {
           }}
         >
           {(isExpanded && !layoutKind.grid) && (
-            <ul className={`sm:grid hidden ${grid.li.s} ${grid.li.sm} ${grid.li.md} ${grid.li.lg} gap-3 bg-[#131313] text-[13px] text-[#adaaaa] border-b border-white/10 px-4 sticky top-0 z-10`}>
+            <ul
+              style={{
+                ...((isExpanded && playlistScrollTop) && {
+                  boxShadow: '0 6px 10px #0009'
+                })
+              }}
+              className={`sm:grid hidden ${grid.li.s} ${grid.li.sm} ${grid.li.md} ${grid.li.lg} gap-3 bg-[#131313] text-[13px] text-[#adaaaa] border-b border-white/10 px-4 sticky top-0 z-10`}
+            >
               <li className="py-2 line-clamp-1 font-semibold">
                 Título
               </li>
@@ -392,7 +399,7 @@ export const Library = (props: LibraryProps) => {
           )}
 
           <ul
-            className={`${isCollapsed ? 'px-1 pb-1' : `${isDesktop ? 'pb-2' : 'pb-10'} px-2`} w-full ${(layoutKind.grid && !isCollapsed) ? 'grid' : ''} ${!isExpanded ? 'grid-cols-2' : `${grid.ul.s} ${grid.ul.md} ${grid.ul.lg} ${grid.ul['2xl']}`} ${(isExpanded && !layoutKind.grid) ? 'sm:mt-10' : ''}`}
+            className={`${isCollapsed ? 'px-1 pb-1' : `${isDesktop ? 'pb-2' : 'pb-10'} px-2`} w-full ${(layoutKind.grid && !isCollapsed) ? 'grid' : ''} ${!isExpanded ? 'grid-cols-2' : `${grid.ul.s} ${grid.ul.md} ${grid.ul.lg} ${grid.ul['2xl']}`}`}
             ref={ulRef}
           >
             <Playlists
