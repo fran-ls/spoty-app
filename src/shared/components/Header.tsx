@@ -39,6 +39,11 @@ export const Header: React.FC<HeaderProps> = ({ onExplorePremiumClick }) => {
     q && setSearchQuery(q);
   }, [search]);
 
+  const icon = {
+    text: user?.username[0].toUpperCase(),
+    bg: '#b49bc8'
+  }
+
   return (
     <header
       className="flex justify-between items-center pl-4 pr-3 py-2 w-full h-16 bg-black transition-all duration-300"
@@ -129,9 +134,14 @@ export const Header: React.FC<HeaderProps> = ({ onExplorePremiumClick }) => {
               onClick={() => setShowUserDropdown(!showUserDropdown)}
               className="text-[#adaaaa] hover:text-white hover:bg-[#181717] rounded-full p-1.5 transition-all flex items-center justify-center cursor-pointer border border-[#adaaaa]/10 bg-black/20"
             >
-              <div className="w-8 h-8 min-w-8 bg-primary rounded-full relative">
+              <div
+                className="w-8 h-8 min-w-8 rounded-full relative"
+                style={{
+                  background: icon.bg
+                }}
+              >
                 <span className="text-[15px] text-black font-bold absolute top-1/2 left-1/2 -translate-1/2 block">
-                  {user?.username[0].toUpperCase()}
+                  {icon.text}
                 </span>
               </div>
             </button>
@@ -143,11 +153,16 @@ export const Header: React.FC<HeaderProps> = ({ onExplorePremiumClick }) => {
                   onClick={onCloseDropdown}
                 />
 
-                <div className="z-50 absolute right-0 mt-2 w-48 rounded-md shadow-2xl bg-[#282828] border border-[#3e3e3e] py-1 text-sm text-on-surface-variant font-medium animate-scale-up">
+                <div
+                  className="z-50 absolute right-0 mt-2 w-50 rounded shadow-2xl bg-[#282828] py-1 text-sm text-on-surface-variant font-medium animate-scale-up"
+                  style={{
+                    boxShadow: '0 16px 24px #0000004d,0 6px 8px #0003'
+                  }}
+                >
                   <div className="flex items-center gap-2 px-4 py-2 border-b border-[#3e3e3e] text-xs text-[#adaaaa]">
                     <div className="w-7 h-7 min-w-7 bg-primary rounded-full relative">
                       <span className="text-black font-semibold absolute top-1/2 left-1/2 -translate-1/2 block">
-                        {user?.username[0].toUpperCase()}
+                        {icon.text}
                       </span>
                     </div>
                     <div>
