@@ -1,12 +1,12 @@
 import { Link } from "react-router-dom";
 
-interface SliderSkeletonProps {
+interface SliderSkeletonsProps {
   title?: string;
   redirectTo?: string;
   items?: number;
 }
 
-const SliderSkeleton = ({ title, redirectTo, items = 10 }: SliderSkeletonProps) => {
+const SliderSkeletons = ({ title, redirectTo, items = 10 }: SliderSkeletonsProps) => {
   return (
     <section className="mb-12 overflow-hidden">
       {title && (
@@ -44,4 +44,4 @@ const SliderSkeleton = ({ title, redirectTo, items = 10 }: SliderSkeletonProps) 
   )
 }
 
-export default SliderSkeleton;
+export default SliderSkeletons;
