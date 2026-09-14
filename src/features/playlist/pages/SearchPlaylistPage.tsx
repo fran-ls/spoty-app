@@ -8,9 +8,13 @@ import { routes } from '../../../shared/utils/routes';
 import Loader from '../../../shared/components/Loader';
 import useSearch from '../../../shared/hooks/useSearch';
 import { useAppCtx } from '../../../shared/context/AppContext';
+import useLibrary from '../../library/hooks/useLibrary';
+import usePlayer from '../../player/hooks/usePlayer';
 
 const SearchPlaylistPage = () => {
   const { searchQuery } = useAppCtx();
+  const { libraryStatus } = useLibrary();
+  const { isPlayer } = usePlayer();
 
   const [filters] = useState<PlaylistFilters>({
     page: 0,
@@ -30,15 +34,15 @@ const SearchPlaylistPage = () => {
   const grid = {
     s: 'grid-cols-1',
     sm: 'min-[460px]:grid-cols-[repeat(2,1fr)]',
-    md: 'min-[940px]:grid-cols-[repeat(3,1fr)]',
-    xl: 'xl:grid-cols-[repeat(4,1fr)]'
+    md: !libraryStatus.collapsed && isPlayer ? 'md:grid-cols-1' : !libraryStatus.collapsed || isPlayer ? 'min-[860px]:grid-cols-2 md:grid-cols-1' : 'min-[860px]:grid-cols-2',
+    xl: !libraryStatus.collapsed && isPlayer ? 'xl:grid-cols-2' : !libraryStatus.collapsed || isPlayer ? 'xl:grid-cols-3 lg:grid-cols-2' : 'xl:grid-cols-4 lg:grid-cols-3'
   }
 
   const card = {
     s: 'h-[40vw]',
     sm: 'min-[460px]:h-[20vw] min-[460px]:min-h-[120px]',
-    md: 'min-[940px]:h-[12vw] min-[940px]:min-h-[130px]',
-    xl: 'xl:h-[10vw] min-[940px]:min-h--[150px]'
+    md: 'md:h-[12vw] md:min-h-[130px]',
+    xl: 'xl:h-[10vw] min-[940px]:min-h-[150px]'
   }
 
   const img = {
