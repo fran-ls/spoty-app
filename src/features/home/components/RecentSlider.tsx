@@ -8,20 +8,28 @@ import { routes } from "../../../shared/utils/routes";
 import songService from "../../song/services/song.service";
 import { paginationMeta } from "../../../shared/data/search.data";
 import { playlist } from "../../playlist/data/playlist.data";
+import SliderSkeletons from "../../../shared/components/SliderSkeletons";
 
 const RecentSlider = () => {
   const { user } = useAuth();
   const { currentSong, play, onPlaylistChange } = usePlayer();
 
   const [playHistory, setPlayHistory] = useState<HistorySong[]>([]);
+  const [loading, setLoading] = useState(false);
 
   async function getPlayHistory() {
     if (!user?.id) return;
+    setLoading(true);
     const { data } = await playHistoryService.getSongs(user.id);
+    setLoading(false);
     if (data?.items) setPlayHistory(data.items);
   }
 
   useEffect(() => { getPlayHistory() }, []);
+
+  if (loading) return (
+    <SliderSkeletons title="Recientes" />
+  )
 
   return (
     <Slider

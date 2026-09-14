@@ -4,11 +4,16 @@ import useArtist from "../../artist/hooks/useArtist";
 import Slider from "../../../shared/components/Slider";
 import artistService from "../../artist/services/artist.service";
 import { routes } from "../../../shared/utils/routes";
+import SliderSkeletons from "../../../shared/components/SliderSkeletons";
 
 const ArtistSlider = () => {
-  const { artists, searchArtists } = useArtist();
+  const { artists, loading, searchArtists } = useArtist();
 
   useEffect(() => { searchArtists() }, []);
+
+  if (loading) return (
+    <SliderSkeletons title="Artistas" />
+  )
 
   return (
     <Slider

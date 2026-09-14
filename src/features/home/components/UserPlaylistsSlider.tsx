@@ -6,12 +6,14 @@ import usePlayer from "../../player/hooks/usePlayer";
 import libraryService from "../../library/services/library.service";
 import Slider from "../../../shared/components/Slider";
 import { routes } from "../../../shared/utils/routes";
+import SliderSkeletons from "../../../shared/components/SliderSkeletons";
 
 const UserPlaylistsSlider = () => {
   const { user } = useAuth();
   const { currentPlaylist, play, onPlaylistChange, togglePlay } = usePlayer();
 
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
+  const [loading, setLoading] = useState(false);
 
   async function getPlaylists(
     userId: string,
@@ -20,7 +22,10 @@ const UserPlaylistsSlider = () => {
   ) {
     if (!userId) return [];
 
+    setLoading(true);
     const { data } = await libraryService.getUserPlaylists(filters, include);
+
+    setLoading(false);
     if (!data) return [];
 
     (filters?.page && filters?.page > 1)
@@ -44,6 +49,10 @@ const UserPlaylistsSlider = () => {
   }
 
   useEffect(() => { user?.id && getPlaylists(user?.id) }, []);
+
+  if (loading) return (
+    <SliderSkeletons title="Tus listas" />
+  )
 
   return (
     <Slider
