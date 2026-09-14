@@ -24,6 +24,7 @@ const LastPlaylistPlayed = ({ bannerRef, setPlaylist }: {
   const { isPlaying, isPlayer, currentPlaylist, togglePlay, play, onPlaylistChange } = usePlayer();
 
   const [playlists, setPlaylists] = useState<HistoryPlaylist[]>([]);
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
@@ -36,7 +37,9 @@ const LastPlaylistPlayed = ({ bannerRef, setPlaylist }: {
 
   async function getPlaylists() {
     if (!user?.id) return;
+    setLoading(true);
     const { data } = await playHistoryService.getLastPlaylistsPlayed(user.id);
+    setLoading(false);
     data && setPlaylists(data);
   }
 
@@ -84,6 +87,20 @@ const LastPlaylistPlayed = ({ bannerRef, setPlaylist }: {
         className={`grid ${grid.base} ${grid.sm} ${grid.lg} gap-3 ${isDesktop ? 'block' : 'hidden'}`}
         ref={bannerRef}
       >
+        {loading && (
+          Array.from({ length: 8 }).map((i) => (
+            <div
+              key={`quick-${i}`}
+              className="flex items-center bg-white/5 rounded overflow-hidden h-16 animate-pulse"
+            >
+              <div className="w-16 h-16 bg-white/10 shrink-0" />
+              <div className="px-5 flex-1 space-y-2">
+                <div className="h-4 bg-white/10 rounded-md w-3/5" />
+              </div>
+            </div>
+          ))
+        )}
+
         {playlists.map((it) => {
           const playlist = it.playlist;
           if (!playlist) return null;
