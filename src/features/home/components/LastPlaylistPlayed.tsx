@@ -13,6 +13,7 @@ import PlaylistCoverImgs from "../../playlist/components/PlaylistCoverImgs";
 import useLibrary from "../../library/hooks/useLibrary";
 import { getDeviceType } from "../../../shared/utils/getDeviceType";
 import Slider from "../../../shared/components/Slider";
+import SliderSkeletons from "../../../shared/components/SliderSkeletons";
 
 const LastPlaylistPlayed = ({ bannerRef, setPlaylist }: {
   bannerRef: React.RefObject<HTMLDivElement | null>;
@@ -61,16 +62,20 @@ const LastPlaylistPlayed = ({ bannerRef, setPlaylist }: {
   return (
     <section className={`${isDesktop ? 'px-8 mb-12' : 'px-0'}`} id="home-greeting-section">
       {!isDesktop && (
-        <Slider
-          keys={{
-            title: 'playlist.name'
-          }}
-          items={playlists}
-          linkToViewAll={routes.playlists}
-          linkToRedirect={routes.playlists}
-          isCurrentPlaying={(it) => currentPlaylist?.id === it.id}
-          loadImage={(p) => playlistService.playlistCover(p.id, p.cover)}
-        />
+        loading ? (
+          <SliderSkeletons />
+        ) : (
+          <Slider
+            keys={{
+              title: 'playlist.name'
+            }}
+            items={playlists}
+            linkToViewAll={routes.playlists}
+            linkToRedirect={routes.playlists}
+            isCurrentPlaying={(it) => currentPlaylist?.id === it.id}
+            loadImage={(p) => playlistService.playlistCover(p.id, p.cover)}
+          />
+        )
       )}
 
       <div
