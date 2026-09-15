@@ -54,7 +54,7 @@
   left: 2px;
   right: 2px;
   bottom: 2px;
-  height: 8px;
+  height: 10px;
 }
 
 /* THUMB */
@@ -86,7 +86,7 @@
 .custom-scrollbar__thumb--horizontal {
   bottom: 0;
   left: 0;
-  height: 6px;
+  height: 8px;
 }
 
 .custom-scrollbar__thumb--horizontal:hover {

@@ -4,6 +4,7 @@ import {
 } from "react";
 
 import "../../assets/css/custom_scrollbar.css";
+import { getDeviceType } from "../utils/getDeviceType";
 
 type ScrollbarMode = "vertical" | "horizontal" | "both" | "none";
 
@@ -25,6 +26,7 @@ export function CustomScrollbar(props: CustomScrollbarProps) {
     children, scrollbar, viewport, content,
     scrollbarMode = "both", minThumbSize = 30
   } = props;
+  const isDesktop = getDeviceType() === 'desktop';
 
   const viewportRef = viewport?.ref || useRef<HTMLDivElement>(null);
 
@@ -222,6 +224,8 @@ export function CustomScrollbar(props: CustomScrollbarProps) {
     viewport.scrollLeft = percentage * (viewport.scrollWidth - viewport.clientWidth);
   }
 
+  const scrollbarSize = isDesktop ? 8 : 4;
+
   return (
     <div
       {...scrollbar}
@@ -252,12 +256,19 @@ export function CustomScrollbar(props: CustomScrollbarProps) {
         <div
           className="custom-scrollbar__track custom-scrollbar__track--vertical"
           onPointerDown={handleVerticalTrackClick}
+          style={{
+            width: scrollbarSize
+          }}
         >
           <div
             className="custom-scrollbar__thumb custom-scrollbar__thumb--vertical"
             style={{
+              width: scrollbarSize,
               height: state.verticalThumbSize,
               transform: `translateY(${state.verticalThumbPosition}px)`,
+              ...(!isDesktop && {
+                borderRadius: 0
+              })
             }}
             onPointerDown={handleVerticalDrag}
           />
@@ -268,12 +279,19 @@ export function CustomScrollbar(props: CustomScrollbarProps) {
         <div
           className="custom-scrollbar__track custom-scrollbar__track--horizontal"
           onPointerDown={handleHorizontalTrackClick}
+          style={{
+            height: scrollbarSize
+          }}
         >
           <div
             className="custom-scrollbar__thumb custom-scrollbar__thumb--horizontal"
             style={{
+              height: scrollbarSize,
               width: state.horizontalThumbSize,
               transform: `translateX(${state.horizontalThumbPosition}px)`,
+              ...(!isDesktop && {
+                borderRadius: 0
+              })
             }}
             onPointerDown={handleHorizontalDrag}
           />
