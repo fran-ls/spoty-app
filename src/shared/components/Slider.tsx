@@ -51,28 +51,30 @@ const Slider = (props: SliderProps) => {
     }
   }, [items]);
 
+  const sliderTitleHTML = (
+    <h2 className="text-xl md:text-2xl font-bold font-headline text-white tracking-tight">
+      {title}
+    </h2>
+  )
+
   return (
-    <section className="mb-12">
+    <section className="md:mb-8 mb-5">
       {title && (
-        <div className="px-8 flex justify-between items-end mb-3">
+        <div className="md:px-8 px-4 flex justify-between items-end mb-3">
           {linkToViewAll ? (
             <Link
               className="text-white hover:underline cursor-pointer"
               to={linkToViewAll || '/'}
             >
-              <h2 className="text-2xl font-bold font-headline tracking-tight">
-                {title}
-              </h2>
+              {sliderTitleHTML}
             </Link>
           ) : (
-            <h2 className="text-2xl font-bold font-headline text-white tracking-tight">
-              {title}
-            </h2>
+            sliderTitleHTML
           )}
 
           {linkToViewAll && (
             <Link
-              className="text-[#adaaaa] font-bold text-[13px] hover:underline cursor-pointer select-none"
+              className="md:block hidden text-[#adaaaa] font-bold text-[13px] hover:underline cursor-pointer select-none"
               to={linkToViewAll || '/'}
             >
               Mostrar todos
@@ -113,17 +115,43 @@ const Slider = (props: SliderProps) => {
           }}
           ref={sliderRef}
         >
-          {items.map((it) => {
+          {items.map((it, i) => {
             const cover = loadImage ? loadImage(it) : null;
             const title = getValue(it, keys.title);
             const isCurrent = isCurrentPlaying?.(it) || false;
             const isCoverImgs = it.coverImages && it.coverImages.length > 3;
             const redirectTo = `${linkToRedirect}/${keys.id ? getValue(it, keys.id) : it.id}`;
 
+            const titleHTML = (
+              <h3
+                className="font-light text-white mb-0 line-clamp-2 google-sans-flex-font"
+                title={title || undefined}
+                style={{
+                  fontWeight: 500
+                }}
+              >
+                {title || ''}
+              </h3>
+            )
+
             return (
               <div
-                className={`min-w-50 grow max-w-50 group h-fit group hover:bg-[#1f1f1f] p-3 rounded-lg transition-all duration-300 flex flex-col playlist-item ${linkToRedirect ? 'cursor-pointer' : ''}`}
+                className={`md:min-w-50 min-w-42 grow max-w-50 group h-fit group md:p-3 p-2 rounded-lg transition-all duration-300 flex flex-col playlist-item ${linkToRedirect ? 'cursor-pointer' : ''}`}
                 onClick={() => linkToRedirect && navigate(redirectTo)}
+                style={{
+                  ...((i === 0) && {
+                    marginLeft: window.innerWidth >= 768 ? 20 : 8
+                  }),
+                  ...((i === items.length - 1) && {
+                    marginRight: window.innerWidth >= 768 ? 20 : 8
+                  })
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.background = '#1f1f1f';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.background = '';
+                }}
                 key={it.id}
               >
                 <div className="shadow-[0_8px_24px_#00000080] relative mb-2 aspect-square rounded-md overflow-hidden bg-[#333333]">
@@ -151,10 +179,19 @@ const Slider = (props: SliderProps) => {
                       className={`shadow-[0_8px_8px_rgba(0,0,0,0.3)] absolute bottom-3 right-3 bg-primary text-black p-3 rounded-full opacity-0 ${isPlaying && isCurrent ? 'translate-y-0 opacity-100' : 'translate-y-3'} group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 cursor-pointer hover:scale-105`}
                       type="button"
                     >
-                      {isPlaying && isCurrent
-                        ? <PauseIcon size={24} fill="currentColor" stroke="none" />
-                        : <PlayIcon size={24} fill="currentColor" stroke="none" />
-                      }
+                      {(isPlaying && isCurrent) ? (
+                        <PauseIcon
+                          size={24}
+                          fill="currentColor"
+                          stroke="none"
+                        />
+                      ) : (
+                        <PlayIcon
+                          size={24}
+                          fill="currentColor"
+                          stroke="none"
+                        />
+                      )}
                     </button>
                   )}
                 </div>
@@ -164,24 +201,14 @@ const Slider = (props: SliderProps) => {
                     className="hover:underline"
                     to={redirectTo}
                   >
-                    <h3
-                      className="font-light text-white mb-0 truncate text-sm sm:text-base google-sans-flex-font"
-                      title={title || undefined}
-                    >
-                      {title || ''}
-                    </h3>
+                    {titleHTML}
                   </Link>
                 ) : (
-                  <h3
-                    className="font-light text-white mb-0 truncate text-sm sm:text-base google-sans-flex-font"
-                    title={title || undefined}
-                  >
-                    {title || ''}
-                  </h3>
+                  titleHTML
                 )}
 
                 {(keys.subtext || subtext) && (
-                  <p className="text-sm text-[#adaaaa] line-clamp-2 leading-relaxed">
+                  <p className="md:block hidden text-sm text-[#adaaaa] line-clamp-2 leading-relaxed">
                     {keys.subtext ? getValue(it, it[keys.subtext]) : subtext}
                   </p>
                 )}
