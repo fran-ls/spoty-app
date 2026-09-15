@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PauseIcon, PlayIcon } from "lucide-react";
 import type { HistoryPlaylist } from "../../player/playHistory.types";
@@ -9,7 +9,6 @@ import playlistService from "../../playlist/services/playlist.service";
 import SmartImage from "../../../shared/components/SmartImage";
 import { routes } from "../../../shared/utils/routes";
 import usePlayer from "../../player/hooks/usePlayer";
-import { getFmtDate } from "../../../shared/utils/getFormatDate";
 import PlaylistCoverImgs from "../../playlist/components/PlaylistCoverImgs";
 import useLibrary from "../../library/hooks/useLibrary";
 import { getDeviceType } from "../../../shared/utils/getDeviceType";
@@ -29,11 +28,6 @@ const LastPlaylistPlayed = ({ bannerRef, setPlaylist }: {
   const navigate = useNavigate();
 
   const isDesktop = getDeviceType() === 'desktop';
-
-  const welcome = useMemo(() => {
-    const hour = Number(getFmtDate(new Date(), 'HH'));
-    return hour >= 18 ? `¡Buenas noches ${user?.username}!` : `¡Buen día ${user?.username}!`;
-  }, []);
 
   async function getPlaylists() {
     if (!user?.id) return;
@@ -65,11 +59,7 @@ const LastPlaylistPlayed = ({ bannerRef, setPlaylist }: {
   }
 
   return (
-    <section className={`${isDesktop ? 'px-8' : 'px-0'} mb-12`} id="home-greeting-section">
-      <h2 className={`${isDesktop ? 'px-0' : 'px-4'} text-3xl font-bold font-headline mb-6 tracking-tight text-white select-none google-sans-flex-font`}>
-        {welcome}
-      </h2>
-
+    <section className={`${isDesktop ? 'px-8 mb-12' : 'px-0'}`} id="home-greeting-section">
       {!isDesktop && (
         <Slider
           keys={{
