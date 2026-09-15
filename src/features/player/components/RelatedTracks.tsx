@@ -8,16 +8,17 @@ import useTrack from "../../song/hooks/useTrack";
 import songService from "../../song/services/song.service";
 
 const RelatedTracks = () => {
-  const { isPlaying, currentSong, playQueueSong, togglePlay } = usePlayer();
-  const { tracks, trackMeta, searchTracks } = useTrack();
+  const { isPlaying, currentSong, play, togglePlay } = usePlayer();
+  const { tracks: allTracks, trackMeta, searchTracks } = useTrack();
 
   const [isPrevBtn, setIsPrevBtn] = useState(false);
   const [isNextBtn, setIsNextBtn] = useState(true);
   const [isHover, setIsHover] = useState(false);
 
-  const [page, setPage] = useState(1);
-  const [section, setSection] = useState(1);
+  const [currentArtistId, setCurrentArtistId] = useState('');
+  const [sliderSection, setSliderSection] = useState(1);
   const [hoverId, setHoverId] = useState('');
+  const [page, setPage] = useState(1);
 
   const sliderRef = useRef<HTMLDivElement>(null);
   const slider = sliderRef.current!;
@@ -25,14 +26,13 @@ const RelatedTracks = () => {
   const sliderItems = useMemo(() => {
     const size = 3;
     const result: Track[][] = [];
-    const items = currentSong ? tracks.filter((t) => t.id !== currentSong.id) : tracks;
 
-    for (let i = 0; i < items.length; i += size) {
-      result.push(tracks.slice(i, i + size));
+    for (let i = 0; i < allTracks.length; i += size) {
+      result.push(allTracks.slice(i, i + size));
     }
 
     return result;
-  }, [tracks, currentSong]);
+  }, [allTracks]);
 
   const step = () => slider.clientWidth;
 
@@ -49,15 +49,22 @@ const RelatedTracks = () => {
 
   useEffect(() => {
     if (slider) {
-      const IsScroll = hasScroll(slider).horizontal;
-      slider && setIsNextBtn(IsScroll);
+      const isScroll = hasScroll(slider).horizontal;
+      slider && setIsNextBtn(isScroll);
     }
-  }, [tracks]);
+  }, [allTracks]);
 
   useEffect(() => {
+    if (currentSong && currentSong.artistId === currentArtistId) {
+      return;
+    }
+    if (currentSong?.artistId) {
+      setCurrentArtistId(currentSong.artistId);
+    }
+
     getTracks();
     setPage(1);
-    setSection(1);
+    setSliderSection(1);
     if (slider) slider.scrollLeft = 0;
   }, [currentSong]);
 
@@ -100,8 +107,9 @@ const RelatedTracks = () => {
         >
           {sliderItems.map((tracks, i) => (
             <ul className="min-w-full" key={`section-${i + 1}`}>
-              {tracks.map((track, i) => {
+              {tracks.map((track, j) => {
                 const cover = songService.songCoverUrl(track.id, track.cover);
+                const index = i < 1 ? j : j + 3 * i;
 
                 return (
                   <li
@@ -121,7 +129,8 @@ const RelatedTracks = () => {
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            playQueueSong(track, i);
+                            play(allTracks, index, trackMeta);
+                            setCurrentArtistId(track.artistId);
                           }}
                           className="cursor-pointer text-white badge w-full h-full absolute top-0 left-0 bg-black/50 flex items-center justify-center"
                           type="button"
@@ -161,7 +170,10 @@ const RelatedTracks = () => {
                     </div>
 
                     <div
-                      onDoubleClick={() => playQueueSong(track, i)}
+                      onDoubleClick={() => {
+                        play(allTracks, index, trackMeta);
+                        setCurrentArtistId(track.artistId);
+                      }}
                       className="w-full"
                     >
                       <h4
@@ -192,9 +204,9 @@ const RelatedTracks = () => {
               slider.scrollBy({ left: step(), behavior: 'smooth' });
             }
 
-            setSection(section + 1);
+            setSliderSection(sliderSection + 1);
 
-            if (section === sliderItems.length - 1 && trackMeta.hasNextPage) {
+            if (sliderSection === sliderItems.length - 1 && trackMeta.hasNextPage) {
               const nextPage = page + 1;
               getTracks({ page: nextPage });
               setPage(nextPage);
