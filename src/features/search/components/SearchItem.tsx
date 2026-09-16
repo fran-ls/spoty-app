@@ -46,7 +46,7 @@ const SearchItem = (props: SearchItemProps) => {
   }
 
   return (
-    <div className={`hover:bg-[#262626] group rounded-md flex items-center gap-2 text-white google-sans-flex-font ${is.artist ? 'p-4' : 'px-3 py-2'}`}>
+    <div className={`hover:bg-[#262626] group rounded-md flex items-center gap-2 text-white google-sans-flex-font ${is.artist ? 'md:p-4 p-3' : 'px-3 py-2'}`}>
       <div className={`${isDesktop ? grid.sm : 'grid-cols-1'} ${grid.md} grid items-center w-full gap-3 relative`}>
         <div className={`flex items-center ${is.artist ? isDesktop ? 'gap-6' : 'gap-3' : 'gap-3'}`}>
           <div className="relative">

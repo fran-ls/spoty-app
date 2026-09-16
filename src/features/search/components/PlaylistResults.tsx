@@ -35,7 +35,7 @@ const PlaylistResults = ({ filter, query, hoverId, setHoverId }: PlaylistResults
   }
 
   const { loaderRef } = useInfiniteScroll(async () => {
-    if (page === 1 || meta.hasNextPage) {
+    if (page === 1 || page < meta.totalPages) {
       const nextPage = page + 1;
       const data = await searchPlaylists({ ...filters, page: nextPage });
       data?.meta && setMeta(data.meta);
@@ -97,6 +97,7 @@ const PlaylistResults = ({ filter, query, hoverId, setHoverId }: PlaylistResults
             })}
             isHover={hoverId === p.id}
             isPlayingNow={isPlayingNow}
+            loadImage={() => (playlistService.playlistCover(p.id, p.cover))}
             onPlay={() => onPlay({
               isPlayingNow,
               playlist: p

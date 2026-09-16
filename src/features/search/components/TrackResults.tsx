@@ -9,6 +9,7 @@ import usePlayer from "../../player/hooks/usePlayer";
 import { paginationMeta } from "../../../shared/data/search.data";
 import { useInfiniteScroll } from "../../../shared/hooks/useInfiniteScroll";
 import Loader from "../../../shared/components/Loader";
+import songService from "../../song/services/song.service";
 
 interface TrackResultsProps {
   filter: SearchFilter;
@@ -65,6 +66,7 @@ const TrackResults = ({ filter, query, hoverId, setHoverId }: TrackResultsProps)
             })}
             isHover={hoverId === t.id}
             isPlayingNow={isPlayingNow}
+            loadImage={() => (songService.songCoverUrl(t.id, t.cover))}
             onPlay={() => {
               if (isPlayingNow) return togglePlay();
               play([t], 0, paginationMeta);

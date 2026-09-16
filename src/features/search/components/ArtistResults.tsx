@@ -10,6 +10,7 @@ import useTrack from "../../song/hooks/useTrack";
 import { paginationMeta } from "../../../shared/data/search.data";
 import Loader from "../../../shared/components/Loader";
 import { useInfiniteScroll } from "../../../shared/hooks/useInfiniteScroll";
+import artistService from "../../artist/services/artist.service";
 
 interface ArtistResultsProps {
   filter: SearchFilter;
@@ -74,6 +75,7 @@ const ArtistResults = ({ filter, query }: ArtistResultsProps) => {
                 link: `${routes.artists}/${a.id}`,
                 sub: 'Artista'
               })}
+              loadImage={() => (artistService.artistImage(a.id, a.image))}
               isPlayingNow={isPlayingNow}
               onPlay={() => onPlay(a.id, isPlayingNow)}
               setHoverId={() => { }}
