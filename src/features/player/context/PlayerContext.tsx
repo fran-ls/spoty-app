@@ -1,4 +1,4 @@
-import { createContext, useRef, useState } from 'react'
+import { createContext, useCallback, useEffect, useRef, useState } from 'react'
 import type { Playlist } from '../../playlist/playlist.types';
 import type { Player } from '../../player/player.types';
 import type { Song } from '../../song/song.types';
@@ -172,6 +172,7 @@ export const PlayerProvider = ({ children }: any) => {
     if (!audio) return;
     audio.currentTime = time;
     setProgress(time);
+    updatePositionState();
   }
 
   const volumeSeek = (vol: number) => {
@@ -397,6 +398,102 @@ export const PlayerProvider = ({ children }: any) => {
       setIsPlaying(true);
     }
   }
+
+  const updatePositionState = useCallback(() => {
+    const audio = audioRef.current;
+    if (!audio || !("mediaSession" in navigator) || !Number.isFinite(audio.duration) || audio.duration <= 0) return;
+    try {
+      navigator.mediaSession.setPositionState({
+        duration: audio.duration,
+        playbackRate: audio.playbackRate,
+        position: Math.min(audio.currentTime, audio.duration)
+      });
+    } catch { }
+  }, []);
+
+  useEffect(() => {
+    if (!("mediaSession" in navigator)) return;
+    navigator.mediaSession.setActionHandler("play", () => void audioRef.current?.play());
+    navigator.mediaSession.setActionHandler("pause", () => audioRef.current?.pause());
+    navigator.mediaSession.setActionHandler("nexttrack", () => { void next() });
+    navigator.mediaSession.setActionHandler("previoustrack", () => { void prev() });
+    navigator.mediaSession.setActionHandler("seekbackward", () => seek(progress - 10));
+    navigator.mediaSession.setActionHandler("seekforward", () => seek(progress + 10));
+    navigator.mediaSession.setActionHandler("seekto", (details) => {
+      const audio = audioRef.current;
+      if (!audio || details.seekTime === undefined) return;
+      if (details.fastSeek && "fastSeek" in audio) audio.fastSeek(details.seekTime);
+      else audio.currentTime = details.seekTime;
+      setProgress(details.seekTime);
+      updatePositionState();
+    });
+    return () => {
+      const actions = ["play", "pause", "nexttrack", "previoustrack", "seekbackward", "seekforward", "seekto"] as const;
+      actions.forEach((action) => {
+        try { navigator.mediaSession.setActionHandler(action, null); }
+        catch { }
+      });
+    }
+  }, [next, prev, seek, updatePositionState]);
+
+  useEffect(() => {
+    if (!("mediaSession" in navigator) || !currentSong) return;
+    const cover = songService.songCoverUrl(currentSong.id, currentSong.cover);
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: currentSong.title,
+      artist: currentSong.artist?.name || 'unknow',
+      album: currentSong.album?.title || 'unknow',
+      artwork: [{
+        src: cover,
+        sizes: "512x512",
+        type: "image/jpeg"
+      }]
+    });
+  }, [currentSong]);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    const onPlay = () => {
+      setIsPlaying(true);
+      if ("mediaSession" in navigator) navigator.mediaSession.playbackState = "playing";
+    }
+    const onPause = () => {
+      setIsPlaying(false);
+      if ("mediaSession" in navigator) navigator.mediaSession.playbackState = "paused";
+    }
+    const onTime = () => {
+      setProgress(audio.currentTime);
+      updatePositionState();
+    }
+    const onLoaded = () => {
+      setDuration(audio.duration);
+      updatePositionState();
+    }
+    const onEnded = () => void next();
+
+    audio.addEventListener("play", onPlay);
+    audio.addEventListener("pause", onPause);
+    audio.addEventListener("timeupdate", onTime);
+    audio.addEventListener("loadedmetadata", onLoaded);
+    audio.addEventListener("ended", onEnded);
+    return () => {
+      audio.removeEventListener("play", onPlay);
+      audio.removeEventListener("pause", onPause);
+      audio.removeEventListener("timeupdate", onTime);
+      audio.removeEventListener("loadedmetadata", onLoaded);
+      audio.removeEventListener("ended", onEnded);
+    }
+  }, [next, updatePositionState]);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (audio && currentSong) {
+      const audioUrl = songService.streamUrl(currentSong.id, currentSong.fileUrl);
+      audio.src = audioUrl;
+      audio.load();
+    }
+  }, []);
 
   return (
     <PlayerContext.Provider
