@@ -10,6 +10,8 @@ export interface Song {
   duration: number;
   artistId: string;
   albumId?: string | null;
+  bgBase?: string;
+  bgColor?: string;
   createdAt?: any;
   artist?: Artist | null;
   album?: Album | null;
@@ -37,6 +39,8 @@ export interface SongDTO {
   quality: string;
   audio: File | null;
   coverFile?: File | null;
+  bgBase?: string;
+  bgColor?: string;
   includeArtist?: boolean;
 }
 
@@ -51,6 +55,8 @@ export interface Track {
   duration: number;
   artistId: string;
   albumId?: string | null;
+  bgBase?: string;
+  bgColor?: string;
   createdAt?: any;
   artist?: Artist | null;
   album?: Album | null;
@@ -78,6 +84,8 @@ export interface TrackDTO {
   quality: string;
   audio: File | null;
   coverFile?: File | null;
+  bgBase?: string;
+  bgColor?: string;
   include?: {
     artist?: boolean;
     album?: boolean;

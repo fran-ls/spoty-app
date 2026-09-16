@@ -72,7 +72,9 @@ const SongCard = (props: SongCardProps) => {
   return (
     <div
       style={{
-        background: `linear-gradient(in oklch to bottom, ${colors.bg} 0%, ${colors.base} 100%)`
+        // backgroundImage: `linear-gradient(in oklch to bottom, ${colors.bg} 0%, ${colors.base} 100%)`
+        backgroundColor: colors.base,
+        backgroundImage: `linear-gradient(in oklch to bottom, ${colors.bg}, transparent), none`
       }}
       className="min-[500px]:flex-row min-[500px]:pb-6 pb-3 p-6 flex-col flex items-center gap-x-6 overflow-auto hide-scrollbar max-[500px]:relative"
       ref={playlistWrapRef}

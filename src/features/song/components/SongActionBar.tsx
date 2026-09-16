@@ -1,21 +1,27 @@
-import { EllipsisIcon, HeartIcon, PauseIcon, PlayIcon, Share2Icon } from "lucide-react";
+import { HeartIcon, PauseIcon, PlayIcon, Share2Icon } from "lucide-react";
 import type { PlaylistColors } from "../../playlist/playlist.types";
-import type { Song } from "../song.types";
+import type { Track } from "../song.types";
 import usePlayer from "../../player/hooks/usePlayer";
 import { getDeviceType } from "../../../shared/utils/getDeviceType";
+import SongActionBarMenu from "./SongActionBarMenu";
+import useAuth from "../../auth/hooks/useAuth";
 
 interface SongActionBarProps {
-  song: Song | null;
+  track: Track | null;
   colors: PlaylistColors;
   playable: boolean;
   onPlay: () => void;
+  setOpenBgEditor: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsRemove: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsEdit: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const SongActionBar = (props: SongActionBarProps) => {
-  const { song, colors, playable, onPlay } = props;
+  const { track, colors, playable, onPlay, setIsEdit, setIsRemove, setOpenBgEditor } = props;
   const { isPlaying, currentSong, togglePlay } = usePlayer();
+  const { user } = useAuth();
 
-  const playingNow = song ? song.id === currentSong?.id : false;
+  const playingNow = track ? track.id === currentSong?.id : false;
   const isDesktop = getDeviceType() === 'desktop';
 
   return (
@@ -27,7 +33,8 @@ const SongActionBar = (props: SongActionBarProps) => {
             isDesktop && window.innerWidth >= 500
               ? `linear-gradient(in oklch to bottom, ${colors.base70}, transparent), none`
               : `linear-gradient(in oklch to bottom, ${colors.base} 0%, transparent 40%)`
-          )
+          ),
+          // backgroundImage: `linear-gradient(in oklch to bottom, ${colors.base70}, transparent), none`
         }}
         className="block absolute left-0 sm:h-43.25 min-[500px]:h-25 h-43.25 w-full"
       />
@@ -71,12 +78,12 @@ const SongActionBar = (props: SongActionBarProps) => {
             }
           </button>
 
-          <button
-            className="flex items-center justify-center h-8 cursor-pointer"
-            type="button"
-          >
-            <EllipsisIcon className="min-[500px]:w-8 min-[500px]:h-8 min-[500px]:rotate-0 w-6 h-6 rotate-90" />
-          </button>
+          <SongActionBarMenu
+            isOwner={user?.role === 'ADMIN'}
+            setIsEdit={setIsEdit}
+            setOpenBgEditor={setOpenBgEditor}
+            setIsRemove={setIsRemove}
+          />
         </div>
       </div>
     </>
