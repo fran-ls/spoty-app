@@ -93,10 +93,10 @@ const PlaylistSongs = (props: PlaylistSongsProps) => {
 
               <div className="flex items-center gap-3 overflow-hidden">
                 <SmartImage
-                  wrapClassName="min-w-10 w-10 h-10 bg-[#262626] text-white rounded overflow-hidden relative"
+                  wrapClassName="min-w-10 w-10 h-10 bg-[#262626] rounded overflow-hidden relative"
                   url={cover}
                   icon={(
-                    <MusicIcon className="text-white" size={20} />
+                    <MusicIcon className="" size={20} />
                   )}
                 />
 
@@ -167,7 +167,7 @@ const PlaylistSongs = (props: PlaylistSongsProps) => {
               {(item.id === activeItem?.id) && (
                 <div
                   onClick={(e) => e.stopPropagation()}
-                  className={`z-3 absolute right-1 bottom-1 shadow-[0_0_24px_rgba(0,0,0,0.5)]`}
+                  className={`z-3 absolute right-1 ${items.length > 3 ? i > 1 ? 'bottom-1' : 'top-1' : 'bottom-1'} shadow-[0_0_24px_rgba(0,0,0,0.5)]`}
                   onMouseLeave={() => setActiveItem(null)}
                 >
                   <ActionMenu
@@ -203,7 +203,7 @@ const PlaylistSongs = (props: PlaylistSongsProps) => {
                       icon: (
                         <Music2Icon size={18} />
                       ),
-                      onAction: () => activeItem?.id && navigate(`${routes.tracks}/${activeItem.id}`)
+                      onAction: () => activeItem?.id && navigate(`${routes.tracks}/${activeItem.songId}`)
                     }, {
                       label: 'Compartir',
                       icon: (
