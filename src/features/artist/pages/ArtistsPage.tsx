@@ -7,7 +7,7 @@ import useTrack from "../../song/hooks/useTrack";
 import usePlayer from "../../player/hooks/usePlayer";
 
 const ArtistsPage = () => {
-  const { artists, artistMeta, searchArtists } = useArtist();
+  const { artists, artistMeta, loading, searchArtists } = useArtist();
   const { tracks, trackMeta, searchTracks } = useTrack();
   const { isPlaying, play, togglePlay, onPlaylistChange } = usePlayer();
 
@@ -15,10 +15,11 @@ const ArtistsPage = () => {
   const [currentArtistId, setCurrentArtistId] = useState('');
 
   const { loaderRef } = useInfiniteScroll(async () => {
-    if (page > 1 && !artistMeta.hasNextPage) return;
-    const nextPage = page + 1;
-    await searchArtists({ page: nextPage });
-    setPage(nextPage);
+    if (page === 1 || artistMeta.hasNextPage) {
+      await searchArtists({ page });
+      const nextPage = page + 1;
+      setPage(nextPage);
+    }
   });
 
   async function onPlay(artistId: string) {
@@ -56,7 +57,7 @@ const ArtistsPage = () => {
           />
         ))}
 
-        {artistMeta.hasNextPage && (
+        {(artistMeta.hasNextPage && !loading) && (
           <li className="flex-1 flex items-center justify-center py-1 overflow-hidden">
             <div
               className="flex-1 flex items-center justify-center"
