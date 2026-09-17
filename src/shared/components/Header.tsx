@@ -168,11 +168,17 @@ export const Header: React.FC<HeaderProps> = ({ onExplorePremiumClick }) => {
                         {icon.text}
                       </span>
                     </div>
-                    <div>
-                      <span className="text-white text-[13px]">
+                    <div className="overflow-hidden">
+                      <span
+                        className="text-white text-[13px] block truncate"
+                        title={user?.username}
+                      >
                         {user?.username}
                       </span>
-                      <span className="text-xs text-[#bababa] block truncate">
+                      <span
+                        className="text-xs text-[#bababa] block truncate"
+                        title={user?.email}
+                      >
                         {user?.email}
                       </span>
                     </div>
