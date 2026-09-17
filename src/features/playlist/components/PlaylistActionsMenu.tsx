@@ -19,7 +19,7 @@ const PlaylistActionsMenu = (props: PlaylistActionsMenuProps) => {
   return (
     <div className="max-[500px]:order-3 relative">
       <button
-        onClick={() => setIsPlaylistMenu(true)}
+        onClick={() => isPlaylistOwner && setIsPlaylistMenu((prev) => !prev)}
         className="flex items-center justify-center h-8 cursor-pointer"
         type="button"
       >
@@ -29,12 +29,12 @@ const PlaylistActionsMenu = (props: PlaylistActionsMenuProps) => {
       {(isPlaylistMenu && isPlaylistOwner) &&
         <div
           onMouseLeave={() => setIsPlaylistMenu(false)}
-          className="z-10 absolute top-0 left-0"
+          className="z-10 absolute bottom-10 left-0"
         >
           <ActionMenu
             onClose={() => setIsPlaylistMenu(false)}
             styles={{
-              wrap: "min-w-[160px]"
+              wrap: "min-w-[160px] shadow-[0_16px_24px_#0000004d,0_6px_8px_#0003]"
             }}
             items={[{
               label: 'Fondo',
