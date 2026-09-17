@@ -9,7 +9,7 @@ interface PlaylistMenuProps {
 }
 
 const PlaylistMenu = ({ actions, onClose }: PlaylistMenuProps) => {
-  const { isQueue } = usePlayer();
+  const { isPlayer } = usePlayer();
 
   return (
     <>
@@ -18,7 +18,7 @@ const PlaylistMenu = ({ actions, onClose }: PlaylistMenuProps) => {
         onClick={onClose}
       />
 
-      <div className={`${!isQueue ? 'md:right-76 right-2' : 'md:right-22 right-2'} w-45 z-100 bg-[#282828] text-sm p-1 rounded fixed bottom-22`}>
+      <div className={`${isPlayer ? 'md:right-76 right-2' : 'md:right-15 right-2'} w-45 z-100 bg-[#282828] text-sm p-1 rounded fixed bottom-22`}>
         <ul className="text-[#adaaaa] flex flex-col items-center justify-between">
           <li className="w-full font-medium hover:text-white hover:bg-white/10 rounded-xs">
             <button
