@@ -146,62 +146,51 @@ const SongCard = (props: SongCardProps) => {
         </span>
         <h1
           style={{
-            fontSize: titleSize,
+            ...(window.innerWidth >= 500 && {
+              fontSize: titleSize
+            }),
             textShadow: '0px 0px 4px rgba(0,0,0,0.3)'
           }}
-          className={`min-[500px]:mb-0 max-[500px]:mt-2 font-black truncate ${window.innerWidth >= 500 ? 'playlist-title google-sans-flex-font' : 'playlist-title-font'}`}
+          className={`min-[500px]:mb-0 max-[500px]:mt-5 min-[500px]:truncate line-clamp-2 font-black ${window.innerWidth >= 500 ? 'playlist-title google-sans-flex-font' : 'text-2xl google-sans-flex-font'}`}
           title={song?.title}
         >
           {song?.title || 'Canción'}
         </h1>
 
-        <div className="mt-2 flex items-center">
-          <SmartImage
-            wrapClassName="w-6 h-6 shrink-0 text-[#7f7f7f] rounded-full"
-            icon={<UserIcon className="w-[40%] h-[40%]" />}
-            url={artistCover}
-          />
+        <div className="max-[500px]:flex-col min-[500px]:mt-2 mt-3 flex min-[500px]:items-center">
+          <div className="flex gap-2 items-center">
+            <SmartImage
+              wrapClassName="w-6 h-6 shrink-0 text-[#7f7f7f] rounded-full"
+              icon={<UserIcon className="w-[40%] h-[40%]" />}
+              url={artistCover}
+            />
 
-          <Link
-            className="hover:underline"
-            to={`${routes.artists}/${song?.artistId || ''}`}
-          >
-            <span className="text-sm ml-2 font-bold">
-              {artistName}
-            </span>
-          </Link>
-
-          {/* {(song?.title) && (
-            <>
-              <span className="min-[500px]:inline-flex hidden text-sm ml-2 font-bold">
-                •
+            <Link
+              className="hover:underline overflow-hidden"
+              to={`${routes.artists}/${song?.artistId || ''}`}
+            >
+              <span className="text-sm font-semibold min-[500px]:truncate line-clamp-2">
+                {artistName}
               </span>
-              <span className="min-[500px]:inline-flex hidden text-sm ml-2 text-nowrap">
-                {song?.title}
-              </span>
-            </>
-          )} */}
+            </Link>
+          </div>
 
           {song?.createdAt && (
-            <>
-              <span className="text-[#adaaaa] text-sm ml-2">
-                •
-              </span>
-              <span className="text-[#adaaaa] ml-2 text-sm font-medium">
+            <div className="max-[500px]:mt-3 text-sm text-[#ffffffb3] flex items-center gap-2">
+              <span className="min-[500px]:inline hidden ml-2">•</span>
+              <span className="font-medium">
                 {new Date(song.createdAt).getFullYear()}
               </span>
-            </>
-          )}
 
-          {song?.duration && (
-            <>
-              <span className="text-[#adaaaa] text-sm ml-2">
-                •
-              </span>
-              <span className="text-[#adaaaa] ml-2 text-sm font-medium">
-                {formatTime(song.duration)}
-              </span>
-            </>
+              {song?.duration && (
+                <>
+                  <span>•</span>
+                  <span className="font-medium">
+                    {formatTime(song.duration)}
+                  </span>
+                </>
+              )}
+            </div>
           )}
         </div>
       </div>
