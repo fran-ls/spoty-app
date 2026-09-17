@@ -94,6 +94,8 @@ const PlaylistActionBar = (props: PlaylistActionBarProps) => {
 
           <PlaylistActionsMenu
             form={form}
+            playlist={playlist}
+            playable={playable}
             isPlaylistOwner={isPlaylistOwner}
             setIsEdit={setIsEdit}
             setIsRemove={setIsRemove}
