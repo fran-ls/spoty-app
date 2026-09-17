@@ -130,7 +130,7 @@ const TrackForm = (props: TrackFormProps) => {
       icon: <Music2Icon size={16} />
     }
 
-    useApi.save<Song>(() => songService.uploadSong(form, { artist: true }), config);
+    useApi.save<Song>(() => songService.uploadSong({ ...form, duration: player.duration }, { artist: true }), config);
   }
 
   return (
