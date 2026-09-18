@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { PlayIcon, MusicIcon, EllipsisIcon, ClockIcon, CheckIcon, PlusIcon, CircleMinusIcon, ListPlusIcon, Music2Icon, ShareIcon } from 'lucide-react';
 import type { PlaylistSong } from '../playlist.types';
 import type { PaginationMeta } from '../../../shared/types/common.types';
@@ -68,14 +69,21 @@ const PlaylistSongs = (props: PlaylistSongsProps) => {
           const track = item.song!;
           const isCurrentPlayingNow = currentSong?.id === track.id;
           const cover = songService.songCoverUrl(track?.id, track?.cover);
+          const redirectToTrack = `${routes.tracks}/${item.songId}`;
 
           return (
             <div
-              onClick={() => onPlay(i)}
+              onDoubleClick={() => onPlay(i)}
               className={`min-w-fit grid ${grid.s} ${grid.sm} ${grid.md} ${grid.lg} gap-4 sm:pr-4 sm:px-0 px-4 py-2 items-center sm:rounded hover:bg-white/5 transition-colors group cursor-pointer duration-200 relative`}
               key={item.id}
             >
-              <div className={`${isCurrentPlayingNow ? 'text-primary' : 'text-[#adaaaa]'} group-hover:pl-4 sm:flex hidden items-center text-sm font-medium`}>
+              <div
+                className={`${isCurrentPlayingNow ? 'text-primary' : 'text-[#adaaaa]'} group-hover:pl-4 sm:flex hidden items-center text-sm font-medium`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onPlay(i);
+                }}
+              >
                 <span className="group-hover:hidden ml-auto text-base text-right font-normal">
                   {i + 1}
                 </span>
@@ -98,18 +106,31 @@ const PlaylistSongs = (props: PlaylistSongsProps) => {
                 />
 
                 <div className="flex flex-col min-w-0">
-                  <span
-                    className={`font-semibold truncate text-sm ${isCurrentPlayingNow ? 'text-primary' : 'text-white'}`}
-                    title={track?.title}
+                  <Link
+                    className="hover:text-white hover:underline"
+                    onClick={(e) => e.stopPropagation()}
+                    to={redirectToTrack}
                   >
-                    {track?.title}
-                  </span>
-                  <span
-                    className="text-[#adaaaa] text-xs truncate transition-colors hover:text-white hover:underline mt-0.5"
-                    title={track.artist?.name || ''}
+                    <span
+                      className={`block font-medium truncate text-sm ${isCurrentPlayingNow ? 'text-primary' : 'text-white'}`}
+                      title={track?.title}
+                    >
+                      {track?.title || ''}
+                    </span>
+                  </Link>
+
+                  <Link
+                    className="hover:text-white hover:underline"
+                    onClick={(e) => e.stopPropagation()}
+                    to={`${routes.artists}/${track.artistId}`}
                   >
-                    {track?.artist?.name || ''}
-                  </span>
+                    <span
+                      className="block text-[#adaaaa] text-xs truncate transition-colors hover:text-white"
+                      title={track.artist?.name}
+                    >
+                      {track?.artist?.name || ''}
+                    </span>
+                  </Link>
                 </div>
               </div>
 
@@ -196,7 +217,7 @@ const PlaylistSongs = (props: PlaylistSongsProps) => {
                         setActiveItem(null);
                       }
                     }, {
-                      link: `${routes.tracks}/${item.songId}`,
+                      link: redirectToTrack,
                       label: 'Ver pista',
                       icon: (
                         <Music2Icon size={18} />
