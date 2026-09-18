@@ -135,6 +135,7 @@ const PlaylistsPage = () => {
 
               <Link
                 className="hover:underline"
+                onClick={(e) => e.stopPropagation()}
                 to={redirectTo}
               >
                 <h3

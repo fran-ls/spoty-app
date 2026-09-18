@@ -48,6 +48,7 @@ const ArtistCard = (props: ArtistCardProps) => {
 
       <Link
         className="hover:underline max-w-fit w-full text-white overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
         to={redirectTo}
       >
         <h3

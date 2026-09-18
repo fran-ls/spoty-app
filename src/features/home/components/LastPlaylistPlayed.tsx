@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { PauseIcon, PlayIcon } from "lucide-react";
 import type { HistoryPlaylist } from "../../player/playHistory.types";
 import type { Playlist } from "../../playlist/playlist.types";
@@ -105,10 +105,11 @@ const LastPlaylistPlayed = ({ bannerRef, setPlaylist }: {
           const cover = playlistService.playlistCover(playlist.id, playlist?.cover);
           const isCoverImgs = !cover && coverImages && coverImages.length > 3;
           const isCurrent = currentPlaylist?.id === playlist.id;
+          const redirectTo = `${routes.playlists}/${playlist.id}`;
 
           return (
             <div
-              onClick={() => navigate(`${routes.playlists}/${playlist.id}`)}
+              onClick={() => navigate(redirectTo)}
               onMouseEnter={() => setPlaylist(playlist)}
               className="group flex items-center bg-white/5 hover:bg-white/10 rounded overflow-hidden transition-all duration-300 cursor-pointer relative active:scale-98"
               key={playlist.id}
@@ -126,12 +127,19 @@ const LastPlaylistPlayed = ({ bannerRef, setPlaylist }: {
                 {isCoverImgs && <PlaylistCoverImgs images={coverImages} />}
               </div>
 
-              <h3
-                className="px-5 flex-1 font-headline font-extrabold text-[#ffffff] text-sm truncate google-sans-flex-font"
-                title={playlist.name}
+              <Link
+                className="overflow-hidden"
+                onClick={(e) => e.stopPropagation()}
+                to={redirectTo}
               >
-                {playlist.name}
-              </h3>
+                <h3
+                  className="px-5 flex-1 font-headline font-extrabold text-[#ffffff] text-sm truncate google-sans-flex-font"
+                  title={playlist.name}
+                >
+                  {playlist.name}
+                </h3>
+              </Link>
+
               <button
                 onClick={(e) => {
                   e.stopPropagation();

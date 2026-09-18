@@ -64,6 +64,7 @@ const PlaylistCard = ({ playlist, playable = true, onPlay }: PlaylistCardProps) 
 
       <Link
         className="hover:underline max-w-fit w-full text-white"
+        onClick={(e) => e.stopPropagation()}
         to={redirectTo}
       >
         <h3
