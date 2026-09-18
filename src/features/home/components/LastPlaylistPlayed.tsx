@@ -67,7 +67,8 @@ const LastPlaylistPlayed = ({ bannerRef, setPlaylist }: {
         ) : (
           <Slider
             keys={{
-              title: 'playlist.name'
+              title: 'playlist.name',
+              id: 'playlist.id'
             }}
             items={playlists}
             linkToViewAll={routes.playlists}
