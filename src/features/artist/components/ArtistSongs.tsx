@@ -1,16 +1,17 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { PlayIcon, MusicIcon, EllipsisIcon, CheckIcon } from 'lucide-react';
 import type { PaginationMeta } from '../../../shared/types/common.types';
 import type { Track } from '../../song/song.types';
 import { PlaylistLayout } from '../../library/library.types';
 import { formatTime } from '../../../shared/utils/formatTime';
-import { getFmtDate } from '../../../shared/utils/getFormatDate';
 import Loader from '../../../shared/components/Loader';
 import { useInfiniteScroll } from '../../../shared/hooks/useInfiniteScroll';
 import songService from '../../song/services/song.service';
 import SmartImage from '../../../shared/components/SmartImage';
 import usePlayer from '../../player/hooks/usePlayer';
 import SongActionsMenu from '../../song/components/SongActionsMenu';
+import { routes } from '../../../shared/utils/routes';
 
 interface ArtistSongsProps {
   layout: PlaylistLayout;
@@ -47,11 +48,17 @@ const ArtistSongs = (props: ArtistSongsProps) => {
 
           return (
             <div
-              onClick={() => play(items, i, paginationMeta)}
+              onDoubleClick={() => play(items, i, paginationMeta)}
               className={`min-w-fit grid ${grid.s} ${grid.sm} ${grid.md} ${grid.lg} ${layout === PlaylistLayout.LIST ? 'py-2' : 'py-1'} gap-4 sm:pr-4 sm:px-0 px-4 items-center sm:rounded hover:bg-white/5 transition-colors group cursor-pointer duration-200 relative`}
               key={t.id}
             >
-              <div className={`${isPlayingNow ? 'text-primary' : 'text-[#adaaaa]'} group-hover:pl-4 sm:flex hidden items-center text-sm font-medium`}>
+              <div
+                className={`${isPlayingNow ? 'text-primary' : 'text-[#adaaaa]'} group-hover:pl-4 sm:flex hidden items-center text-sm font-medium`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  play(items, i, paginationMeta);
+                }}
+              >
                 <span className="group-hover:hidden ml-auto text-base text-right font-normal">
                   {i + 1}
                 </span>
@@ -76,30 +83,33 @@ const ArtistSongs = (props: ArtistSongsProps) => {
                 )}
 
                 <div className="flex flex-col min-w-0">
-                  <span
-                    className={`font-semibold truncate text-sm ${isPlayingNow ? 'text-primary' : 'text-white'}`}
-                    title={t?.title}
+                  <Link
+                    className={`${isPlayingNow ? 'hover:text-primary' : 'hover:text-white'} hover:underline`}
+                    onClick={(e) => e.stopPropagation()}
+                    to={`${routes.tracks}/${t.id}`}
                   >
-                    {t?.title}
-                  </span>
-
-                  {layout === PlaylistLayout.LIST && (
                     <span
-                      className="text-[#adaaaa] text-xs truncate transition-colors hover:text-white hover:underline mt-0.5"
-                      title={t.artist?.name || ''}
+                      className={`block font-medium truncate text-sm ${isPlayingNow ? 'text-primary' : 'text-white'}`}
+                      title={t?.title}
                     >
-                      {t?.artist?.name || ''}
+                      {t?.title}
                     </span>
-                  )}
+                  </Link>
                 </div>
               </div>
 
-              <div className="lg:block hidden text-[#adaaaa] text-sm truncate group-hover:text-white transition-colors">
-                {t?.album?.title || ''}
+              <div
+                className="lg:block hidden text-[#adaaaa] text-sm truncate group-hover:text-white transition-colors"
+                title={t.album?.title}
+              >
+                {t?.album?.title}
               </div>
 
-              <div className="lg:block hidden text-[#adaaaa] text-sm truncate select-none">
-                {t?.createdAt ? getFmtDate(t?.createdAt, 'dd MMM yyyy') : ''}
+              <div
+                className="lg:block hidden text-[#adaaaa] text-sm truncate select-none"
+                title={t.artist?.name}
+              >
+                {t.artist?.name}
               </div>
 
               <div className="sm:flex hidden items-center justify-center">
@@ -145,7 +155,7 @@ const ArtistSongs = (props: ArtistSongsProps) => {
               {(t.id === activeTrack?.id) && (
                 <div
                   onClick={(e) => e.stopPropagation()}
-                  className={`z-3 absolute right-1 bottom-1 shadow-[0_16px_24px_#0000004d,0_6px_8px_#0003]`}
+                  className={`z-3 absolute right-1 ${items.length > 3 ? i > 1 ? 'bottom-1' : 'top-1' : 'bottom-1'} shadow-[0_16px_24px_#0000004d,0_6px_8px_#0003]`}
                   onMouseLeave={() => setActiveTrack(null)}
                 >
                   <SongActionsMenu
