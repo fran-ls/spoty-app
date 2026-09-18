@@ -199,6 +199,7 @@ const Slider = (props: SliderProps) => {
                 {linkToRedirect ? (
                   <Link
                     className="hover:underline"
+                    onClick={(e) => e.stopPropagation()}
                     to={redirectTo}
                   >
                     {titleHTML}
