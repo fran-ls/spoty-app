@@ -145,7 +145,7 @@ const ArtistSongs = (props: ArtistSongsProps) => {
               {(t.id === activeTrack?.id) && (
                 <div
                   onClick={(e) => e.stopPropagation()}
-                  className={`z-3 absolute right-1 bottom-1 shadow-[0_0_24px_rgba(0,0,0,0.5)]`}
+                  className={`z-3 absolute right-1 bottom-1 shadow-[0_16px_24px_#0000004d,0_6px_8px_#0003]`}
                   onMouseLeave={() => setActiveTrack(null)}
                 >
                   <SongActionsMenu

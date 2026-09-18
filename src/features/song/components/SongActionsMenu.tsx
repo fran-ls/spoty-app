@@ -1,4 +1,3 @@
-import { useNavigate } from "react-router-dom";
 import { CircleMinusIcon, ListPlusIcon, Music2Icon, PlusIcon, ShareIcon } from "lucide-react";
 import type { Track } from "../song.types";
 import ActionMenu from "../../../shared/components/ActionMenu";
@@ -16,8 +15,6 @@ interface SongActionsMenuProps {
 const SongActionsMenu = (props: SongActionsMenuProps) => {
   const { track, isPlaylistOwner, index, unbox = false, onClose } = props;
   const { queue, setQueue } = usePlayer();
-
-  const navigate = useNavigate();
 
   const items = [{
     label: 'Añadir a lista',
@@ -43,11 +40,11 @@ const SongActionsMenu = (props: SongActionsMenuProps) => {
       onClose();
     }
   }, {
+    link: track?.id && `${routes.tracks}/${track.id}`,
     label: 'Ver pista',
     icon: (
       <Music2Icon size={18} />
     ),
-    onAction: () => track?.id && navigate(`${routes.tracks}/${track.id}`)
   }, {
     label: 'Compartir',
     icon: (
@@ -66,7 +63,7 @@ const SongActionsMenu = (props: SongActionsMenuProps) => {
     />
   ) : (
     <div
-      className={`z-3 absolute right-1 shadow-[0_0_64px_#000] ${index != null ? index > 1 ? 'bottom-1' : 'top-1' : ''}`}
+      className={`z-3 absolute right-1 shadow-[0_16px_24px_#0000004d,0_6px_8px_#0003] ${index != null ? index > 1 ? 'bottom-1' : 'top-1' : ''}`}
       onMouseLeave={() => onClose()}
     >
       <ActionMenu

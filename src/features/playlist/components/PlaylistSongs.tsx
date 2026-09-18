@@ -1,4 +1,3 @@
-import { useNavigate } from 'react-router-dom';
 import { PlayIcon, MusicIcon, EllipsisIcon, ClockIcon, CheckIcon, PlusIcon, CircleMinusIcon, ListPlusIcon, Music2Icon, ShareIcon } from 'lucide-react';
 import type { PlaylistSong } from '../playlist.types';
 import type { PaginationMeta } from '../../../shared/types/common.types';
@@ -30,8 +29,6 @@ const PlaylistSongs = (props: PlaylistSongsProps) => {
   const { loaderRef } = useInfiniteScroll(() => loadMore());
 
   const [activeItem, setActiveItem] = useState<PlaylistSong | null>(null);
-
-  const navigate = useNavigate();
 
   const grid = {
     s: 'grid-cols-[minmax(200px,2fr)_28px]',
@@ -167,7 +164,7 @@ const PlaylistSongs = (props: PlaylistSongsProps) => {
               {(item.id === activeItem?.id) && (
                 <div
                   onClick={(e) => e.stopPropagation()}
-                  className={`z-3 absolute right-1 ${items.length > 3 ? i > 1 ? 'bottom-1' : 'top-1' : 'bottom-1'} shadow-[0_0_24px_rgba(0,0,0,0.5)]`}
+                  className={`z-3 absolute right-1 ${items.length > 3 ? i > 1 ? 'bottom-1' : 'top-1' : 'bottom-1'} shadow-[0_16px_24px_#0000004d,0_6px_8px_#0003]`}
                   onMouseLeave={() => setActiveItem(null)}
                 >
                   <ActionMenu
@@ -199,11 +196,11 @@ const PlaylistSongs = (props: PlaylistSongsProps) => {
                         setActiveItem(null);
                       }
                     }, {
+                      link: `${routes.tracks}/${item.songId}`,
                       label: 'Ver pista',
                       icon: (
                         <Music2Icon size={18} />
                       ),
-                      onAction: () => activeItem?.id && navigate(`${routes.tracks}/${activeItem.songId}`)
                     }, {
                       label: 'Compartir',
                       icon: (

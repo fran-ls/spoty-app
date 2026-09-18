@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { CircleMinusIcon, ListPlusIcon, Music2Icon, UploadIcon } from "lucide-react";
 import type { Role } from "../../features/auth/auth.types";
 import useAuth from "../../features/auth/hooks/useAuth";
@@ -34,10 +35,11 @@ interface LiItemStyles {
 type MenuStyleK = keyof MenuStyles;
 
 interface Item {
+  link?: string;
   label: string;
   subtext?: string;
   icon?: React.ReactElement;
-  type?: 'toggle' | 'btn';
+  type?: 'toggle' | 'btn' | 'link';
   isActive?: boolean;
   styles?: LiItemStyles;
   onAction?: (isActive?: boolean) => any;
@@ -88,56 +90,66 @@ const LiItem = ({ item, styles }: LiItemProps) => {
       }}
       className={cn("w-full font-medium hover:text-white hover:bg-white/10 rounded-xs", li.className)}
     >
-      <button
-        onClick={() => type === 'btn' && item.onAction?.()}
-        style={li.style}
-        className={cn("w-full flex items-center gap-2 cursor-pointer px-3 py-2", li.className)}
-        type="button"
-      >
-        {type === 'btn' && (
-          <>
-            {item.icon}
-            <span>{item.label}</span>
-          </>
-        )}
-
-        {item.type === 'toggle' && (
-          <div className="w-full">
-            <div className="w-full flex items-center justify-between gap-2">
+      {(type === 'link' || item.link) ? (
+        <Link
+          className={cn("w-full flex items-center gap-2 cursor-pointer px-3 py-2", li.className)}
+          to={item.link || '/'}
+        >
+          {item.icon}
+          <span>{item.label}</span>
+        </Link>
+      ) : (
+        <button
+          onClick={() => type === 'btn' && item.onAction?.()}
+          style={li.style}
+          className={cn("w-full flex items-center gap-2 cursor-pointer px-3 py-2", li.className)}
+          type="button"
+        >
+          {type === 'btn' && (
+            <>
+              {item.icon}
               <span>{item.label}</span>
+            </>
+          )}
 
-              <label
-                className="switch"
-                title={`${!isActive ? 'Activar' : 'Desactivar'} Borrar archivos`}
-              >
-                <input
-                  onChange={() => {
-                    const active = !isActive;
-                    setIsActive(active);
-                    type === "toggle" && item.onAction?.(active);
-                  }}
-                  checked={isActive}
-                  type="checkbox"
-                  id="toggleSwitch"
-                />
+          {item.type === 'toggle' && (
+            <div className="w-full">
+              <div className="w-full flex items-center justify-between gap-2">
+                <span>{item.label}</span>
+
+                <label
+                  className="switch"
+                  title={`${!isActive ? 'Activar' : 'Desactivar'} Borrar archivos`}
+                >
+                  <input
+                    onChange={() => {
+                      const active = !isActive;
+                      setIsActive(active);
+                      type === "toggle" && item.onAction?.(active);
+                    }}
+                    checked={isActive}
+                    type="checkbox"
+                    id="toggleSwitch"
+                  />
+                  <span
+                    style={slider.style}
+                    className={cn("slider bg-primary", slider.className)}
+                  />
+                </label>
+              </div>
+
+              {item.subtext &&
                 <span
-                  style={slider.style}
-                  className={cn("slider bg-primary", slider.className)}
-                />
-              </label>
+                  style={subtext.style}
+                  className={cn("text-xs w-full text-left font-light block mt-1", subtext.className)}
+                >
+                  {item.subtext}
+                </span>
+              }
             </div>
-
-            {item.subtext &&
-              <span
-                style={subtext.style}
-                className={cn("text-xs w-full text-left font-light block mt-1", subtext.className)}
-              >
-                {item.subtext}
-              </span>
-            }
-          </div>
-        )}
-      </button>
+          )}
+        </button>
+      )}
     </li>
   )
 }
@@ -217,6 +229,8 @@ const ActionMenu = (props: MenuItemProps) => {
               key={it.label}
               styles={it.styles || styles}
               item={{
+                type: it.type || 'btn',
+                link: it.link,
                 label: it.label,
                 subtext: it.subtext,
                 isActive: it.isActive,
@@ -240,11 +254,12 @@ const ActionMenu = (props: MenuItemProps) => {
                   key={it.label}
                   styles={it.styles || styles}
                   item={{
+                    type,
+                    link: it.link,
                     label: it.label,
                     subtext: it.subtext,
                     isActive: it.isActive,
                     icon: it.icon,
-                    type,
                     onAction: (isActive) => {
                       it.onAction?.(isActive);
                       if (type !== 'toggle') onClose?.();

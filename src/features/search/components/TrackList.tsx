@@ -157,7 +157,7 @@ const TrackList = (props: TrackListProps) => {
 
               {(track.id === activeTrack?.id) && (
                 <div
-                  className={`z-3 absolute right-1 shadow-[0_0_64px_#000] ${i > 1 ? 'bottom-1' : 'top-1'}`}
+                  className={`z-3 absolute right-1 shadow-[0_16px_24px_#0000004d,0_6px_8px_#0003] ${i > 1 ? 'bottom-1' : 'top-1'}`}
                   onMouseLeave={() => setActiveTrack(null)}
                 >
                   <SongActionsMenu
