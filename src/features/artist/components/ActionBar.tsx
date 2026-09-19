@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { HeartIcon, ListIcon, PauseIcon, PlayIcon, Share2Icon, TextAlignJustifyIcon } from "lucide-react";
+import { EllipsisIcon, HeartIcon, ListIcon, PaletteIcon, PauseIcon, PlayIcon, Share2Icon, TextAlignJustifyIcon } from "lucide-react";
 import type { PlaylistColors } from "../../playlist/playlist.types";
 import type { Artist } from "../artist.types";
 import LayoutMenu from "../../playlist/components/LayoutMenu";
@@ -7,25 +7,32 @@ import usePlayer from "../../player/hooks/usePlayer";
 import { getDeviceType } from "../../../shared/utils/getDeviceType";
 import artistService from "../services/artist.service";
 import { PlaylistLayout } from "../../library/library.types";
+import ActionMenu from "../../../shared/components/ActionMenu";
+import useAuth from "../../auth/hooks/useAuth";
 
 interface ActionBarProps {
   layout: PlaylistLayout;
   artist: Artist | null;
   colors: PlaylistColors;
   playable: boolean;
+  isOwner: boolean;
   onPlay: () => void;
   setLayout: React.Dispatch<React.SetStateAction<PlaylistLayout>>;
+  setOpenBgEditor: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const ActionBar = (props: ActionBarProps) => {
-  const { artist, colors, playable, layout, onPlay, setLayout } = props;
+  const { artist, colors, playable, layout, isOwner, onPlay, setLayout, setOpenBgEditor } = props;
   const { isPlaying, togglePlay } = usePlayer();
+  const { user } = useAuth();
 
   const [isLayoutMenu, setIsLayoutMenu] = useState(false);
+  const [isOpenMenu, setIsOpenMenu] = useState(false);
   const [playingNow, setPlayingNow] = useState(false);
 
   const cover = artist ? artistService.artistImage(artist.id, artist.image) : null;
   const isDesktop = getDeviceType() === 'desktop';
+  const owner = isOwner || user?.role === 'ADMIN';
 
   return (
     <>
@@ -96,6 +103,40 @@ const ActionBar = (props: ActionBarProps) => {
               />
             </div>
           )}
+
+          <div className="max-[500px]:order-3 relative">
+            <button
+              onClick={() => owner && setIsOpenMenu(!isOpenMenu)}
+              className="flex items-center justify-center h-8 cursor-pointer"
+              type="button"
+            >
+              <EllipsisIcon className="min-[500px]:w-8 min-[500px]:h-8 min-[500px]:rotate-0 w-6 h-6 rotate-90" />
+            </button>
+
+            {(isOpenMenu && owner) &&
+              <div
+                onMouseLeave={() => setIsOpenMenu(false)}
+                className="z-10 absolute bottom-10 left-0"
+                style={{
+                  boxShadow: '0 16px 24px #0000004d,0 6px 8px #0003'
+                }}
+              >
+                <ActionMenu
+                  onClose={() => setIsOpenMenu(false)}
+                  styles={{
+                    wrap: "min-w-[160px]"
+                  }}
+                  items={[{
+                    label: 'Fondo',
+                    icon: (
+                      <PaletteIcon size={18} />
+                    ),
+                    onAction: () => setOpenBgEditor(true)
+                  }]}
+                />
+              </div>
+            }
+          </div>
         </div>
 
         <div

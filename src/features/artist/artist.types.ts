@@ -7,6 +7,8 @@ export interface Artist {
   name: string;
   bio?: string | null;
   image?: string | null;
+  bgBase?: string;
+  bgColor?: string;
   albums?: Album[];
   songs?: Track[];
 }
@@ -16,6 +18,8 @@ export interface ArtistDTO {
   bio?: string | null;
   image?: string;
   file?: string | null;
+  bgBase?: string;
+  bgColor?: string;
 }
 
 export type ArtistFilters = Partial<Artist> & PaginationQuery;
