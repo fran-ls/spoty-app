@@ -185,14 +185,17 @@ const PlaylistCard = (props: PlaylistCardProps) => {
           Lista {form.isPublic ? 'pública' : 'privada'}
         </span>
         <h1
-          style={{
-            fontSize: titleSize
-          }}
           onClick={() => isPlaylistOwner && setIsEdit(true)}
-          className={`min-[500px]:mb-0 max-[500px]:mt-2 font-black truncate ${isPlaylistOwner ? 'cursor-pointer' : ''} ${window.innerWidth >= 500 ? 'playlist-title google-sans-flex-font' : 'playlist-title-font'}`}
+          className={`min-[500px]:mb-0 max-[500px]:mt-5 min-[500px]:truncate line-clamp-2 font-black ${window.innerWidth >= 500 ? 'playlist-title google-sans-flex-font' : 'text-2xl google-sans-flex-font'}`}
           title={form.name}
+          style={{
+            ...(window.innerWidth >= 500 && {
+              fontSize: titleSize
+            }),
+            textShadow: '0px 0px 4px rgba(0,0,0,0.3)'
+          }}
         >
-          {form.name || 'Mi lista'}
+          {form.name || 'Lista'}
         </h1>
 
         {form.description && (
