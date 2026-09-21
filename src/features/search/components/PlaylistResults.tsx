@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import type { SearchFilter } from "./SearchHeader";
-import type { Playlist, PlaylistFilters, PlaylistSong } from "../../playlist/playlist.types";
-import usePlaylist from "../../playlist/hooks/usePlaylist";
+import type { Playlist, PlaylistFilters, PlaylistInclude, PlaylistSong } from "../../playlist/playlist.types";
 import { routes } from "../../../shared/utils/routes";
 import PlaylistCard from "./PlaylistCard";
 import SearchItem from "./SearchItem";
@@ -19,10 +18,10 @@ interface PlaylistResultsProps {
 }
 
 const PlaylistResults = ({ filter, query, hoverId, setHoverId }: PlaylistResultsProps) => {
-  const { playlists, searchPlaylists } = usePlaylist();
   const { queue, currentPlaylist, togglePlay, play, onPlaylistChange, setQueue, setQueueMeta } = usePlayer();
   const isPlaylistFilter = filter === 'playlists';
 
+  const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [tracks, setTracks] = useState<PlaylistSong[]>([]);
   const [currentPlaylistId, setCurrentPlaylistId] = useState('');
 
@@ -42,6 +41,20 @@ const PlaylistResults = ({ filter, query, hoverId, setHoverId }: PlaylistResults
       setPage(nextPage);
     }
   });
+
+  async function searchPlaylists(
+    filters?: PlaylistFilters,
+    include?: PlaylistInclude
+  ) {
+    const { data } = await playlistService.searchPublicPlaylists(filters, include);
+    if (!data) return data;
+
+    (filters?.page && filters.page > 1)
+      ? setPlaylists([...playlists, ...data.items])
+      : setPlaylists(data.items);
+
+    return data;
+  }
 
   async function onPlay({ playlist, isPlayingNow, queueMerge }: {
     playlist: Playlist;
