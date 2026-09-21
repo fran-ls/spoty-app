@@ -129,7 +129,7 @@ class PlaylistService {
 
   async searchPlaylists(filters?: PlaylistFilters, include?: PlaylistInclude) {
     return await apiFetch<SearchResponse<Playlist[]>>(() => (
-      api.get(`/playlists/search`, {
+      api.get(`/playlists/u/search`, {
         params: {
           ...filters,
           include: include ? JSON.stringify(include) : undefined
