@@ -15,17 +15,16 @@ const RecentPage = () => {
   const [playHistory, setPlayHistory] = useState<THistoryItem[]>([]);
   const [meta, setMeta] = useState(paginationMeta);
 
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
 
   const lastIndex = playHistory.length - 1;
-  const hasMore = firstHistoryItem ? firstHistoryItem.createdAt !== playHistory[lastIndex]?.createdAt : true;
+  const hasMore = firstHistoryItem && lastIndex > 0 ? firstHistoryItem.createdAt !== playHistory[lastIndex]?.createdAt : false;
 
   const { loaderRef } = useInfiniteScroll(async () => {
     if (!hasMore) return;
-    const nextPage = page + 1;
-    await getPlayHistory(nextPage);
-    setPage(nextPage);
+    await getPlayHistory(page);
+    setPage(page + 1);
   });
 
   async function getPlayHistory(page = 1) {
@@ -83,7 +82,7 @@ const RecentPage = () => {
             />
           ))}
 
-          {hasMore && (
+          {(hasMore && !loading) && (
             <div
               className="flex items-center justify-center"
               ref={loaderRef}
