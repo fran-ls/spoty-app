@@ -11,7 +11,7 @@ class AuthService {
 
     if (response.status === 401) {
       response.error = 'Not authenticated';
-      response.message = 'Inicia sesión';
+      response.message = 'No tienes permisos';
       return response;
     }
     if (response.status === 409) {
