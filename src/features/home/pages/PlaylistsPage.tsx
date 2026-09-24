@@ -100,7 +100,6 @@ const PlaylistsPage = () => {
               <div className="shadow-[0_8px_24px_#00000080] relative mb-2 aspect-square rounded-md overflow-hidden bg-[#333333]">
                 <SmartImage
                   wrapClassName="bg-transparent"
-                  referrerPolicy="no-referrer"
                   url={cover}
                   styles={{
                     imgWrap: 'w-full h-full bg-transparent',

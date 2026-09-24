@@ -36,7 +36,6 @@ const OpenQueueCard = () => {
       >
         <div className="min-w-12 w-12 h-12 rounded relative overflow-hidden hover:badge:bg-blue-500">
           <SmartImage
-            referrerPolicy="no-referrer"
             wrapClassName="bg-[#333333]"
             url={cover}
           />

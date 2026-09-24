@@ -31,8 +31,6 @@ const HistoryItem = ({ userId, item }: HistoryItemProps) => {
         onClick={() => setExpanded(!expanded)}
       >
         <SmartImage
-          crossOrigin="anonymous"
-          referrerPolicy="no-referrer"
           url={cover}
           styles={{
             imgWrap: {

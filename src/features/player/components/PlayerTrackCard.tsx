@@ -23,7 +23,6 @@ const PlayerTrackCard = () => {
       <div className="min-w-full shrink-0 w-full aspect-square rounded-lg overflow-hidden shadow-[0_8px_24px_#00000080]">
         <SmartImage
           wrapClassName="w-full h-full"
-          referrerPolicy="no-referrer"
           url={cover}
           icon={(
             <MusicIcon className="w-1/4 h-1/4" />

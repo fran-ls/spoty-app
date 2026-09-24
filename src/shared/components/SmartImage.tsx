@@ -60,8 +60,8 @@ const SmartImage = (props: SmartImageProps) => {
       {url && (
         <img
           src={url}
-          crossOrigin="anonymous"
-          referrerPolicy="no-referrer"
+          // crossOrigin="anonymous"
+          // referrerPolicy="no-referrer"
           {...imgProps}
           style={{
             ...values.img.style,

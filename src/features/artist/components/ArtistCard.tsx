@@ -27,7 +27,6 @@ const ArtistCard = (props: ArtistCardProps) => {
         <div className="shadow-[0_8px_24px_#00000080] relative mb-2 aspect-square rounded-full overflow-hidden bg-[#333333]">
           <SmartImage
             wrapClassName="w-full h-full bg-transparent"
-            referrerPolicy="no-referrer"
             url={cover}
             icon={(
               <UserIcon className="w-1/4 h-1/4" />

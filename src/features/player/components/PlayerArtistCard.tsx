@@ -17,7 +17,6 @@ const PlayerArtistCard = () => {
     <div className="mb-4 mx-4 bg-[#1f1f1f] rounded-lg overflow-hidden">
       <SmartImage
         wrapClassName="w-full h-42.5"
-        referrerPolicy="no-referrer"
         url={cover}
         icon={(
           <UserIcon className="w-1/4 h-1/4" />

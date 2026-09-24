@@ -105,8 +105,6 @@ const HistoryItemList = ({ expanded, userId, item }: HistoryItemListProps) => {
                 >
                   {h.song?.cover ?
                     <SmartImage
-                      crossOrigin="anonymous"
-                      referrerPolicy="no-referrer"
                       url={h.song.cover}
                       styles={{
                         imgWrap: 'w-full h-full',
