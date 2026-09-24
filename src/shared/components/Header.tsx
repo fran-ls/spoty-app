@@ -244,7 +244,7 @@ export const Header: React.FC<HeaderProps> = ({ onExplorePremiumClick }) => {
                         className="cursor-pointer flex items-center gap-2 w-full text-left px-4 py-2 text-[#adaaaa] hover:text-white hover:bg-white/10 transition-colors"
                       >
                         <UploadIcon size={20} />
-                        <span>Subir</span>
+                        <span>Subir música</span>
                       </button>
 
                       <Link
@@ -255,7 +255,7 @@ export const Header: React.FC<HeaderProps> = ({ onExplorePremiumClick }) => {
                         className="flex items-center gap-2 w-full text-left px-4 py-2 text-[#adaaaa] hover:text-white hover:bg-white/10 transition-colors"
                       >
                         <DownloadIcon size={20} />
-                        <span>Descargar</span>
+                        <span>YTDrop</span>
                       </Link>
                     </>
                   )}
