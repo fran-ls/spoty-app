@@ -55,7 +55,7 @@ const UserPlaylistsSlider = () => {
   )
 
   return (
-    <Slider
+    <Slider<Playlist>
       keys={{
         title: 'name'
       }}
@@ -64,11 +64,11 @@ const UserPlaylistsSlider = () => {
       items={playlists}
       linkToViewAll={routes.playlists}
       linkToRedirect={routes.playlists}
-      isCurrentPlaying={(it) => currentPlaylist?.id === it.id}
+      isCurrentPlaying={(p) => currentPlaylist?.id === p.id}
       loadImage={(p) => {
         const cover = playlistService.playlistCover(p.id, p.cover);
-        const img = p?.coverImages?.[0]?.url || '';
-        return cover ? cover : p?.coverImages.length < 4 ? img : ''
+        const img = p.coverImages?.[0]?.url || '';
+        return cover ? cover : p.coverImages && p.coverImages.length < 4 ? img : ''
       }}
       onPlay={(playlist) => getPlaylistSongs(playlist as any)}
     />

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { PauseIcon, PlayIcon } from "lucide-react";
-import type { HistoryPlaylist } from "../../player/playHistory.types";
+import type { HistoryPlaylist, PlayHistory } from "../../player/playHistory.types";
 import type { Playlist } from "../../playlist/playlist.types";
 import playHistoryService from "../../player/services/playHistory.service";
 import useAuth from "../../auth/hooks/useAuth";
@@ -65,7 +65,7 @@ const LastPlaylistPlayed = ({ bannerRef, setPlaylist }: {
         loading ? (
           <SliderSkeletons />
         ) : (
-          <Slider
+          <Slider<PlayHistory>
             keys={{
               title: 'playlist.name',
               id: 'playlist.id'
@@ -73,8 +73,12 @@ const LastPlaylistPlayed = ({ bannerRef, setPlaylist }: {
             items={playlists}
             linkToViewAll={routes.playlists}
             linkToRedirect={routes.playlists}
-            isCurrentPlaying={(it) => currentPlaylist?.id === it.id}
-            loadImage={(p) => playlistService.playlistCover(p.id, p.cover)}
+            isCurrentPlaying={(it) => currentPlaylist?.id === it.playlistId}
+            loadImage={({ playlist: p }) => {
+              const cover = playlistService.playlistCover(p?.id || '', p?.cover);
+              const img = p?.coverImages?.[0]?.url || '';
+              return cover ? cover : p?.coverImages && p.coverImages.length < 4 ? img : ''
+            }}
           />
         )
       )}

@@ -7,7 +7,7 @@ import { getValue } from "../utils/getValue";
 import usePlayer from "../../features/player/hooks/usePlayer";
 import PlaylistCoverImgs from "../../features/playlist/components/PlaylistCoverImgs";
 
-interface SliderProps {
+interface SliderProps<T> {
   keys: {
     id?: string;
     title: string;
@@ -20,12 +20,12 @@ interface SliderProps {
   linkToRedirect?: string;
   linkToViewAll?: string;
   playable?: boolean;
-  loadImage?: (item: Record<string, any>) => string;
-  isCurrentPlaying?: (item: Record<string, any>) => boolean;
-  onPlay?: (item: Record<string, any>) => void;
+  loadImage?: (item: T) => string;
+  isCurrentPlaying?: (item: T) => boolean;
+  onPlay?: (item: T) => void;
 }
 
-const Slider = (props: SliderProps) => {
+function Slider<T = Record<string, any>>(props: SliderProps<T>) {
   const {
     title, subtext, keys, items, icon, linkToRedirect, playable = true,
     linkToViewAll, loadImage, isCurrentPlaying, onPlay
@@ -119,7 +119,8 @@ const Slider = (props: SliderProps) => {
             const cover = loadImage ? loadImage(it) : null;
             const title = getValue(it, keys.title);
             const isCurrent = isCurrentPlaying?.(it) || false;
-            const isCoverImgs = it.coverImages && it.coverImages.length > 3;
+            const coverImages = it.coverImages || it.playlist?.coverImages || [];
+            const isCoverImgs = coverImages && coverImages.length > 3;
             const redirectTo = `${linkToRedirect}/${keys.id ? getValue(it, keys.id) : it.id}`;
 
             const titleHTML = (
@@ -165,8 +166,8 @@ const Slider = (props: SliderProps) => {
                     }}
                   />
 
-                  {!cover && isCoverImgs && (
-                    <PlaylistCoverImgs images={it.coverImages || []} />
+                  {(!cover && isCoverImgs) && (
+                    <PlaylistCoverImgs images={coverImages} />
                   )}
 
                   {playable && (
