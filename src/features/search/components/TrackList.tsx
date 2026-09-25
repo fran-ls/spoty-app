@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { PlayIcon, MusicIcon, EllipsisIcon, ClockIcon, CheckIcon, PauseIcon } from 'lucide-react';
 import type { PaginationMeta } from '../../../shared/types/common.types';
 import type { Track } from '../../song/song.types';
@@ -10,6 +11,7 @@ import { DropdownIcon } from '../../../shared/components/Icons';
 import SmartImage from '../../../shared/components/SmartImage';
 import usePlayer from '../../player/hooks/usePlayer';
 import SongActionsMenu from '../../song/components/SongActionsMenu';
+import { routes } from '../../../shared/utils/routes';
 
 interface TrackListProps {
   items: Track[];
@@ -107,18 +109,31 @@ const TrackList = (props: TrackListProps) => {
                 />
 
                 <div className="flex flex-col min-w-0">
-                  <span
-                    className={`font-semibold truncate text-sm ${isPlayingNow ? 'text-primary' : 'text-white'}`}
-                    title={track?.title}
+                  <Link
+                    className="hover:text-white hover:underline"
+                    onClick={(e) => e.stopPropagation()}
+                    to={`${routes.tracks}/${track.id}`}
                   >
-                    {track?.title}
-                  </span>
-                  <span
-                    className="text-[#adaaaa] text-xs truncate transition-colors hover:text-white hover:underline mt-0.5"
-                    title={track.artist?.name || ''}
+                    <span
+                      className={`block font-medium truncate text-sm ${isPlayingNow ? 'text-primary' : 'text-white'}`}
+                      title={track?.title}
+                    >
+                      {track?.title}
+                    </span>
+                  </Link>
+
+                  <Link
+                    className="hover:text-white hover:underline"
+                    onClick={(e) => e.stopPropagation()}
+                    to={`${routes.artists}/${track.artistId}`}
                   >
-                    {track?.artist?.name || ''}
-                  </span>
+                    <span
+                      className="block text-[#adaaaa] text-xs truncate transition-colors hover:text-white"
+                      title={track.artist?.name}
+                    >
+                      {track?.artist?.name}
+                    </span>
+                  </Link>
                 </div>
               </div>
 
