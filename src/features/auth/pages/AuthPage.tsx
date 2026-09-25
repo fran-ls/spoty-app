@@ -3,6 +3,7 @@ import { Music, User as UserIcon, LogIn, MailIcon, LockIcon, EyeIcon, EyeOffIcon
 import "../../../assets/css/toaster.css";
 import Toaster from '../../../shared/components/Toaster';
 import useAuth from '../hooks/useAuth';
+import { envs } from '../../../shared/utils/envs';
 
 const AuthPage: React.FC = () => {
   const {
@@ -146,6 +147,12 @@ const AuthPage: React.FC = () => {
                 </>
               )}
             </button>
+
+            {(isLogin && envs.MODE === 'prod-demo') && (
+              <p className="text-[#adaaaa] text-center text-sm select-text">
+                Demo → <strong>{envs.DEMO_USER.email}</strong> / <strong>{envs.DEMO_USER.pass}</strong>
+              </p>
+            )}
           </form>
 
           {/* Toggle Tab Footer */}

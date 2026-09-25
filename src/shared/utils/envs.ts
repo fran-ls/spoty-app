@@ -8,6 +8,11 @@ interface Envs {
   IS_PROD: boolean;
   YTDROP_API_URL: string;
   YTDROP_STORAGE_KEY: string;
+  MODE: string;
+  DEMO_USER: {
+    email: string;
+    pass: string;
+  }
 }
 
 const vars = [
@@ -18,7 +23,8 @@ const vars = [
   'VITE_SUPABASE_URL',
   'VITE_SUPABASE_PUBLISHABLE_KEY',
   'VITE_YTDROP_API_URL',
-  'VITE_YTDROP_STORAGE_KEY'
+  'VITE_YTDROP_STORAGE_KEY',
+  'VITE_MODE',
 ];
 
 const metaEnv = { ...import.meta.env }
@@ -30,11 +36,11 @@ for (const v of vars) {
   env[k] = metaEnv[v];
 }
 
-const { REACT_ENV, DEV_API_URL, PROD_API_URL } = env;
-const MODE = REACT_ENV ? REACT_ENV.toLowerCase() : 'dev';
-const IS_PROD = MODE === 'prod' || MODE === 'production';
+const { REACT_ENV, DEV_API_URL, PROD_API_URL, MODE } = env;
+const reactEnv = REACT_ENV ? REACT_ENV.toLowerCase() : 'dev';
+const IS_PROD = reactEnv === 'prod' || reactEnv === 'production';
 
-env.REACT_ENV = MODE;
+env.REACT_ENV = reactEnv;
 env.IS_PROD = IS_PROD;
 
 if (!DEV_API_URL) {
@@ -48,5 +54,8 @@ if (!env.API_URL || !IS_PROD) {
 if (IS_PROD && PROD_API_URL) {
   env.API_URL = PROD_API_URL;
 }
+
+env.MODE = MODE ? MODE.toLowerCase() : 'dev';
+env.DEMO_USER = JSON.parse(metaEnv.VITE_DEMO_USER)
 
 export const envs = env as Envs;
