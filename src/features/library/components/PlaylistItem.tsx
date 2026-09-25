@@ -71,7 +71,7 @@ const PlaylistItem = (props: PlaylistItemProps) => {
                     background: bgIcon
                   }
                 }}
-                url={playlist.cover}
+                url={playlist.cover || playlist?.coverImages?.[0]?.url || ''}
               />
 
               {isCoverImgs && (
@@ -189,7 +189,7 @@ const PlaylistItem = (props: PlaylistItemProps) => {
                 }
               }}
               className="object-cover w-full h-full"
-              url={playlist.cover}
+              url={playlist.cover || playlist?.coverImages?.[0]?.url || ''}
               icon={(
                 <MusicIcon className="w-1/2 h-1/2" />
               )}
