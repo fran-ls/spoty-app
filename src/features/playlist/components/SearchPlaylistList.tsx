@@ -54,7 +54,7 @@ const SearchPlaylistList = ({ query, filter, triggerViewPlaylist }: SearchPlayli
     setPlaylists(data.items);
   }
 
-  useEffect(() => { setTimeout(() => searchPlaylists(filters), 300) }, [query]);
+  useEffect(() => { setTimeout(() => searchPlaylists({ ...filters, page: 1 }), 300) }, [query]);
 
   return (
     <div className="space-y-2 pt-2">

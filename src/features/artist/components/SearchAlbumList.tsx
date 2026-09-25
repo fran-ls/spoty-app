@@ -33,7 +33,7 @@ const SearchAlbumList = (props: SearchAlbumListProps) => {
     }
   });
 
-  useEffect(() => { setTimeout(() => searchAlbums(filters, { artist: true }), 300) }, [query]);
+  useEffect(() => { setTimeout(() => searchAlbums({ ...filters, page: 1 }, { artist: true }), 300) }, [query]);
 
   return (
     <div className="space-y-2 pt-2">

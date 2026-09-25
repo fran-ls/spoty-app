@@ -36,7 +36,7 @@ const SearchTrackList = ({ query, filter, triggerViewTrack }: SearchTrackListPro
     }
   });
 
-  useEffect(() => { setTimeout(() => searchTracks(filters, trackInclude), 300) }, [query]);
+  useEffect(() => { setTimeout(() => searchTracks({ ...filters, page: 1 }, trackInclude), 300) }, [query]);
 
   return (
     <div className="space-y-2 pt-2">
