@@ -117,7 +117,7 @@ const LastPlaylistPlayed = ({ bannerRef, setPlaylist }: {
               <div className="shadow-[0px_0px_24px_#00000080] aspect-square w-16 h-16 shrink-0 relative overflow-hidden bg-[#333333]">
                 <SmartImage
                   wrapClassName="bg-transparent"
-                  url={cover}
+                  url={cover || playlist?.coverImages?.[0]?.url || ''}
                   styles={{
                     imgWrap: 'w-full h-full',
                     icon: 'w-[40%] h-[40%]'

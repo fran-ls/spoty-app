@@ -114,7 +114,7 @@ const HistoryItemList = ({ expanded, userId, item }: HistoryItemListProps) => {
                     :
                     <>
                       <SmartImage
-                        url={cover}
+                        url={cover || playlist?.coverImages?.[0]?.url || ''}
                         styles={{
                           imgWrap: 'w-full h-full',
                           icon: 'w-[40%] h-[40%]'
