@@ -24,8 +24,6 @@ const PlaylistCoverImgs = ({ images, onError }: PlaylistCoverImgsProps) => {
           setIsError(true);
           onError?.(e.isTrusted);
         }}
-        crossOrigin="anonymous"
-        referrerPolicy="no-referrer"
         src={img.url}
         alt="cover"
         key={img.id}

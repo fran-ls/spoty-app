@@ -1,9 +1,11 @@
 import { Link, useNavigate } from "react-router-dom";
 import { EllipsisIcon, ListIcon, ListPlusIcon, Music2Icon, MusicIcon, PauseIcon, PlayIcon, ShareIcon, UserIcon } from "lucide-react";
+import type { TrackCover } from "../../song/song.types";
 import SmartImage from "../../../shared/components/SmartImage";
 import usePlayer from "../../player/hooks/usePlayer";
 import ActionMenu from "../../../shared/components/ActionMenu";
 import { getDeviceType } from "../../../shared/utils/getDeviceType";
+import PlaylistCoverImgs from "../../playlist/components/PlaylistCoverImgs";
 
 interface SearchItemProps {
   type?: 'artist' | 'playlist' | 'song';
@@ -18,6 +20,8 @@ interface SearchItemProps {
     link: string;
     sub?: string;
     sublink?: string;
+    images?: TrackCover[];
+    isCover?: boolean;
   };
   setHoverId: React.Dispatch<React.SetStateAction<string>>;
 }
@@ -45,6 +49,8 @@ const SearchItem = (props: SearchItemProps) => {
     md: 'md:grid-cols-[1fr_250px]'
   }
 
+  const isCoverImgs = item.images && item.images.length > 3;
+
   return (
     <div className={`hover:bg-[#262626] group rounded-md flex items-center gap-2 text-white google-sans-flex-font ${is.artist ? 'md:p-4 p-3' : 'px-3 py-2'}`}>
       <div className={`${isDesktop ? grid.sm : 'grid-cols-1'} ${grid.md} grid items-center w-full gap-3 relative`}>
@@ -64,6 +70,10 @@ const SearchItem = (props: SearchItemProps) => {
               )}
               url={loadImage?.(item) || null}
             />
+
+            {(is.playlist && !item.isCover && isCoverImgs) && (
+              <PlaylistCoverImgs images={item.images || []} />
+            )}
 
             {(!is.artist && !isPlayingNow) && (
               <button

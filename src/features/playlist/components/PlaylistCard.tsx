@@ -122,7 +122,7 @@ const PlaylistCard = (props: PlaylistCardProps) => {
         <SmartImage
           wrapClassName="bg-transparent text-[#7f7f7f] w-full h-full"
           icon={<MusicIcon className="w-[30%] h-[30%]" />}
-          url={cover}
+          url={cover || playlist?.coverImages?.[0]?.url || ''}
         />
 
         {(!cover && isCoverImgs) && (

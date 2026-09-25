@@ -86,7 +86,7 @@ const SearchPlaylistPage = () => {
                   </h3>
 
                   <SmartImage
-                    url={cover}
+                    url={cover || p?.coverImages?.[0]?.url || ''}
                     icon={(
                       <MusicIcon className="w-[30%] h-[30%] absolute top-1/2 left-1/2 -translate-1/2" />
                     )}

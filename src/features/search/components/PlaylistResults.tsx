@@ -88,6 +88,7 @@ const PlaylistResults = ({ filter, query, hoverId, setHoverId }: PlaylistResults
     <>
       {playlists.map((p) => {
         const isPlayingNow = p.id === currentPlaylist?.id;
+        const cover = playlistService.playlistCover(p.id, p.cover);
 
         return (isPlaylistFilter ? (
           <PlaylistCard
@@ -106,11 +107,13 @@ const PlaylistResults = ({ filter, query, hoverId, setHoverId }: PlaylistResults
               id: p.id,
               title: p.name,
               link: `${routes.playlists}/${p.id}`,
-              sub: 'Lista'
+              sub: 'Lista',
+              images: p.coverImages,
+              isCover: !!cover
             })}
             isHover={hoverId === p.id}
             isPlayingNow={isPlayingNow}
-            loadImage={() => (playlistService.playlistCover(p.id, p.cover))}
+            loadImage={() => (cover || p?.coverImages?.[0]?.url || '')}
             onPlay={() => onPlay({
               isPlayingNow,
               playlist: p
