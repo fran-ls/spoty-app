@@ -16,20 +16,21 @@ interface SearchAlbumListProps {
 
 const SearchAlbumList = (props: SearchAlbumListProps) => {
   const { query, filter, triggerViewAlbum } = props;
-  const { albums, albumMeta, searchAlbums } = useAlbum();
+  const { albums, albumMeta, loading, searchAlbums } = useAlbum();
   const isLoadMore = albumMeta.hasNextPage && filter === 'albums';
 
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useState(1);
   const filters: AlbumFilters = {
     title: query.trim(),
     limit: 10,
-    page: 1
+    page
   }
 
-  const { loaderRef } = useInfiniteScroll(() => {
-    if (!isLoadMore) return;
-    searchAlbums({ ...filters, page: page + 1 }, { artist: true });
-    setPage(page + 1);
+  const { loaderRef } = useInfiniteScroll(async () => {
+    if (page === 1 || isLoadMore) {
+      searchAlbums(filters, { artist: true });
+      await setPage(page + 1);
+    }
   });
 
   useEffect(() => { setTimeout(() => searchAlbums(filters, { artist: true }), 300) }, [query]);
@@ -81,7 +82,7 @@ const SearchAlbumList = (props: SearchAlbumListProps) => {
         </div>
       )}
 
-      {isLoadMore &&
+      {(isLoadMore && !loading) && (
         <div
           className="flex items-center justify-center overflow-hidden"
           ref={loaderRef}
@@ -92,7 +93,7 @@ const SearchAlbumList = (props: SearchAlbumListProps) => {
             stroke={2}
           />
         </div>
-      }
+      )}
     </div>
   )
 }

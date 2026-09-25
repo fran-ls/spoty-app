@@ -16,20 +16,21 @@ interface SearchArtistListProps {
 
 const SearchArtistList = (props: SearchArtistListProps) => {
   const { query, filter, triggerViewArtist } = props;
-  const { artists, artistMeta, searchArtists } = useArtist();
+  const { artists, artistMeta, loading, searchArtists } = useArtist();
   const isLoadMore = artistMeta.hasNextPage && filter === 'artists';
 
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useState(1);
   const filters = {
     name: query.trim(),
     limit: 10,
-    page: 0
+    page
   }
 
-  const { loaderRef } = useInfiniteScroll(() => {
-    if (!isLoadMore) return;
-    searchArtists({ ...filters, page: page + 1 });
-    setPage(page + 1);
+  const { loaderRef } = useInfiniteScroll(async () => {
+    if (page === 1 || isLoadMore) {
+      await searchArtists(filters);
+      setPage(page + 1);
+    }
   });
 
   useEffect(() => { setTimeout(() => searchArtists(filters), 300) }, [query]);
@@ -83,7 +84,7 @@ const SearchArtistList = (props: SearchArtistListProps) => {
         </div>
       )}
 
-      {isLoadMore &&
+      {(isLoadMore && !loading) && (
         <div
           className="flex items-center justify-center overflow-hidden"
           ref={loaderRef}
@@ -94,7 +95,7 @@ const SearchArtistList = (props: SearchArtistListProps) => {
             stroke={2}
           />
         </div>
-      }
+      )}
     </div>
   )
 }

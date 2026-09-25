@@ -7,6 +7,7 @@ import SmartImage from "../../../shared/components/SmartImage";
 import playlistService from "../services/playlist.service";
 import Loader from "../../../shared/components/Loader";
 import { useInfiniteScroll } from "../../../shared/hooks/useInfiniteScroll";
+import { paginationMeta } from "../../../shared/data/search.data";
 
 interface SearchPlaylistListProps {
   query: string;
@@ -16,31 +17,31 @@ interface SearchPlaylistListProps {
 
 const SearchPlaylistList = ({ query, filter, triggerViewPlaylist }: SearchPlaylistListProps) => {
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
-  const [playlistMeta, setPlaylistMeta] = useState<SearchMeta>({
-    page: 0,
-    limit: 10,
-    total: 0,
-    totalPages: 0,
-    hasNextPage: false,
-    hasPrevPage: false
-  });
+  const [playlistMeta, setPlaylistMeta] = useState<SearchMeta>(paginationMeta);
+  const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(1);
+
   const isLoadMore = playlistMeta.hasNextPage && filter === 'playlists';
 
-  const [page, setPage] = useState(0);
   const filters = {
     name: query.trim(),
     limit: 10,
-    page: 0
+    page
   }
 
-  const { loaderRef } = useInfiniteScroll(() => {
-    if (!isLoadMore) return;
-    searchPlaylists({ ...filters, page: page + 1 });
-    setPage(page + 1);
+  const { loaderRef } = useInfiniteScroll(async () => {
+    if (page === 1 || isLoadMore) {
+      await searchPlaylists(filters);
+      setPage(page + 1);
+    }
   });
 
   async function searchPlaylists(filters?: Record<string, any>) {
+    if (loading) return;
+    setLoading(true);
+
     const { data } = await playlistService.searchPlaylists(filters);
+    setLoading(false);
     if (!data) return;
 
     setPlaylistMeta(data.meta);
@@ -95,7 +96,7 @@ const SearchPlaylistList = ({ query, filter, triggerViewPlaylist }: SearchPlayli
         </div>
       )}
 
-      {isLoadMore &&
+      {(isLoadMore && !loading) && (
         <div
           className="flex items-center justify-center overflow-hidden"
           ref={loaderRef}
@@ -106,7 +107,7 @@ const SearchPlaylistList = ({ query, filter, triggerViewPlaylist }: SearchPlayli
             stroke={2}
           />
         </div>
-      }
+      )}
     </div>
   )
 }

@@ -15,24 +15,25 @@ interface SearchTrackListProps {
 }
 
 const SearchTrackList = ({ query, filter, triggerViewTrack }: SearchTrackListProps) => {
-  const { tracks, trackMeta, searchTracks } = useTrack();
+  const { tracks, trackMeta, loading, searchTracks } = useTrack();
   const isLoadMore = trackMeta.hasNextPage && filter === 'tracks';
 
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useState(1);
   const filters: TrackFilters = {
     title: query.trim(),
     limit: 10,
-    page: 0
+    page
   }
   const trackInclude: TrackInclude = {
     album: 'id title',
     artist: 'id name image'
   }
 
-  const { loaderRef } = useInfiniteScroll(() => {
-    if (!isLoadMore) return;
-    searchTracks({ ...filters, page: page + 1 }, trackInclude);
-    setPage(page + 1);
+  const { loaderRef } = useInfiniteScroll(async () => {
+    if (page === 1 || isLoadMore) {
+      await searchTracks(filters, trackInclude);
+      setPage(page + 1);
+    }
   });
 
   useEffect(() => { setTimeout(() => searchTracks(filters, trackInclude), 300) }, [query]);
@@ -78,7 +79,7 @@ const SearchTrackList = ({ query, filter, triggerViewTrack }: SearchTrackListPro
         </div>
       )}
 
-      {isLoadMore &&
+      {(isLoadMore && !loading) && (
         <div
           className="flex items-center justify-center overflow-hidden"
           ref={loaderRef}
@@ -89,7 +90,7 @@ const SearchTrackList = ({ query, filter, triggerViewTrack }: SearchTrackListPro
             stroke={2}
           />
         </div>
-      }
+      )}
     </div>
   )
 }
