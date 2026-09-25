@@ -5,10 +5,6 @@ type Args = {
 
 export const fmtSearchUrl = ({ text, reverse = false }: Args) => {
   if (!text) return '';
-
-  if (reverse) {
-    return text.split('=')[1].replaceAll('-', ' ');
-  }
-
-  return text.split('=')[1].replaceAll(' ', '-');
+  const separator = '+';
+  return reverse ? text.trim().replaceAll(separator, ' ') : text.trim().replaceAll(' ', separator);
 }

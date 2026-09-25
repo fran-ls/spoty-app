@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Bell, Users, Search, Sparkles, XIcon, GlobeIcon, CircleUserRoundIcon, SettingsIcon, LaptopMinimalIcon, LogOutIcon, UploadIcon, MusicIcon, DownloadIcon, LibraryIcon } from 'lucide-react';
+import queryString from 'query-string';
 import useAuth from '../../features/auth/hooks/useAuth';
 import { routes } from '../utils/routes';
 import { getDeviceType } from '../utils/getDeviceType';
@@ -14,6 +15,7 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ onExplorePremiumClick }) => {
   const { user, isAdmin, dispatch, showProfile, logout } = useAuth();
   const { search, pathname } = useLocation();
+  const { q = '' } = queryString.parse(search);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [showUserDropdown, setShowUserDropdown] = useState(false);
@@ -31,13 +33,14 @@ export const Header: React.FC<HeaderProps> = ({ onExplorePremiumClick }) => {
 
   const onPressKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key.toLowerCase() !== 'enter') return;
-    const q = searchQuery.trim().replaceAll(' ', '-');
-    navigate(!searchQuery.trim() ? routes.search : `${routes.search}?q=${q}`);
+    const qStr = fmtSearchUrl({ text: searchQuery });
+    navigate(!qStr ? routes.search : `${routes.search}?q=${qStr}`);
   }
 
   useEffect(() => {
-    const q = fmtSearchUrl({ text: search, reverse: true });
-    q && setSearchQuery(q);
+    if (!q) return;
+    const qStr = q.toString();
+    setSearchQuery(qStr);
   }, [search]);
 
   const icon = {

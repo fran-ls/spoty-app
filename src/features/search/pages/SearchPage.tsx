@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
+import queryString from 'query-string';
 import type { SearchFilter } from "../components/SearchHeader";
 import ArtistResults from "../components/ArtistResults";
 import TrackResults from "../components/TrackResults";
@@ -7,12 +8,12 @@ import PlaylistResults from "../components/PlaylistResults";
 import SearchHeader from "../components/SearchHeader";
 import ResultsContainer from "../components/ResultsContainer";
 import SearchPlaylistPage from "../../playlist/pages/SearchPlaylistPage";
-import { fmtSearchUrl } from "../utils/fmtSearchUrl";
 import { getDeviceType } from "../../../shared/utils/getDeviceType";
 import SearchInput from "../components/SearchInput";
 
 const SearchPage = () => {
   const { search } = useLocation();
+  const { q = '' } = queryString.parse(search);
 
   const [filter, setFilter] = useState<SearchFilter>('all');
   const [hoverId, setHoverId] = useState('');
@@ -22,8 +23,9 @@ const SearchPage = () => {
   const isDesktop = getDeviceType() === 'desktop';
 
   useEffect(() => {
-    const q = fmtSearchUrl({ text: search, reverse: true });
-    q && setQuery(q);
+    if (!q) return;
+    const qStr = q.toString();
+    setQuery(qStr);
   }, [search]);
 
   if (!query && isDesktop) return (
