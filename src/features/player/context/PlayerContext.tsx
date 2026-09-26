@@ -295,6 +295,8 @@ export const PlayerProvider = ({ children }: any) => {
   }
 
   function addToPlayHistory(data: PlayHistoryAddPayload) {
+    if (!isPlaying) return;
+
     const { song, playlist, playlistTimout } = data;
 
     if (song) {
@@ -302,7 +304,7 @@ export const PlayerProvider = ({ children }: any) => {
       setTimeout(() => { playHistoryService.add({ songId: song.id }) }, timout);
     }
     if (playlist) {
-      const timout = 3 * 60 * 1000;
+      const timout = (song?.duration ? song.duration : 60) * 1000;
       setTimeout(() => playHistoryService.add({
         playlistId: playlist.id
       }), playlistTimout || timout);
