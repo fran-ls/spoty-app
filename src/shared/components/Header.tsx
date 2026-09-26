@@ -57,11 +57,14 @@ export const Header: React.FC<HeaderProps> = ({ onExplorePremiumClick }) => {
         <div className="flex gap-2">
           <Link
             to={routes.home}
-            className="ml-3 text-white"
+            className="text-white"
+            style={{
+              ...(isDesktop && {
+                marginLeft: 8
+              })
+            }}
           >
-            <div className="bg-white rounded-full p-1.5">
-              <AppIcon />
-            </div>
+            <AppIcon className="w-11 h-11" />
           </Link>
           <button
             onClick={() => navigate(routes.home)}
@@ -79,7 +82,7 @@ export const Header: React.FC<HeaderProps> = ({ onExplorePremiumClick }) => {
         </div>
 
         {isDesktop && (
-          <div className="relative group sm:ml-4 animate-fade-in w-full">
+          <div className="relative group sm:ml-1 animate-fade-in w-full">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-[#adaaaa] group-focus-within:text-white">
               <Search size={18} />
             </div>
