@@ -6,7 +6,6 @@ import useAuth from '../../features/auth/hooks/useAuth';
 import { routes } from '../utils/routes';
 import { getDeviceType } from '../utils/getDeviceType';
 import { fmtSearchUrl } from '../../features/search/utils/fmtSearchUrl';
-import { AppIcon } from './Icons';
 
 interface HeaderProps {
   onExplorePremiumClick?: () => void;
@@ -60,11 +59,15 @@ export const Header: React.FC<HeaderProps> = ({ onExplorePremiumClick }) => {
             className="text-white"
             style={{
               ...(isDesktop && {
-                marginLeft: 8
+                marginLeft: 12
               })
             }}
           >
-            <AppIcon className="w-11 h-11" />
+            <img
+              className="w-8 min-w-8 shrink-0"
+              src="favicon.svg"
+              alt="spoty"
+            />
           </Link>
           <button
             onClick={() => navigate(routes.home)}
@@ -82,9 +85,9 @@ export const Header: React.FC<HeaderProps> = ({ onExplorePremiumClick }) => {
         </div>
 
         {isDesktop && (
-          <div className="relative group sm:ml-1 animate-fade-in w-full">
+          <div className="relative group sm:ml-3 animate-fade-in w-full">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-[#adaaaa] group-focus-within:text-white">
-              <Search size={18} />
+              <Search size={22} />
             </div>
 
             <input
