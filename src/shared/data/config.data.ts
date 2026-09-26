@@ -1,3 +1,3 @@
 export const config = {
-  APP_NAME: 'Songfy'
+  APP_NAME: 'Spoty'
 }
