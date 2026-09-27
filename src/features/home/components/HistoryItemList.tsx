@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import type { THistoryItem } from "../../player/playHistory.types";
 import SmartImage from "../../../shared/components/SmartImage";
 import PlaylistCoverImgs from "../../playlist/components/PlaylistCoverImgs";
@@ -13,16 +13,16 @@ import { routes } from "../../../shared/utils/routes";
 interface HistoryItemListProps {
   expanded: boolean;
   userId: string;
-  item: THistoryItem;
+  data: THistoryItem;
 }
 
-const HistoryItemList = ({ expanded, userId, item }: HistoryItemListProps) => {
-  const { createdAt, items } = item;
+const HistoryItemList = ({ expanded, userId, data }: HistoryItemListProps) => {
+  const { createdAt, items } = data;
 
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [dayHistory, setDayHistory] = useState(items);
-  const [meta, setMeta] = useState(item.meta ? item.meta : paginationMeta);
+  const [meta, setMeta] = useState(data.meta ? data.meta : paginationMeta);
 
   const contentRef = useRef<any>(null);
 
@@ -77,33 +77,27 @@ const HistoryItemList = ({ expanded, userId, item }: HistoryItemListProps) => {
         className="ml-3"
         ref={contentRef}
       >
-        {dayHistory.map((h) => {
+        {dayHistory.map((h, i) => {
           const playlist = h.playlist;
+          const coverImages = playlist?.coverImages || [];
           const cover = playlist ? playlistService.playlistCover(playlist.id, playlist.cover) : null;
-          const isCoverImgs = !cover && playlist?.coverImages && playlist.coverImages.length > 3;
+          const redirectTo = h.playlistId ? `${routes.playlists}/${h.playlistId}` : `${routes.tracks}/${h.songId}`;
+          const isCoverImgs = !cover && coverImages && coverImages.length > 3;
 
           return (
             <li
               className="cursor-pointer hover:bg-[#262626] rounded-md p-3 w-full flex items-center justify-between gap-3"
-              onClick={() => {
-                if (h.playlistId) {
-                  navigate(`${routes.playlists}/${h.playlistId}`);
-                  return;
-                }
-                else if (h.songId) {
-                  navigate(`${routes.tracks}/${h.songId}`);
-                }
-              }}
-              key={h.id}
+              onClick={() => navigate(redirectTo)}
+              key={`${h.id}-${i}`}
             >
-              <div className="flex items-center gap-3">
+              <div className="overflow-hidden flex items-center gap-3">
                 <div
                   className="min-w-12 w-12 h-12 rounded overflow-hidden relative"
                   style={{
                     boxShadow: '0 4px 60px rgba(0, 0, 0, .5)'
                   }}
                 >
-                  {h.song?.cover ?
+                  {h.song?.cover ? (
                     <SmartImage
                       url={h.song.cover}
                       styles={{
@@ -111,7 +105,7 @@ const HistoryItemList = ({ expanded, userId, item }: HistoryItemListProps) => {
                         icon: 'w-[40%] h-[40%]'
                       }}
                     />
-                    :
+                  ) : (
                     <>
                       <SmartImage
                         url={cover || playlist?.coverImages?.[0]?.url || ''}
@@ -121,26 +115,41 @@ const HistoryItemList = ({ expanded, userId, item }: HistoryItemListProps) => {
                         }}
                       />
 
-                      {isCoverImgs && (
-                        <PlaylistCoverImgs images={playlist.coverImages || []} />
-                      )}
+                      {isCoverImgs && <PlaylistCoverImgs images={coverImages} />}
                     </>
-                  }
+                  )}
                 </div>
 
-                <div className="w-full">
-                  <p className="text-white text-[15px] font-semibold">
-                    {h.song?.title || h.playlist?.name}
-                  </p>
+                <div className="flex flex-col justify-center gap-1 overflow-hidden">
+                  <Link
+                    className="text-white hover:underline"
+                    onClick={(e) => e.stopPropagation()}
+                    to={redirectTo}
+                  >
+                    <p
+                      className="text-sm font-medium line-clamp-2"
+                      style={{
+                        lineHeight: 1.25
+                      }}
+                    >
+                      {h.song?.title || h.playlist?.name}
+                    </p>
+                  </Link>
 
                   {h.song?.artist && (
-                    <span className="text-[13px]">
-                      {h.song.artist.name}
-                    </span>
+                    <Link
+                      className="hover:underline overflow-hidden"
+                      onClick={(e) => e.stopPropagation()}
+                      to={`${routes.artists}/${h.song?.artistId || ''}`}
+                    >
+                      <span className="block text-xs truncate">
+                        {h.song.artist.name}
+                      </span>
+                    </Link>
                   )}
 
                   {h.playlist && (
-                    <span className="text-sm">
+                    <span className="text-xs">
                       Lista
                     </span>
                   )}
@@ -150,7 +159,7 @@ const HistoryItemList = ({ expanded, userId, item }: HistoryItemListProps) => {
           )
         })}
 
-        {meta.hasNextPage && (
+        {(meta.hasNextPage && !loading) && (
           <li className="py-1">
             <div
               className="flex items-center justify-center"

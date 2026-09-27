@@ -7,6 +7,7 @@ import { paginationMeta } from "../../../shared/data/search.data";
 import Loader from "../../../shared/components/Loader";
 import HistoryItem from "../components/HistoryItem";
 import { CustomScrollbar } from "../../../shared/components/CustomScrollbar";
+import { getDeviceType } from "../../../shared/utils/getDeviceType";
 
 const RecentPage = () => {
   const { user } = useAuth();
@@ -20,6 +21,7 @@ const RecentPage = () => {
 
   const lastIndex = playHistory.length - 1;
   const hasMore = firstHistoryItem && lastIndex > 0 ? firstHistoryItem.createdAt !== playHistory[lastIndex]?.createdAt : false;
+  const isDesktop = getDeviceType() === 'desktop';
 
   const { loaderRef } = useInfiniteScroll(async () => {
     if (!hasMore) return;
@@ -65,7 +67,7 @@ const RecentPage = () => {
         viewport={{
           className: "md:px-8 px-2 py-8 relative",
           style: {
-            maxHeight: `calc(100vh - 64px - 88px)`
+            maxHeight: `calc(100dvh - 64px - 88px${!isDesktop ? ' - 20px' : ''})`
           }
         }}
       >
@@ -76,7 +78,7 @@ const RecentPage = () => {
         <div className="max-w-3xl mx-auto mt-12 space-y-8">
           {playHistory?.map((item) => (
             <HistoryItem
-              item={item}
+              data={item}
               userId={user?.id || ''}
               key={item.createdAt}
             />
