@@ -139,6 +139,8 @@ export const PlayerProvider = ({ children }: any) => {
   const [prevVolume, setPrevVolume] = useState<number>(1);
 
   const [playingTracks, setPlayingTracks] = useState<Song[]>([]);
+  const [trackTimeout, setTrackTimeout] = useState<number | null>(null);
+  const [playlistTimeout, setPlaylistTimeout] = useState<number | null>(null);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audio = audioRef.current;
@@ -295,19 +297,21 @@ export const PlayerProvider = ({ children }: any) => {
   }
 
   function addToPlayHistory(data: PlayHistoryAddPayload) {
-    if (!isPlaying) return;
-
     const { song, playlist, playlistTimout } = data;
 
     if (song) {
+      if (trackTimeout) clearTimeout(trackTimeout);
       const timout = song.duration * 1000;
-      setTimeout(() => { playHistoryService.add({ songId: song.id }) }, timout);
+      const activeTimeout = setTimeout(() => playHistoryService.add({ songId: song.id }), timout);
+      setTrackTimeout(activeTimeout);
     }
     if (playlist) {
+      if (playlistTimeout) clearTimeout(playlistTimeout);
       const timout = (song?.duration ? song.duration : 60) * 1000;
-      setTimeout(() => playHistoryService.add({
-        playlistId: playlist.id
-      }), playlistTimout || timout);
+      const activeTimeout = setTimeout(() => {
+        playHistoryService.add({ playlistId: playlist.id })
+      }, playlistTimout || timout);
+      setPlaylistTimeout(activeTimeout);
     }
   }
 
@@ -402,7 +406,6 @@ export const PlayerProvider = ({ children }: any) => {
   }
 
   const updatePositionState = useCallback(() => {
-    const audio = audioRef.current;
     if (!audio || !("mediaSession" in navigator) || !Number.isFinite(audio.duration) || audio.duration <= 0) return;
     try {
       navigator.mediaSession.setPositionState({
@@ -422,7 +425,6 @@ export const PlayerProvider = ({ children }: any) => {
     navigator.mediaSession.setActionHandler("seekbackward", () => seek(progress - 10));
     navigator.mediaSession.setActionHandler("seekforward", () => seek(progress + 10));
     navigator.mediaSession.setActionHandler("seekto", (details) => {
-      const audio = audioRef.current;
       if (!audio || details.seekTime === undefined) return;
       if (details.fastSeek && "fastSeek" in audio) audio.fastSeek(details.seekTime);
       else audio.currentTime = details.seekTime;
@@ -454,7 +456,6 @@ export const PlayerProvider = ({ children }: any) => {
   }, [currentSong]);
 
   useEffect(() => {
-    const audio = audioRef.current;
     if (!audio) return;
     const onPlay = () => {
       setIsPlaying(true);
@@ -489,7 +490,6 @@ export const PlayerProvider = ({ children }: any) => {
   }, [next, updatePositionState]);
 
   useEffect(() => {
-    const audio = audioRef.current;
     if (audio && currentSong) {
       const audioUrl = songService.streamUrl(currentSong.id, currentSong.fileUrl);
       audio.src = audioUrl;
