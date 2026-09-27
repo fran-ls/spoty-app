@@ -88,7 +88,7 @@ const LastPlaylistPlayed = ({ bannerRef, setPlaylist }: {
         ref={bannerRef}
       >
         {loading && (
-          Array.from({ length: 8 }).map((i) => (
+          Array.from({ length: 8 }).map((_, i) => (
             <div
               key={`quick-${i}`}
               className="flex items-center bg-white/5 rounded overflow-hidden h-16 animate-pulse"

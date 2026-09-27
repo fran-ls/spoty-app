@@ -31,9 +31,9 @@ const SliderSkeletons = ({ title, redirectTo, items = 10 }: SliderSkeletonsProps
       )}
 
       <div className="md:px-5 px-2 flex">
-        {Array.from({ length: items }).map((i) => (
+        {Array.from({ length: items }).map((_, i) => (
           <div
-            key={`made-for-you-${i}`}
+            key={`quick-${i}`}
             className="md:min-w-50 min-w-42 grow max-w-50 md:p-3 p-2 rounded-lg flex flex-col h-full animate-pulse"
           >
             <div className="aspect-square rounded-md bg-white/10 mb-3" />
