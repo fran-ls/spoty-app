@@ -65,7 +65,7 @@ export const Header: React.FC<HeaderProps> = ({ onExplorePremiumClick }) => {
           >
             <img
               className="w-8 min-w-8 shrink-0"
-              src="favicon.svg"
+              src="/favicon.svg"
               alt="spoty"
             />
           </Link>
